@@ -23,7 +23,7 @@ public class App
         URL url = new URL("https://90tv.ir/rss/news");
         SyndFeedInput syndFeed = new SyndFeedInput();
         SyndFeed build = syndFeed.build(new XmlReader(url));
-        
+
         System.out.println( "Hello World!" );
     }
 }
