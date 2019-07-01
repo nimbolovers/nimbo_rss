@@ -8,6 +8,7 @@ import com.rometools.rome.feed.synd.SyndEntry;
 import com.rometools.rome.feed.synd.SyndEntryImpl;
 import com.rometools.rome.io.FeedException;
 import in.nimbo.dao.FeedDAO;
+import in.nimbo.entity.Entry;
 import in.nimbo.service.FeedService;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -30,12 +31,15 @@ public class AppTest
     private static App app;
     private static FeedService service;
     @BeforeClass
-    public static void init() throws FileNotFoundException {
+    public static void init() throws IOException {
         service = mock(FeedService.class);
         app = new App(service, new Scanner(new FileInputStream("input.txt")));
-        List<SyndEntry> entries = new ArrayList<>();
-        SyndEntry entry = new SyndEntryImpl();
-        entry.setTitle("تست");
+        List<Entry> entries = new ArrayList<>();
+        Entry entry = new Entry();
+        entry.setChannel("نود");
+        SyndEntry syndEntry = new SyndEntryImpl();
+        syndEntry.setTitle("تست");
+        entry.setSyndEntry(syndEntry);
         entries.add(entry);
         when(service.getFeeds()).thenReturn(entries);
     }

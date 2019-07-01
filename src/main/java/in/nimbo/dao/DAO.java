@@ -2,6 +2,7 @@ package in.nimbo.dao;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -13,7 +14,10 @@ public class DAO {
     public DAO() {
         try {
             Properties databaseProp = new Properties();
-            databaseProp.load(new FileInputStream("resource/database.properties"));
+            ClassLoader loader = Thread.currentThread().getContextClassLoader();
+            InputStream is = loader.getResourceAsStream("database.properties");
+            databaseProp.load(is);
+
             String url = databaseProp.getProperty("database.url");
             String username = databaseProp.getProperty("database.username");
             String password = databaseProp.getProperty("database.password");

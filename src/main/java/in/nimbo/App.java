@@ -2,8 +2,11 @@ package in.nimbo;
 
 import com.rometools.rome.feed.synd.SyndEntry;
 import com.rometools.rome.io.FeedException;
+import in.nimbo.dao.ContentDAO;
+import in.nimbo.dao.ContentDAOImpl;
 import in.nimbo.dao.FeedDAO;
 import in.nimbo.dao.FeedDAOImpl;
+import in.nimbo.entity.Entry;
 import in.nimbo.service.FeedService;
 
 import java.io.FileReader;
@@ -32,7 +35,8 @@ public class App {
     }
     public static void main( String[] args ) throws IOException, FeedException {
         Scanner scanner = new Scanner(System.in);
-        FeedDAO dao = new FeedDAOImpl();
+        ContentDAO contentDAO = new ContentDAOImpl();
+        FeedDAO dao = new FeedDAOImpl(contentDAO);
         FeedService service = new FeedService(dao);
         App app = new App(service, scanner);
         app.run();
@@ -44,23 +48,22 @@ public class App {
             switch (strings[0]){
                 case "save":
                     service.save(properties.getProperty(strings[1]));
-                    System.out.println("saved successfully");
                     break;
                 case "getAll":
-                    List<SyndEntry> feeds = service.getFeeds();
+                    List<Entry> feeds = service.getFeeds();
                     show(feeds);
                     break;
                 case "search":
-                    List<SyndEntry> search = service.getFeeds(strings[1]);
+                    List<Entry> search = service.getFeeds(strings[1]);
                     show(search);
                     break;
             }
         }
     }
 
-    private void show(List<SyndEntry> entries){
-        for (SyndEntry entry:entries) {
-            System.out.println(entry.getTitle());
+    private void show(List<Entry> entries){
+        for (Entry entry:entries) {
+            System.out.println(entry.getSyndEntry().getTitle());
         }
     }
 }
