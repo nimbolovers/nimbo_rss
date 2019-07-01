@@ -12,18 +12,35 @@ import org.junit.Test;
 import org.mockito.Mock;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 public class FeedServiceTest {
+    private static FeedDAO dao;
+    private static SyndEntry entry;
+    private static FeedService service;
+    @BeforeClass
+    public static void init(){
+        dao = mock(FeedDAO.class);
+        entry = mock(SyndEntry.class);
+        service = new FeedService(dao);
+    }
     @Test
     public void save() throws IOException, FeedException {
-        FeedDAO dao = mock(FeedDAO.class);
-        SyndEntry entry = mock(SyndEntry.class);
         when(dao.save(entry)).thenReturn(entry);
-        FeedService service = new FeedService(dao);
         List<SyndEntry> save = service.save("https://90tv.ir/rss/news");
         for (SyndEntry syndEntry:save) {
             assertNull(syndEntry);
         }
+    }
+    @Test
+    public void getFeeds(){
+        List<SyndEntry> entries = new ArrayList<>();
+        entries.add(new SyndEntryImpl());
+        entries.add(new SyndEntryImpl());
+        entries.add(new SyndEntryImpl());
+        when(dao.getFeeds()).thenReturn(entries);
+        List<SyndEntry> feeds = service.getFeeds();
+        assertEquals(feeds, entries);
     }
 }
