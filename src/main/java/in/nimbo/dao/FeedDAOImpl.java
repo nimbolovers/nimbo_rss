@@ -1,39 +1,20 @@
 package in.nimbo.dao;
 
+import com.rometools.rome.feed.synd.SyndEntry;
+import com.rometools.rome.feed.synd.SyndEntryImpl;
 import in.nimbo.entity.Entry;
 
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.sql.*;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 
-public class FeedDAOImpl implements FeedDAO {
-    private Connection connection;
-    private Properties databaseProp;
+public class FeedDAOImpl extends DAO implements FeedDAO {
+    private ContentDAO contentDAO;
 
-    private void loadProperties() {
-        try {
-            databaseProp = new Properties();
-            databaseProp.load(new FileInputStream("resource/database.properties"));
-        } catch (IOException e) {
-            throw new RuntimeException("database properties not found");
-        }
-    }
-
-    public FeedDAOImpl() {
-        loadProperties();
-        String url = databaseProp.getProperty("database.url");
-        String username = databaseProp.getProperty("database.username");
-        String password = databaseProp.getProperty("database.password");
-        try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
-            connection = DriverManager.getConnection(url, username, password);
-        } catch (SQLException e) {
-            throw new RuntimeException("Unable to connect to MySQL: " + e.getMessage());
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException("MySQL driver not found");
-        }
+    public void setContentDAO(ContentDAO contentDAO) {
+        this.contentDAO = contentDAO;
     }
 
     @Override
@@ -43,7 +24,30 @@ public class FeedDAOImpl implements FeedDAO {
 
     @Override
     public List<Entry> getFeeds() {
-        
+        try {
+            PreparedStatement preparedStatement = getConnection().prepareStatement("SELECT * FROM feed");
+            ResultSet resultSet = preparedStatement.executeQuery();
+            List<Entry> result = new ArrayList<>();
+            while (resultSet.next()) {
+                Entry entry = new Entry();
+                SyndEntry syndEntry = new SyndEntryImpl();
+                entry.setSyndEntry(syndEntry);
+
+                // fetch id
+                entry.setId(resultSet.getInt(1));
+
+                // fetch channel
+                entry.setChannel(resultSet.getString(2));
+
+                // fetch title
+                syndEntry.setTitle(resultSet.getString(3));
+
+                // fetch description
+//                syndEntry.setDescription(resultSet.getI(4));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
         return null;
     }
 
