@@ -6,8 +6,8 @@ DROP TABLE IF EXISTS `feed`;
 
 CREATE TABLE `feed` (
                         `id` int(11) NOT NULL AUTO_INCREMENT,
-                        `channel` varchar(45) DEFAULT NULL,
-                        `title` text DEFAULT NULL,
+                        `channel` TEXT DEFAULT NULL,
+                        `title` TEXT DEFAULT NULL,
                         `pub_date` date DEFAULT NULL,
                         PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4;
