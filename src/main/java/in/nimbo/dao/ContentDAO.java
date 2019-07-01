@@ -1,11 +1,14 @@
 package in.nimbo.dao;
 
 import com.rometools.rome.feed.synd.SyndContent;
+import in.nimbo.entity.Content;
+
+import java.util.List;
 
 public interface ContentDAO {
-    SyndContent get(int id);
+    Content get(int id);
 
-    SyndContent getByFeedId(int feedId);
+    List<Content> getByFeedId(int feedId);
 
-    SyndContent save(SyndContent content);
+    Content save(Content content);
 }

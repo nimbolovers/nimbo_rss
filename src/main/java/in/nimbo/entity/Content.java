@@ -9,6 +9,7 @@ public class Content {
     private int id;
     private String relation;
     private SyndContent syndContent;
+    private int feed_id;
 
     public Content() {
     }
@@ -16,6 +17,15 @@ public class Content {
     public Content(String relation, SyndContent syndContent) {
         this.relation = relation;
         this.syndContent = syndContent;
+    }
+
+
+    public int getFeed_id() {
+        return feed_id;
+    }
+
+    public void setFeed_id(int feed_id) {
+        this.feed_id = feed_id;
     }
 
     public int getId() {
