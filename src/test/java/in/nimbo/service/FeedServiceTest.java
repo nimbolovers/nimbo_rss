@@ -43,4 +43,15 @@ public class FeedServiceTest {
         List<SyndEntry> feeds = service.getFeeds();
         assertEquals(feeds, entries);
     }
+
+    @Test
+    public void searchFeeds(){
+        List<SyndEntry> entries = new ArrayList<>();
+        entries.add(new SyndEntryImpl());
+        entries.add(new SyndEntryImpl());
+        entries.add(new SyndEntryImpl());
+        when(dao.getFeeds("نود")).thenReturn(entries);
+        List<SyndEntry> feeds = service.getFeeds("نود");
+        assertEquals(feeds, entries);
+    }
 }

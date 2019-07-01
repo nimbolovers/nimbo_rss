@@ -1,26 +1,66 @@
 package in.nimbo;
 
-import com.rometools.rome.feed.synd.SyndFeed;
+import com.rometools.rome.feed.synd.SyndEntry;
 import com.rometools.rome.io.FeedException;
-import com.rometools.rome.io.SyndFeedInput;
-import com.rometools.rome.io.XmlReader;
 import in.nimbo.dao.FeedDAO;
+import in.nimbo.dao.FeedDAOImpl;
+import in.nimbo.service.FeedService;
 
+import java.io.FileReader;
 import java.io.IOException;
-import java.net.URL;
+import java.io.InputStream;
+import java.util.List;
+import java.util.Properties;
+import java.util.Scanner;
 
 /**
  * Hello world!
  *
  */
-public class App 
-{
-    private FeedDAO feedDAO;
-    public static void main( String[] args ) throws IOException, FeedException {
-        URL url = new URL("https://90tv.ir/rss/news");
-        SyndFeedInput syndFeed = new SyndFeedInput();
-        SyndFeed build = syndFeed.build(new XmlReader(url));
+public class App {
+    private FeedService service;
+    private Scanner scanner;
+    private Properties properties;
+    public App(FeedService service, Scanner scanner) throws IOException {
+        this.service = service;
+        this.scanner = scanner;
+        ClassLoader loader = Thread.currentThread().getContextClassLoader();
+        properties = new Properties();
+        InputStream is = loader.getResourceAsStream("sites.properties");
+        properties.load(is);
 
-        System.out.println( "Hello World!" );
+    }
+    public static void main( String[] args ) throws IOException, FeedException {
+        Scanner scanner = new Scanner(System.in);
+        FeedDAO dao = new FeedDAOImpl();
+        FeedService service = new FeedService(dao);
+        App app = new App(service, scanner);
+        app.run();
+    }
+    public void run() throws IOException, FeedException {
+        while (scanner.hasNextLine()){
+            String line = scanner.nextLine();
+            String[] strings = line.split(" ");
+            switch (strings[0]){
+                case "save":
+                    service.save(strings[1]);
+                    System.out.println("saved successfully");
+                    break;
+                case "getAll":
+                    List<SyndEntry> feeds = service.getFeeds();
+                    show(feeds);
+                    break;
+                case "search":
+                    List<SyndEntry> search = service.getFeeds(properties.getProperty(strings[1]));
+                    show(search);
+                    break;
+            }
+        }
+    }
+
+    private void show(List<SyndEntry> entries){
+        for (SyndEntry entry:entries) {
+            System.out.println(entry.getTitle());
+        }
     }
 }
