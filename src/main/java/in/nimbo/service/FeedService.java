@@ -19,15 +19,15 @@ public class FeedService {
         this.dao = dao;
     }
 
-    List<SyndEntry> getFeeds(){
-        return null;
+    public List<SyndEntry> getFeeds(){
+        return dao.getFeeds();
     }
 
-    List<SyndEntry> getFeeds(String title){
-        return null;
+    public List<SyndEntry> getFeeds(String title){
+        return dao.getFeeds(title);
     }
 
-    List<SyndEntry> save(String url) throws IOException, FeedException {
+    public List<SyndEntry> save(String url) throws IOException, FeedException {
         URL url1 = new URL(url);
         SyndFeedInput input = new SyndFeedInput();
         SyndFeed feed = input.build(new XmlReader(url1));

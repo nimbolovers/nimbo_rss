@@ -6,6 +6,8 @@ import com.rometools.rome.io.FeedException;
 import in.nimbo.dao.FeedDAO;
 import static org.mockito.Mockito.*;
 import static org.junit.Assert.*;
+
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mockito.Mock;
 
