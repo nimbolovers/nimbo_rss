@@ -6,6 +6,7 @@ import com.rometools.rome.io.FeedException;
 import com.rometools.rome.io.SyndFeedInput;
 import com.rometools.rome.io.XmlReader;
 import in.nimbo.dao.FeedDAO;
+import in.nimbo.entity.Entry;
 
 import java.io.IOException;
 import java.net.URL;
@@ -19,21 +20,21 @@ public class FeedService {
         this.dao = dao;
     }
 
-    List<SyndEntry> getFeeds(){
-        return null;
+    public List<Entry> getFeeds(){
+        return dao.getFeeds();
     }
 
-    List<SyndEntry> getFeeds(String title){
-        return null;
+    public List<Entry> getFeeds(String title){
+        return dao.filterFeeds(title);
     }
 
-    List<SyndEntry> save(String url) throws IOException, FeedException {
+    public List<Entry> save(String url) throws IOException, FeedException {
         URL url1 = new URL(url);
         SyndFeedInput input = new SyndFeedInput();
         SyndFeed feed = input.build(new XmlReader(url1));
-        List<SyndEntry> list = new ArrayList<>(feed.getEntries().size());
+        List<Entry> list = new ArrayList<>(feed.getEntries().size());
         for (SyndEntry entry:feed.getEntries()) {
-            list.add(dao.save(entry));
+            list.add(dao.save(new Entry(feed.getTitle(),entry)));
         }
         return list;
     }
