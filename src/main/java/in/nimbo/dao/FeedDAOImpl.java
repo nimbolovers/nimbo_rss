@@ -97,4 +97,19 @@ public class FeedDAOImpl extends DAO implements FeedDAO {
         }
         return entry;
     }
+
+    @Override
+    public boolean contain(Entry entry) {
+        try {
+            PreparedStatement preparedStatement = getConnection().prepareStatement(
+                    "SELECT COUNT(*) FROM feed WHERE channel=? AND title=?");
+            preparedStatement.setString(1, entry.getChannel());
+            preparedStatement.setString(2, entry.getSyndEntry().getTitle());
+            ResultSet resultSet = preparedStatement.executeQuery();
+            resultSet.next();
+            return resultSet.getInt(1) > 0;
+        } catch (SQLException e) {
+            throw new RuntimeException("contain error", e);
+        }
+    }
 }
