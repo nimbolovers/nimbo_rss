@@ -16,17 +16,9 @@ public class FeedDAOImpl extends DAO implements FeedDAO {
         this.contentDAO = contentDAO;
     }
 
-    @Override
-    public List<Entry> filterFeeds(String title) {
-        return null;
-    }
-
-    @Override
-    public List<Entry> getFeeds() {
+    private List<Entry> createEntryFromResultSet(ResultSet resultSet) {
         List<Entry> result = new ArrayList<>();
         try {
-            PreparedStatement preparedStatement = getConnection().prepareStatement("SELECT * FROM feed");
-            ResultSet resultSet = preparedStatement.executeQuery();
             while (resultSet.next()) {
                 Entry entry = new Entry();
                 SyndEntry syndEntry = new SyndEntryImpl();
@@ -57,6 +49,29 @@ public class FeedDAOImpl extends DAO implements FeedDAO {
             e.printStackTrace();
         }
         return result;
+    }
+
+    @Override
+    public List<Entry> filterFeeds(String title) {
+        try {
+            PreparedStatement preparedStatement = getConnection().prepareStatement("SELECT * FROM feed WHERE title LIKE %?%");
+            preparedStatement.setString(1, title);
+            ResultSet resultSet = preparedStatement.executeQuery();
+            return createEntryFromResultSet(resultSet);
+        } catch (SQLException e) {
+            throw new RuntimeException("filterFeeds error", e);
+        }
+    }
+
+    @Override
+    public List<Entry> getFeeds() {
+        try {
+            PreparedStatement preparedStatement = getConnection().prepareStatement("SELECT * FROM feed");
+            ResultSet resultSet = preparedStatement.executeQuery();
+            return createEntryFromResultSet(resultSet);
+        } catch (SQLException e) {
+            throw new RuntimeException("getFeeds error", e);
+        }
     }
 
     @Override
