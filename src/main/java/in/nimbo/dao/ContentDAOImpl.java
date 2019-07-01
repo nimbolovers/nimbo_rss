@@ -16,7 +16,6 @@ public class ContentDAOImpl extends DAO implements ContentDAO {
         List<Content> contents = new ArrayList<>();
         try {
             while (resultSet.next()) {
-                resultSet.next();
                 Content content = new Content();
                 SyndContent syndContent = new SyndContentImpl();
                 content.setSyndContent(syndContent);
@@ -33,8 +32,13 @@ public class ContentDAOImpl extends DAO implements ContentDAO {
                 // fetch mode
                 syndContent.setMode(resultSet.getString(4));
 
+                // fetch value
+                syndContent.setValue(resultSet.getString(5));
+
                 // fetch feed_id
-                content.setFeed_id(resultSet.getInt(5));
+                content.setFeed_id(resultSet.getInt(6));
+
+                contents.add(content);
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -72,11 +76,12 @@ public class ContentDAOImpl extends DAO implements ContentDAO {
     public Content save(Content content) {
         try {
             PreparedStatement preparedStatement = getConnection().prepareStatement(
-                    "INSERT INTO content(type, relation, mode, feed_id) VALUES(?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
+                    "INSERT INTO content(type, relation, mode, value, feed_id) VALUES(?, ?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
             preparedStatement.setString(1, content.getSyndContent().getType());
             preparedStatement.setString(2, content.getRelation());
             preparedStatement.setString(3, content.getSyndContent().getMode());
-            preparedStatement.setInt(4, content.getFeed_id());
+            preparedStatement.setString(4, content.getSyndContent().getValue());
+            preparedStatement.setInt(5, content.getFeed_id());
             int newId = preparedStatement.executeUpdate();
             content.setId(newId);
         } catch (SQLException e) {
