@@ -43,7 +43,7 @@ public class App {
             String[] strings = line.split(" ");
             switch (strings[0]){
                 case "save":
-                    service.save(strings[1]);
+                    service.save(properties.getProperty(strings[1]));
                     System.out.println("saved successfully");
                     break;
                 case "getAll":
@@ -51,7 +51,7 @@ public class App {
                     show(feeds);
                     break;
                 case "search":
-                    List<SyndEntry> search = service.getFeeds(properties.getProperty(strings[1]));
+                    List<SyndEntry> search = service.getFeeds(strings[1]);
                     show(search);
                     break;
             }
