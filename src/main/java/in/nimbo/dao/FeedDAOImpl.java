@@ -1,20 +1,31 @@
 package in.nimbo.dao;
 
-import com.rometools.rome.feed.synd.SyndEntry;
+import in.nimbo.entity.Entry;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.sql.*;
 import java.util.List;
+import java.util.Properties;
 
 public class FeedDAOImpl implements FeedDAO {
-    private static final String url = "jdbc:mysql://localhost:3306/nimbo_rss?useSSL=false&useUnicode=yes&characterEncoding=UTF-8";
-    private static final String username = "root";
-    private static final String password = "";
-
     private Connection connection;
+    private Properties databaseProp;
+
+    private void loadProperties() {
+        try {
+            databaseProp = new Properties();
+            databaseProp.load(new FileInputStream("resource/database.properties"));
+        } catch (IOException e) {
+            throw new RuntimeException("database properties not found");
+        }
+    }
 
     public FeedDAOImpl() {
+        loadProperties();
+        String url = databaseProp.getProperty("database.url");
+        String username = databaseProp.getProperty("database.username");
+        String password = databaseProp.getProperty("database.password");
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
             connection = DriverManager.getConnection(url, username, password);
@@ -26,18 +37,18 @@ public class FeedDAOImpl implements FeedDAO {
     }
 
     @Override
-    public List<SyndEntry> getFeeds(String title) {
-
+    public List<Entry> filterFeeds(String title) {
         return null;
     }
 
     @Override
-    public List<SyndEntry> getFeeds() {
+    public List<Entry> getFeeds() {
+        
         return null;
     }
 
     @Override
-    public SyndEntry save(SyndEntry entry) {
+    public Entry save(Entry entry) {
         return null;
     }
 }
