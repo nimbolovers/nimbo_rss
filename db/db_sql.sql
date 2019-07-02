@@ -20,6 +20,6 @@ CREATE TABLE `content` (
                            `value` text DEFAULT NULL,
                            `feed_id` int(45) NOT NULL,
                            PRIMARY KEY (`id`),
-                           FOREIGN KEY fk_cat(feed_id)
+                           FOREIGN KEY (feed_id)
                                REFERENCES feed(id)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4;
