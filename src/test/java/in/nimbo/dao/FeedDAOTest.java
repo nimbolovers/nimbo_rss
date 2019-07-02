@@ -1,44 +1,97 @@
 package in.nimbo.dao;
 
+import com.rometools.rome.feed.synd.SyndEntry;
+import com.rometools.rome.feed.synd.SyndEntryImpl;
+import in.nimbo.entity.Entry;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.powermock.api.mockito.PowerMockito;
+import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.modules.junit4.PowerMockRunner;
 
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.sql.*;
-import java.util.Scanner;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Date;
 
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.mock;
+import static org.junit.Assert.*;
 
+@RunWith(PowerMockRunner.class)
+@PrepareForTest(DAO.class)
 public class FeedDAOTest
 {
     private ContentDAO contentDAO;
     private static Connection connection;
+
+    private static String readFile(String path) {
+        try {
+            byte[] bytes = Files.readAllBytes(Paths.get(path));
+            return new String(bytes, StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            throw new RuntimeException("couldn't read file: " + path, e);
+        }
+    }
+
     @BeforeClass
     public static void init() throws SQLException, FileNotFoundException {
         connection = DriverManager.getConnection("jdbc:h2:~/h2_rss", "user", "");
-        Scanner scanner = new Scanner(new FileInputStream("db/db_sql.sql"));
-        String queries = "";
-        while (scanner.hasNextLine()){
-            queries += scanner.nextLine();
-        }
-        String[] split = queries.split(";");
-        for (String query:split) {
-            PreparedStatement preparedStatement = connection.prepareStatement(query + ";");
-            preparedStatement.execute();
-        }
-        PreparedStatement statement = connection.prepareStatement("SHOW TABLES");
-        ResultSet resultSet = statement.executeQuery();
-        while (resultSet.next()){
-            System.out.println(resultSet);
-        }
+        String queries = readFile("db/db_tables_sql.sql");
+        PreparedStatement statement = connection.prepareStatement(queries);
+        statement.execute();
+    }
 
+    @Before
+    public void initTables() throws SQLException {
+        PowerMockito.mockStatic(DAO.class);
+        PowerMockito.when(DAO.getConnection()).thenReturn(connection);
+        PreparedStatement statement = connection.prepareStatement("DELETE FROM content; " +
+                "DELETE FROM feed");
+        statement.executeUpdate();
     }
+
     @Test
-    public void testConnection()
-    {
-        contentDAO = mock(ContentDAO.class);
+    public void save() throws SQLException {
+        contentDAO = PowerMockito.mock(ContentDAO.class);
+        assertEquals(DAO.getConnection(), connection);
         FeedDAO feedDAO = new FeedDAOImpl(contentDAO);
+        Entry entry = new Entry();
+        List<Entry> entryList = new ArrayList<>();
+        SyndEntry syndEntry = new SyndEntryImpl();
+        syndEntry.setPublishedDate(new Date());
+        entry.setSyndEntry(syndEntry);
+        if (!feedDAO.contain(entry)) {
+            entry = feedDAO.save(entry);
+        }
+        entryList.add(entry);
+        syndEntry = new SyndEntryImpl();
+        syndEntry.setPublishedDate(new Date());
+        syndEntry.setTitle("test");
+        entry = new Entry();
+        entry.setChannel("test");
+        entry.setSyndEntry(syndEntry);
+        if (!feedDAO.contain(entry)){
+            entry = feedDAO.save(entry);
+        }
+        entryList.add(entry);
+        PreparedStatement statement = connection.prepareStatement("SELECT COUNT(*) as cnt FROM feed");
+        ResultSet resultSet = statement.executeQuery();
+        if (resultSet.next()){
+            int cnt = resultSet.getInt("cnt");
+            assertTrue(cnt > 0);
+            assertArrayEquals(entryList.toArray(), feedDAO.getEntries().toArray());
+        }
+        else {
+            fail();
+        }
+        entryList.remove(0);
+        assertArrayEquals(entryList.toArray(), feedDAO.getEntryByTitle("e").toArray());
     }
+
 }
