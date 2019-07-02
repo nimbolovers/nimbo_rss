@@ -16,7 +16,7 @@
     <maven.compiler.target>1.8</maven.compiler.target>
     <junit.version>4.12</junit.version>
     <rometools.version>1.12.1</rometools.version>
-    <slf4j.version>1.7.25</slf4j.version>
+    <slf4j.version>1.7.26</slf4j.version>
     <powermock.version>1.7.1</powermock.version>
     <mysql.driver.version>8.0.16</mysql.driver.version>
     <h2.driver.version>1.4.199</h2.driver.version>
@@ -42,7 +42,17 @@
     <!-- slf4j for logging -->
     <dependency>
       <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-simple</artifactId>
+      <version>${slf4j.version}</version>
+      <artifactId>slf4j-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>log4j</groupId>
+      <artifactId>log4j</artifactId>
+      <version>1.2.17</version>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-log4j12</artifactId>
       <version>${slf4j.version}</version>
     </dependency>
 

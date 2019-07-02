@@ -40,7 +40,7 @@ public class FeedServiceTest {
         entries.add(new Entry());
         entries.add(new Entry());
         entries.add(new Entry());
-        when(dao.getFeeds()).thenReturn(entries);
+        when(dao.getEntries()).thenReturn(entries);
         List<Entry> feeds = service.getFeeds();
         assertEquals(feeds, entries);
     }
@@ -51,7 +51,7 @@ public class FeedServiceTest {
         entries.add(new Entry());
         entries.add(new Entry());
         entries.add(new Entry());
-        when(dao.filterFeeds("نود")).thenReturn(entries);
+        when(dao.getEntryByTitle("نود")).thenReturn(entries);
         List<Entry> feeds = service.getFeeds("نود");
         assertEquals(feeds, entries);
     }

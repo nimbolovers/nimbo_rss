@@ -17,6 +17,8 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Date;
 
 import static org.junit.Assert.*;
@@ -60,21 +62,36 @@ public class FeedDAOTest
         assertEquals(DAO.getConnection(), connection);
         FeedDAO feedDAO = new FeedDAOImpl(contentDAO);
         Entry entry = new Entry();
+        List<Entry> entryList = new ArrayList<>();
         SyndEntry syndEntry = new SyndEntryImpl();
         syndEntry.setPublishedDate(new Date());
         entry.setSyndEntry(syndEntry);
         if (!feedDAO.contain(entry)) {
-            feedDAO.save(entry);
+            entry = feedDAO.save(entry);
         }
+        entryList.add(entry);
+        syndEntry = new SyndEntryImpl();
+        syndEntry.setPublishedDate(new Date());
+        syndEntry.setTitle("test");
+        entry = new Entry();
+        entry.setChannel("test");
+        entry.setSyndEntry(syndEntry);
+        if (!feedDAO.contain(entry)){
+            entry = feedDAO.save(entry);
+        }
+        entryList.add(entry);
         PreparedStatement statement = connection.prepareStatement("SELECT COUNT(*) as cnt FROM feed");
         ResultSet resultSet = statement.executeQuery();
         if (resultSet.next()){
             int cnt = resultSet.getInt("cnt");
             assertTrue(cnt > 0);
+            assertArrayEquals(entryList.toArray(), feedDAO.getEntries().toArray());
         }
         else {
             fail();
         }
+        entryList.remove(0);
+        assertArrayEquals(entryList.toArray(), feedDAO.getEntryByTitle("e").toArray());
     }
 
 }

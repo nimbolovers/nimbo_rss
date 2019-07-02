@@ -11,17 +11,28 @@ public class DAO {
     private static Connection connection;
     private static Properties databaseProp;
 
-    private static void getProperties() {
-        try {
-            databaseProp = new Properties();
-            ClassLoader loader = Thread.currentThread().getContextClassLoader();
-            InputStream is = loader.getResourceAsStream("database.properties");
-            databaseProp.load(is);
-        } catch (IOException e) {
-            throw new RuntimeException("database properties not found", e);
+    /**
+     * get properties of class from resource
+     * @return properties which is loaded
+     */
+    private static Properties getProperties() {
+        if (databaseProp == null) {
+            try {
+                databaseProp = new Properties();
+                ClassLoader loader = Thread.currentThread().getContextClassLoader();
+                InputStream is = loader.getResourceAsStream("database.properties");
+                databaseProp.load(is);
+            } catch (IOException e) {
+                throw new RuntimeException("database properties not found", e);
+            }
         }
+        return databaseProp;
     }
 
+    /**
+     * create a connection to database
+     * @return connection which is created
+     */
     public static Connection getConnection() {
         getProperties();
         if (connection == null) {
@@ -38,9 +49,5 @@ public class DAO {
             }
         }
         return connection;
-    }
-
-    public DAO() {
-
     }
 }

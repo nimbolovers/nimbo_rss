@@ -5,9 +5,9 @@ import in.nimbo.entity.Entry;
 import java.util.List;
 
 public interface FeedDAO {
-    List<Entry> filterFeeds(String title);
+    List<Entry> getEntryByTitle(String title);
 
-    List<Entry> getFeeds();
+    List<Entry> getEntries();
 
     Entry save(Entry entry);
 
