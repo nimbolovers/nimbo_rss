@@ -1,5 +1,4 @@
-CREATE DATABASE  IF NOT EXISTS `nimbo_rss`;
-USE `nimbo_rss`;
+# USE `nimbo_rss`;
 
 DROP TABLE IF EXISTS `content`;
 DROP TABLE IF EXISTS `feed`;
