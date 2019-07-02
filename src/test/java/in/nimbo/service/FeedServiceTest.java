@@ -2,6 +2,8 @@ package in.nimbo.service;
 
 import com.rometools.rome.feed.synd.SyndEntry;
 import com.rometools.rome.feed.synd.SyndEntryImpl;
+import com.rometools.rome.feed.synd.SyndFeed;
+import com.rometools.rome.feed.synd.SyndFeedImpl;
 import com.rometools.rome.io.FeedException;
 import in.nimbo.dao.FeedDAO;
 import static org.mockito.Mockito.*;
@@ -14,25 +16,36 @@ import org.mockito.Mock;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class FeedServiceTest {
     private static FeedDAO dao;
-    private static Entry entry;
     private static FeedService service;
     @BeforeClass
     public static void init(){
         dao = mock(FeedDAO.class);
-        entry = mock(Entry.class);
         service = new FeedService(dao);
     }
     @Test
     public void save() throws IOException, FeedException {
+        SyndEntry syndEntry = new SyndEntryImpl();
+        syndEntry.setPublishedDate(new Date());
+
+        SyndFeed feed = new SyndFeedImpl();
+        Entry entry = new Entry();
+        entry.setSyndEntry(syndEntry);
+        entry.setChannel("test");
+
+        List<SyndEntry> entries = new ArrayList<>();
+        entries.add(entry.getSyndEntry());
+        feed.setEntries(entries);
+
         when(dao.save(entry)).thenReturn(entry);
-        List<Entry> save = service.save("https://90tv.ir/rss/news");
-        for (Entry entry:save) {
-            assertNull(entry);
-        }
+        when(dao.contain(entry)).thenReturn(false);
+
+        List<Entry> savedEntries = service.save(feed);
+        assertEquals(savedEntries.size(), feed.getEntries().size());
     }
     @Test
     public void getFeeds(){
