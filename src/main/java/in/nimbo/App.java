@@ -8,6 +8,8 @@ import in.nimbo.dao.FeedDAO;
 import in.nimbo.dao.FeedDAOImpl;
 import in.nimbo.entity.Entry;
 import in.nimbo.service.FeedService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.FileReader;
 import java.io.IOException;
@@ -34,6 +36,8 @@ public class App {
 
     }
     public static void main( String[] args ) throws IOException, FeedException {
+        Logger logger = LoggerFactory.getLogger(App.class);
+        logger.info("test");
         Scanner scanner = new Scanner(System.in);
         ContentDAO contentDAO = new ContentDAOImpl();
         FeedDAO dao = new FeedDAOImpl(contentDAO);
