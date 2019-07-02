@@ -1,6 +1,5 @@
 package in.nimbo.service;
 
-import com.rometools.rome.feed.synd.SyndEntry;
 import com.rometools.rome.feed.synd.SyndFeed;
 import com.rometools.rome.io.FeedException;
 import com.rometools.rome.io.SyndFeedInput;
@@ -11,9 +10,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class FeedService {
     private FeedDAO feedDAO;
@@ -31,29 +31,44 @@ public class FeedService {
         return feedDAO.getEntryByTitle(title);
     }
 
-    public List<Entry> save(String url) throws IOException, FeedException {
-        logger.info("saving data from " + url);
-        // use Rome library to parse url and get RSS
-        URL url1 = new URL(url);
-        logger.info("data fetched");
-        SyndFeedInput input = new SyndFeedInput();
-        SyndFeed feed = input.build(new XmlReader(url1));
-        logger.info("data parsed");
-        List<Entry> list = new ArrayList<>(feed.getEntries().size());
-        logger.info("start saving data");
-        // add rss data to database
+    public List<Entry> save(SyndFeed feed) throws IOException, FeedException {
+        List<Entry> entries = feed.getEntries().stream()
+                .map(syndEntry -> new Entry(feed.getTitle(), syndEntry))
+                .collect(Collectors.toList());
         int count = 0;
-        for (SyndEntry entry : feed.getEntries()) {
-            Entry newEntry = new Entry(feed.getTitle(), entry);
-            if (!feedDAO.contain(newEntry)) {
-                list.add(feedDAO.save(newEntry));
+        for (Entry entry : entries) {
+            if (!feedDAO.contain(entry)) {
+                feedDAO.save(entry);
                 count++;
             }
-            else {
-                logger.warn("data contains before. " + entry.getTitle());
-            }
         }
-        logger.info("saving data ended " + count + " data added");
-        return list;
+        if (count == entries.size()) {
+            logger.info("Add " + count + " entry to database");
+        } else if (count == 0) {
+            logger.warn("There is no new entry");
+        } else {
+            logger.info("Add " + count + "/" + entries.size() + " entries");
+        }
+
+        return entries;
+    }
+
+    public SyndFeed fetchFromURL(String url) {
+        try {
+            logger.info("fetching data from url: " + url);
+            URL url1 = new URL(url);
+            SyndFeedInput input = new SyndFeedInput();
+            SyndFeed feed = input.build(new XmlReader(url1));
+            logger.info("URL fetched successfully");
+            return feed;
+        } catch (FeedException e) {
+            logger.error("Invalid RSS");
+            throw new RuntimeException("Invalid RSS", e);
+        } catch (MalformedURLException e) {
+            logger.error("URL not found: " + url);
+            throw new RuntimeException("URL not found: " + url, e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

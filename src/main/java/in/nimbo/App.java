@@ -52,7 +52,7 @@ public class App {
             try {
                 switch (strings[0]) {
                     case "save":
-                        service.save(properties.getProperty(strings[1]));
+                        service.save(service.fetchFromURL(properties.getProperty(strings[1])));
                         break;
                     case "getAll":
                         List<Entry> feeds = service.getFeeds();

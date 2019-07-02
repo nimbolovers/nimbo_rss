@@ -1,3 +1,0 @@
-save navad
-getAll
-search ا
