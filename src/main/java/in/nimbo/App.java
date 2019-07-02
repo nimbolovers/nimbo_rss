@@ -63,7 +63,7 @@ public class App {
 
     private void show(List<Entry> entries){
         for (Entry entry:entries) {
-            System.out.println(entry.getSyndEntry().getTitle());
+            System.out.println(entry.getChannel() + " "  + entry.getSyndEntry().getTitle());
         }
     }
 }
