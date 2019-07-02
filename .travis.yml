@@ -1,0 +1,6 @@
+language: java
+script:
+  - mvn test
+cache:
+  directory:
+    - '$HOME/.m2/repositories'
