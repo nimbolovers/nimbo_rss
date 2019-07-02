@@ -1,5 +1,6 @@
 package in.nimbo;
 
+import com.rometools.rome.feed.synd.SyndEntry;
 import com.rometools.rome.io.FeedException;
 import in.nimbo.dao.ContentDAO;
 import in.nimbo.dao.ContentDAOImpl;
@@ -10,6 +11,7 @@ import in.nimbo.service.FeedService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;

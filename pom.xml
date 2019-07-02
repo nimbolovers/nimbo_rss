@@ -9,55 +9,84 @@
   <version>1.0-SNAPSHOT</version>
 
   <name>rss</name>
-  <!-- FIXME change it to the project's website -->
-  <url>http://www.example.com</url>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <maven.compiler.source>1.7</maven.compiler.source>
-    <maven.compiler.target>1.7</maven.compiler.target>
+    <maven.compiler.source>1.8</maven.compiler.source>
+    <maven.compiler.target>1.8</maven.compiler.target>
+    <junit.version>4.12</junit.version>
+    <rometools.version>1.12.1</rometools.version>
+    <slf4j.version>1.7.25</slf4j.version>
+    <powermock.version>1.7.1</powermock.version>
+    <mysql.driver.version>8.0.16</mysql.driver.version>
+    <h2.driver.version>1.4.199</h2.driver.version>
+    <mockito1.version>1.10.19</mockito1.version>
   </properties>
 
   <dependencies>
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-      <version>4.12</version>
+      <version>${junit.version}</version>
       <scope>test</scope>
     </dependency>
 
-    <!-- https://mvnrepository.com/artifact/com.rometools/rome -->
+    <!-- rometools for parse RSS -->
     <dependency>
       <groupId>com.rometools</groupId>
       <artifactId>rome</artifactId>
-      <version>1.12.1</version>
+      <version>${rometools.version}</version>
     </dependency>
 
-    <dependency>
-      <groupId>org.mockito</groupId>
-      <artifactId>mockito-core</artifactId>
-      <version>2.0.73-beta</version>
-    </dependency>
-    <!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-simple -->
+
+    <!-- slf4j for logging -->
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-simple</artifactId>
-      <version>1.7.25</version>
+      <version>${slf4j.version}</version>
     </dependency>
 
     <!-- MySQL Driver for JDBC -->
     <dependency>
       <groupId>mysql</groupId>
       <artifactId>mysql-connector-java</artifactId>
-      <version>8.0.16</version>
+      <version>${mysql.driver.version}</version>
     </dependency>
-    <!-- https://mvnrepository.com/artifact/com.h2database/h2 -->
+
+    <!-- h2 driver for test -->
     <dependency>
       <groupId>com.h2database</groupId>
       <artifactId>h2</artifactId>
-      <version>1.4.199</version>
+      <version>${h2.driver.version}</version>
       <scope>test</scope>
     </dependency>
+
+
+    <!-- power mockito for mock class -->
+    <dependency>
+      <groupId>org.powermock</groupId>
+      <artifactId>powermock-module-junit4</artifactId>
+      <version>${powermock.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.powermock</groupId>
+      <artifactId>powermock-core</artifactId>
+      <version>${powermock.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.powermock</groupId>
+      <artifactId>powermock-api-mockito</artifactId>
+      <version>${powermock.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-core</artifactId>
+      <version>${mockito1.version}</version>
+    </dependency>
+
+
 
   </dependencies>
 

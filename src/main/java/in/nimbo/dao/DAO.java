@@ -8,10 +8,10 @@ import java.sql.SQLException;
 import java.util.Properties;
 
 public class DAO {
-    private Connection connection;
-    private Properties databaseProp;
+    private static Connection connection;
+    private static Properties databaseProp;
 
-    private void getProperties() {
+    private static void getProperties() {
         try {
             databaseProp = new Properties();
             ClassLoader loader = Thread.currentThread().getContextClassLoader();
@@ -22,7 +22,7 @@ public class DAO {
         }
     }
 
-    public Connection getConnection() {
+    public static Connection getConnection() {
         getProperties();
         if (connection == null) {
             try {
@@ -41,6 +41,6 @@ public class DAO {
     }
 
     public DAO() {
-        getConnection();
+
     }
 }
