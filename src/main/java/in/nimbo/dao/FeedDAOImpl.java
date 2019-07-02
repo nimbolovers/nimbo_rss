@@ -5,15 +5,17 @@ import com.rometools.rome.feed.synd.SyndEntry;
 import com.rometools.rome.feed.synd.SyndEntryImpl;
 import in.nimbo.entity.Content;
 import in.nimbo.entity.Entry;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class FeedDAOImpl extends DAO implements FeedDAO {
+    private Logger logger = LoggerFactory.getLogger(FeedDAOImpl.class);
     private ContentDAO contentDAO;
 
     public FeedDAOImpl(ContentDAO contentDAO) {
@@ -61,10 +63,11 @@ public class FeedDAOImpl extends DAO implements FeedDAO {
 
                 result.add(entry);
             }
+            return result;
         } catch (SQLException e) {
-            e.printStackTrace();
+            logger.error("Unable to fetch data from ResultSet: " + e.getMessage());
+            throw new RuntimeException("Unable to fetch data from ResultSet", e);
         }
-        return result;
     }
 
     /**
@@ -73,14 +76,15 @@ public class FeedDAOImpl extends DAO implements FeedDAO {
      * @return list of entries which their title contain "searchString"
      */
     @Override
-    public List<Entry> filterFeeds(String searchString) {
+    public List<Entry> getEntryByTitle(String searchString) {
         try {
             PreparedStatement preparedStatement = getConnection().prepareStatement("SELECT * FROM feed WHERE title LIKE ?");
             preparedStatement.setString(1, "%" + searchString + "%");
             ResultSet resultSet = preparedStatement.executeQuery();
             return createEntryFromResultSet(resultSet);
         } catch (SQLException e) {
-            throw new RuntimeException("filterFeeds error", e);
+            logger.error("Unable to execute query: " + e.getMessage());
+            throw new RuntimeException("Unable to fetch data from ResultSet", e);
         }
     }
 
@@ -89,13 +93,14 @@ public class FeedDAOImpl extends DAO implements FeedDAO {
      * @return a list of entries
      */
     @Override
-    public List<Entry> getFeeds() {
+    public List<Entry> getEntries() {
         try {
             PreparedStatement preparedStatement = getConnection().prepareStatement("SELECT * FROM feed");
             ResultSet resultSet = preparedStatement.executeQuery();
             return createEntryFromResultSet(resultSet);
         } catch (SQLException e) {
-            throw new RuntimeException("getFeeds error", e);
+            logger.error("Unable to execute query: " + e.getMessage());
+            throw new RuntimeException("Unable to execute query", e);
         }
     }
 
@@ -137,7 +142,8 @@ public class FeedDAOImpl extends DAO implements FeedDAO {
                 }
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            logger.error("Unable to save entry with id=" + entry.getId() + ": " + e.getMessage());
+            throw new RuntimeException("Unable to save entry with id=" + entry.getId(), e);
         }
         return entry;
     }
@@ -159,7 +165,8 @@ public class FeedDAOImpl extends DAO implements FeedDAO {
             resultSet.next();
             return resultSet.getInt(1) > 0;
         } catch (SQLException e) {
-            throw new RuntimeException("contain error", e);
+            logger.error("Unable to execute query: " + e.getMessage());
+            throw new RuntimeException("Unable to execute query", e);
         }
     }
 }
