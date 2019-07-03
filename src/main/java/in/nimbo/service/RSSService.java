@@ -35,8 +35,8 @@ public class RSSService {
         return entryDAO.filterEntryByTitle(title);
     }
 
-    public List<Entry> filterEntryByContent(String title, Date startTime, Date finishTime) {
-        return entryDAO.filterEntryByContent(title, startTime, finishTime);
+    public List<Entry> filterEntryByContent(String channel, String title, Date startTime, Date finishTime) {
+        return entryDAO.filterEntryByContent(channel, title, startTime, finishTime);
     }
 
     public List<Entry> save(SyndFeed feed) {

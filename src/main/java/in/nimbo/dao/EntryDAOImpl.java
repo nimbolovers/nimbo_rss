@@ -103,20 +103,26 @@ public class EntryDAOImpl extends DAO implements EntryDAO {
     /**
      * find entries which their content contain something in range of date
      *
+     * @param channel channel which search for entry in it
+     *                if it is not specified (null), then search in all channels
      * @param value value want to be in content of entry
-     * @param startDate start date of fetched data (if it is null, there is no limitation)
-     * @param finishDate finish date of fetched data (if it is null, there is no limitation)
+     * @param startDate start date of fetched data
+     *                  if it is not specified (null), then there is no limitation on start time
+     * @param finishDate finish date of fetched data
+     *                   if it is not specified (null), then there is no limitation on finish time
      * @return list of entries which their content contain value
      * @throws RuntimeException if it is unable to execute query
      */
     @Override
-    public List<Entry> filterEntryByContent(String value, Date startDate, Date finishDate) {
+    public List<Entry> filterEntryByContent(String channel, String value, Date startDate, Date finishDate) {
         try {
             SelectConditionStep<Record> query = DSL.using(SQLDialect.MYSQL)
                     .select()
                     .from("feed")
                     .innerJoin("content").on(DSL.field("feed.id").eq(DSL.field("content.feed_id")))
                     .where(DSL.field("content.value").like("%" + value + "%"));
+            if (channel != null)
+                query = query.and(DSL.field("feed.channel").eq(channel));
             if (startDate != null)
                 query = query.and(DSL.field("feed.pub_date").ge(startDate));
             if (finishDate != null)

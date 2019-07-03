@@ -4,6 +4,7 @@ import com.rometools.rome.io.FeedException;
 import in.nimbo.dao.*;
 import in.nimbo.entity.Entry;
 import in.nimbo.service.RSSService;
+import org.apache.log4j.LogManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,13 +17,13 @@ import java.util.Scanner;
 
 /**
  * Hello world!
- *
  */
 public class App {
     private RSSService service;
     private Scanner scanner;
     private Properties properties;
     private Logger logger = LoggerFactory.getLogger(App.class);
+
     public App(RSSService service, Scanner scanner) throws IOException {
         this.service = service;
         this.scanner = scanner;
@@ -32,7 +33,8 @@ public class App {
         properties.load(is);
 
     }
-    public static void main( String[] args ) throws IOException, FeedException {
+
+    public static void main(String[] args) throws IOException, FeedException {
         Scanner scanner = new Scanner(System.in);
         DescriptionDAO descriptionDAO = new DescriptionDAOImpl();
         ContentDAO contentDAO = new ContentDAOImpl();
@@ -41,9 +43,10 @@ public class App {
         App app = new App(service, scanner);
         app.run();
     }
+
     public void run() {
         logger.info("app started successfully");
-        while (scanner.hasNextLine()){
+        while (scanner.hasNextLine()) {
             String line = scanner.nextLine();
             String[] strings = line.split(" ");
             switch (strings[0]) {
@@ -63,14 +66,14 @@ public class App {
                     logger.info("the site added to my sites " + strings[1] + " " + strings[2]);
                     break;
                 case "get":
-                    show(service.filterEntryByContent(strings[1], new Date(120), new Date(140)));
+                    show(service.filterEntryByContent(null, strings[1], null, null));
                     break;
             }
         }
     }
 
-    private void show(List<Entry> entries){
-        for (Entry entry:entries) {
+    private void show(List<Entry> entries) {
+        for (Entry entry : entries) {
             logger.info(entry.getChannel() + "\t" + entry.getSyndEntry().getTitle());
         }
     }
