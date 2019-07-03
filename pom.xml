@@ -21,6 +21,8 @@
     <mysql.driver.version>8.0.16</mysql.driver.version>
     <h2.driver.version>1.4.199</h2.driver.version>
     <mockito1.version>1.10.19</mockito1.version>
+    <JOOQ.version>3.11.11</JOOQ.version>
+    <boilerpipe.version>1.2.3</boilerpipe.version>
   </properties>
 
   <dependencies>
@@ -63,6 +65,23 @@
       <version>${mysql.driver.version}</version>
     </dependency>
 
+    <!--JOOQ Library for creating query strings-->
+    <dependency>
+      <groupId>org.jooq</groupId>
+      <artifactId>jooq</artifactId>
+      <version>${JOOQ.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.jooq</groupId>
+      <artifactId>jooq-meta</artifactId>
+      <version>${JOOQ.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.jooq</groupId>
+      <artifactId>jooq-codegen</artifactId>
+      <version>${JOOQ.version}</version>
+    </dependency>
+
     <!-- h2 driver for test -->
     <dependency>
       <groupId>com.h2database</groupId>
@@ -100,7 +119,7 @@
     <dependency>
       <groupId>com.robbypond</groupId>
       <artifactId>boilerpipe</artifactId>
-      <version>1.2.3</version>
+      <version>${boilerpipe.version}</version>
     </dependency>
 
   </dependencies>

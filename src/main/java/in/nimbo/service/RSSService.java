@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class RSSService {
@@ -34,8 +35,8 @@ public class RSSService {
         return entryDAO.filterEntryByTitle(title);
     }
 
-    public List<Entry> filterEntryByContent(String title) {
-        return entryDAO.filterEntryByContent(title);
+    public List<Entry> filterEntryByContent(String title, Date startTime, Date finishTime) {
+        return entryDAO.filterEntryByContent(title, startTime, finishTime);
     }
 
     public List<Entry> save(SyndFeed feed) {

@@ -6,11 +6,20 @@ import in.nimbo.entity.Content;
 import in.nimbo.entity.Description;
 import in.nimbo.entity.Entry;
 import in.nimbo.exception.RecordNotFoundException;
+import org.jooq.Record;
+import org.jooq.SQLDialect;
+import org.jooq.SelectConditionStep;
+import org.jooq.conf.ParamType;
+import org.jooq.impl.DSL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.sql.*;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class EntryDAOImpl extends DAO implements EntryDAO {
@@ -92,19 +101,30 @@ public class EntryDAOImpl extends DAO implements EntryDAO {
     }
 
     /**
-     * find entries which their content contain something
+     * find entries which their content contain something in range of date
      *
      * @param value value want to be in content of entry
+     * @param startDate start date of fetched data (if it is null, there is no limitation)
+     * @param finishDate finish date of fetched data (if it is null, there is no limitation)
      * @return list of entries which their content contain value
      * @throws RuntimeException if it is unable to execute query
      */
     @Override
-    public List<Entry> filterEntryByContent(String value) {
+    public List<Entry> filterEntryByContent(String value, Date startDate, Date finishDate) {
         try {
-            PreparedStatement preparedStatement = getConnection().prepareStatement(
-                    "SELECT * FROM feed INNER JOIN content ON feed.id=content.feed_id WHERE content.value LIKE ?");
-            preparedStatement.setString(1, "%" + value + "%");
-            ResultSet resultSet = preparedStatement.executeQuery();
+            SelectConditionStep<Record> query = DSL.using(SQLDialect.MYSQL)
+                    .select()
+                    .from("feed")
+                    .innerJoin("content").on(DSL.field("feed.id").eq(DSL.field("content.feed_id")))
+                    .where(DSL.field("content.value").like("%" + value + "%"));
+            if (startDate != null)
+                query = query.and(DSL.field("feed.pub_date").ge(startDate));
+            if (finishDate != null)
+                query = query.and(DSL.field("feed.pub_date").le(finishDate));
+
+            String sqlQuery = query.getSQL(ParamType.INLINED);
+            Statement statement = getConnection().createStatement();
+            ResultSet resultSet = statement.executeQuery(sqlQuery);
             return createEntryFromResultSet(resultSet);
         } catch (SQLException e) {
             logger.error("Unable to execute query: " + e.getMessage());
@@ -145,7 +165,7 @@ public class EntryDAOImpl extends DAO implements EntryDAO {
                     "INSERT INTO feed(channel, title, pub_date) VALUES(?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
             preparedStatement.setString(1, entry.getChannel());
             preparedStatement.setString(2, entry.getSyndEntry().getTitle());
-            preparedStatement.setDate(3, new Date(entry.getSyndEntry().getPublishedDate().getTime()));
+            preparedStatement.setDate(3, new java.sql.Date(entry.getSyndEntry().getPublishedDate().getTime()));
             preparedStatement.executeUpdate();
             ResultSet generatedKeys = preparedStatement.getGeneratedKeys();
             generatedKeys.next();

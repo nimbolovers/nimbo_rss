@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 import java.util.Scanner;
@@ -62,7 +63,7 @@ public class App {
                     logger.info("the site added to my sites " + strings[1] + " " + strings[2]);
                     break;
                 case "get":
-                    show(service.filterEntryByContent(strings[1]));
+                    show(service.filterEntryByContent(strings[1], new Date(120), new Date(140)));
                     break;
             }
         }

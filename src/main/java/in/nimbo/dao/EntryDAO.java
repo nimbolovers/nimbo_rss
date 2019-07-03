@@ -2,12 +2,13 @@ package in.nimbo.dao;
 
 import in.nimbo.entity.Entry;
 
+import java.util.Date;
 import java.util.List;
 
 public interface EntryDAO {
     List<Entry> filterEntryByTitle(String title);
 
-    List<Entry> filterEntryByContent(String value);
+    List<Entry> filterEntryByContent(String value, Date startDate, Date finishDate);
 
     List<Entry> getEntries();
 
