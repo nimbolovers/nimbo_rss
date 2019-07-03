@@ -96,7 +96,12 @@
       <version>${mockito1.version}</version>
     </dependency>
 
-
+    <!--Article Extractor (boilerpipe) from Google-->
+    <dependency>
+      <groupId>com.robbypond</groupId>
+      <artifactId>boilerpipe</artifactId>
+      <version>1.2.3</version>
+    </dependency>
 
   </dependencies>
 

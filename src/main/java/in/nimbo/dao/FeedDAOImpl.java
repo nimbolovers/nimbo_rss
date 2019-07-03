@@ -16,10 +16,10 @@ import java.util.stream.Collectors;
 
 public class FeedDAOImpl extends DAO implements FeedDAO {
     private Logger logger = LoggerFactory.getLogger(FeedDAOImpl.class);
-    private ContentDAO contentDAO;
+    private DescriptionDAO descriptionDAO;
 
-    public FeedDAOImpl(ContentDAO contentDAO) {
-        this.contentDAO = contentDAO;
+    public FeedDAOImpl(DescriptionDAO descriptionDAO) {
+        this.descriptionDAO = descriptionDAO;
     }
 
     /**
@@ -44,7 +44,7 @@ public class FeedDAOImpl extends DAO implements FeedDAO {
                 // fetch title
                 syndEntry.setTitle(resultSet.getString(3));
 
-                List<Content> contents = contentDAO.getByFeedId(entry.getId());
+                List<Content> contents = descriptionDAO.getByFeedId(entry.getId());
                 // fetch description
                 Optional<Content> description = contents.stream()
                         .filter(content -> content.getRelation().equals("description"))
@@ -130,7 +130,7 @@ public class FeedDAOImpl extends DAO implements FeedDAO {
             if (entry.getSyndEntry().getDescription() != null) {
                 Content content = new Content("description", entry.getSyndEntry().getDescription());
                 content.setFeed_id(newId);
-                contentDAO.save(content);
+                descriptionDAO.save(content);
             }
 
             // add entry contents
@@ -138,7 +138,7 @@ public class FeedDAOImpl extends DAO implements FeedDAO {
                 for (SyndContent syndContent : entry.getSyndEntry().getContents()) {
                     Content content = new Content("content", syndContent);
                     content.setFeed_id(newId);
-                    contentDAO.save(content);
+                    descriptionDAO.save(content);
                 }
             }
         } catch (SQLException e) {

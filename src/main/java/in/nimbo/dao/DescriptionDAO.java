@@ -4,7 +4,7 @@ import in.nimbo.entity.Content;
 
 import java.util.List;
 
-public interface ContentDAO {
+public interface DescriptionDAO {
     Content get(int id);
 
     List<Content> getByFeedId(int feedId);

@@ -27,7 +27,7 @@ import static org.junit.Assert.*;
 @PrepareForTest(DAO.class)
 public class FeedDAOTest
 {
-    private ContentDAO contentDAO;
+    private DescriptionDAO descriptionDAO;
     private static Connection connection;
 
     private static String readFile(String path) {
@@ -58,9 +58,9 @@ public class FeedDAOTest
 
     @Test
     public void save() throws SQLException {
-        contentDAO = PowerMockito.mock(ContentDAO.class);
+        descriptionDAO = PowerMockito.mock(DescriptionDAO.class);
         assertEquals(DAO.getConnection(), connection);
-        FeedDAO feedDAO = new FeedDAOImpl(contentDAO);
+        FeedDAO feedDAO = new FeedDAOImpl(descriptionDAO);
         Entry entry = new Entry();
         List<Entry> entryList = new ArrayList<>();
         SyndEntry syndEntry = new SyndEntryImpl();
