@@ -1,6 +1,8 @@
 package in.nimbo.dao;
 
-import in.nimbo.entity.Content;
+import com.rometools.rome.feed.synd.SyndContent;
+import com.rometools.rome.feed.synd.SyndContentImpl;
+import in.nimbo.entity.Description;
 import in.nimbo.exception.RecordNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,38 +14,45 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ContentDAOImpl extends DAO implements ContentDAO {
-    private Logger logger = LoggerFactory.getLogger(ContentDAOImpl.class);
+public class DescriptionDAOImpl extends DAO implements DescriptionDAO {
+    private Logger logger = LoggerFactory.getLogger(DescriptionDAOImpl.class);
 
     /**
-     * create a list of contents from a ResultSet of JDBC
+     * create a list of description from a ResultSet of JDBC
      *
      * @param resultSet resultSet of database
-     * @return list of contents
-     * @throws RuntimeException if unable to fetch data from ResultSet
+     * @return list of description
      */
-    private List<Content> createContentFromResultSet(ResultSet resultSet) {
-        List<Content> contents = new ArrayList<>();
+    private List<Description> createDescriptionFromResultSet(ResultSet resultSet) {
+        List<Description> descriptions = new ArrayList<>();
         try {
             while (resultSet.next()) {
-                Content content = new Content();
+                Description description = new Description();
+                SyndContent syndContent = new SyndContentImpl();
+                description.setSyndContent(syndContent);
 
                 // fetch id
-                content.setId(resultSet.getInt(1));
+                description.setId(resultSet.getInt(1));
+
+                // fetch type
+                syndContent.setType(resultSet.getString(2));
+
+                // fetch mode
+                syndContent.setMode(resultSet.getString(3));
 
                 // fetch value
-                content.setValue(resultSet.getString(2));
+                syndContent.setValue(resultSet.getString(4));
 
                 // fetch feed_id
-                content.setFeed_id(resultSet.getInt(3));
+                description.setFeed_id(resultSet.getInt(5));
 
-                contents.add(content);
+                descriptions.add(description);
             }
         } catch (SQLException e) {
             logger.error("Unable to fetch data from ResultSet: " + e.getMessage());
             throw new RuntimeException("Unable to fetch data from ResultSet", e);
         }
-        return contents;
+        return descriptions;
     }
 
     /**
@@ -54,16 +63,15 @@ public class ContentDAOImpl extends DAO implements ContentDAO {
      * @throws RuntimeException if content with specific id not found
      */
     @Override
-    public Content get(int id) {
+    public Description get(int id) {
         try {
             PreparedStatement preparedStatement = getConnection().prepareStatement(
-                    "SELECT * FROM content WHERE id=?");
+                    "SELECT * FROM description WHERE id=?");
             preparedStatement.setInt(1, id);
             ResultSet resultSet = preparedStatement.executeQuery();
-            return createContentFromResultSet(resultSet).get(0);
+            return createDescriptionFromResultSet(resultSet).get(0);
         } catch (IndexOutOfBoundsException e) {
-            logger.error("content with id=" + id + " not found");
-            throw new RuntimeException("content with id=" + id + " not found", e);
+            throw new RuntimeException("description with id=" + id + " not found", e);
         } catch (SQLException e) {
             logger.error("Unable to execute query: " + e.getMessage());
             throw new RuntimeException("Unable to execute query", e);
@@ -71,20 +79,20 @@ public class ContentDAOImpl extends DAO implements ContentDAO {
     }
 
     /**
-     * get list of contents from database which their feed_id is given
+     * get list of descriptions from database which their feed_id is given
      *
      * @param feedId feed_id to search id
-     * @return list of contents
+     * @return list of descriptions
      * @throws RecordNotFoundException if unable to find a record with given feedId
      */
     @Override
-    public Content getByFeedId(int feedId) {
+    public Description getByFeedId(int feedId) {
         try {
             PreparedStatement preparedStatement = getConnection().prepareStatement(
-                    "SELECT * FROM content WHERE feed_id=?");
+                    "SELECT * FROM description WHERE feed_id=?");
             preparedStatement.setInt(1, feedId);
             ResultSet resultSet = preparedStatement.executeQuery();
-            return createContentFromResultSet(resultSet).get(0);
+            return createDescriptionFromResultSet(resultSet).get(0);
         } catch (IndexOutOfBoundsException e) {
             throw new RecordNotFoundException("content which has feed_id=" + feedId + " not found", e);
         } catch (SQLException e) {
@@ -94,24 +102,26 @@ public class ContentDAOImpl extends DAO implements ContentDAO {
     }
 
     /**
-     * save an content in database
+     * save an description in database
      *
-     * @param content content which is saved
-     * @return content which it's ID will be set after adding to database
+     * @param description description which is saved
+     * @return description which it's ID will be set after adding to database
      */
     @Override
-    public Content save(Content content) {
+    public Description save(Description description) {
         try {
             PreparedStatement preparedStatement = getConnection().prepareStatement(
-                    "INSERT INTO content(value, feed_id) VALUES(?, ?)", Statement.RETURN_GENERATED_KEYS);
-            preparedStatement.setString(1, content.getValue());
-            preparedStatement.setInt(2, content.getFeed_id());
+                    "INSERT INTO description(type, mode, value, feed_id) VALUES(?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
+            preparedStatement.setString(1, description.getSyndContent().getType());
+            preparedStatement.setString(2, description.getSyndContent().getMode());
+            preparedStatement.setString(3, description.getSyndContent().getValue());
+            preparedStatement.setInt(4, description.getFeed_id());
             int newId = preparedStatement.executeUpdate();
-            content.setId(newId);
+            description.setId(newId);
         } catch (SQLException e) {
             logger.error("Unable to execute query: " + e.getMessage());
             throw new RuntimeException("Unable to execute query", e);
         }
-        return content;
+        return description;
     }
 }
