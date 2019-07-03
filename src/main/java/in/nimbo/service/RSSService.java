@@ -71,7 +71,7 @@ public class RSSService {
     public SyndFeed fetchFromURL(String url) {
         try {
             logger.info("Fetch data of RSS from URL: " + url);
-            URL url1 = new URL(Utility.encodeURL(url));
+            URL url1 = Utility.encodeURL(url);
             SyndFeedInput input = new SyndFeedInput();
             SyndFeed feed = input.build(new XmlReader(url1));
             logger.info("RSS data fetched successfully from: "+ url);
@@ -97,11 +97,8 @@ public class RSSService {
      */
     public String getContentOfRSSLink(String link) {
         try {
-            URL rssURL = new URL(Utility.encodeURL(link));
+            URL rssURL = Utility.encodeURL(link);
             return ArticleExtractor.INSTANCE.getText(rssURL);
-        } catch (MalformedURLException e) {
-            logger.error("Unsupported URL format: " + link);
-            throw new RuntimeException("Unsupported URL format", e);
         } catch (BoilerpipeProcessingException e) {
             logger.error("Unable to extract content from " + link);
             throw new RuntimeException("Unable to extract content from rss link", e);
