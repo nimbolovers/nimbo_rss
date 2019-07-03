@@ -4,25 +4,25 @@ import com.rometools.rome.io.FeedException;
 import in.nimbo.dao.*;
 import in.nimbo.entity.Entry;
 import in.nimbo.service.RSSService;
-import org.apache.log4j.LogManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 import java.util.Scanner;
 
-/**
- * Hello world!
- */
 public class App {
     private RSSService service;
     private Scanner scanner;
     private Properties properties;
     private Logger logger = LoggerFactory.getLogger(App.class);
+
+    static {
+        // disable logs of JOOQ for query
+        System.getProperties().setProperty("org.jooq.no-logo", "true");
+    }
 
     public App(RSSService service, Scanner scanner) throws IOException {
         this.service = service;

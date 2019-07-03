@@ -214,11 +214,11 @@ public class EntryDAOImpl extends DAO implements EntryDAO {
     }
 
     /**
-     * check whether database contain a same entry
-     * check based on entry.title and entry.channel
+     * check whether an entry exists in database
      *
      * @param entry which is checked
-     * @return true if database contain same entry as given entry
+     * @return true if entry exists in database
+     * based on entry.title and entry.channel
      */
     @Override
     public boolean contain(Entry entry) {
