@@ -7,32 +7,31 @@ import com.rometools.rome.io.SyndFeedInput;
 import com.rometools.rome.io.XmlReader;
 import de.l3s.boilerpipe.BoilerpipeProcessingException;
 import de.l3s.boilerpipe.extractors.ArticleExtractor;
-import in.nimbo.dao.FeedDAO;
+import in.nimbo.dao.EntryDAO;
 import in.nimbo.entity.Entry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
-public class FeedService {
-    private FeedDAO feedDAO;
-    private Logger logger = LoggerFactory.getLogger(FeedService.class);
+public class RSSService {
+    private EntryDAO entryDAO;
+    private Logger logger = LoggerFactory.getLogger(RSSService.class);
 
-    public FeedService(FeedDAO feedDAO) {
-        this.feedDAO = feedDAO;
+    public RSSService(EntryDAO entryDAO) {
+        this.entryDAO = entryDAO;
     }
 
     public List<Entry> getFeeds() {
-        return feedDAO.getEntries();
+        return entryDAO.getEntries();
     }
 
     public List<Entry> getFeeds(String title) {
-        return feedDAO.getEntryByTitle(title);
+        return entryDAO.getEntryByTitle(title);
     }
 
     public List<Entry> save(SyndFeed feed) {
@@ -41,8 +40,8 @@ public class FeedService {
         for (SyndEntry syndEntry : feed.getEntries()) {
             Entry entry = new Entry(feed.getTitle(), syndEntry);
             entry.setContent(getContentOfRSSLink(syndEntry.getLink()));
-            if (!feedDAO.contain(entry)) {
-                feedDAO.save(entry);
+            if (!entryDAO.contain(entry)) {
+                entryDAO.save(entry);
                 resultEntries.add(entry);
                 count++;
             }

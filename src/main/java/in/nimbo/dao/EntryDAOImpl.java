@@ -12,13 +12,13 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class FeedDAOImpl extends DAO implements FeedDAO {
-    private Logger logger = LoggerFactory.getLogger(FeedDAOImpl.class);
+public class EntryDAOImpl extends DAO implements EntryDAO {
+    private Logger logger = LoggerFactory.getLogger(EntryDAOImpl.class);
 
     private DescriptionDAO descriptionDAO;
     private ContentDAO contentDAO;
 
-    public FeedDAOImpl(DescriptionDAO descriptionDAO, ContentDAO contentDAO) {
+    public EntryDAOImpl(DescriptionDAO descriptionDAO, ContentDAO contentDAO) {
         this.descriptionDAO = descriptionDAO;
         this.contentDAO = contentDAO;
     }

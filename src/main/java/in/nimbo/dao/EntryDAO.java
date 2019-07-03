@@ -4,7 +4,7 @@ import in.nimbo.entity.Entry;
 
 import java.util.List;
 
-public interface FeedDAO {
+public interface EntryDAO {
     List<Entry> getEntryByTitle(String title);
 
     List<Entry> getEntries();

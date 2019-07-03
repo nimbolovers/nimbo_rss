@@ -5,27 +5,26 @@ import com.rometools.rome.feed.synd.SyndEntryImpl;
 import com.rometools.rome.feed.synd.SyndFeed;
 import com.rometools.rome.feed.synd.SyndFeedImpl;
 import com.rometools.rome.io.FeedException;
-import in.nimbo.dao.FeedDAO;
+import in.nimbo.dao.EntryDAO;
 import static org.mockito.Mockito.*;
 import static org.junit.Assert.*;
 
 import in.nimbo.entity.Entry;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.mockito.Mock;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-public class FeedServiceTest {
-    private static FeedDAO dao;
-    private static FeedService service;
+public class RSSServiceTest {
+    private static EntryDAO dao;
+    private static RSSService service;
     @BeforeClass
     public static void init(){
-        dao = mock(FeedDAO.class);
-        service = new FeedService(dao);
+        dao = mock(EntryDAO.class);
+        service = new RSSService(dao);
     }
     @Test
     public void save() throws IOException, FeedException {

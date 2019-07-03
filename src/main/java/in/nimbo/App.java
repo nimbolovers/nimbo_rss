@@ -3,7 +3,7 @@ package in.nimbo;
 import com.rometools.rome.io.FeedException;
 import in.nimbo.dao.*;
 import in.nimbo.entity.Entry;
-import in.nimbo.service.FeedService;
+import in.nimbo.service.RSSService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,11 +18,11 @@ import java.util.Scanner;
  *
  */
 public class App {
-    private FeedService service;
+    private RSSService service;
     private Scanner scanner;
     private Properties properties;
     private Logger logger = LoggerFactory.getLogger(App.class);
-    public App(FeedService service, Scanner scanner) throws IOException {
+    public App(RSSService service, Scanner scanner) throws IOException {
         this.service = service;
         this.scanner = scanner;
         ClassLoader loader = Thread.currentThread().getContextClassLoader();
@@ -35,8 +35,8 @@ public class App {
         Scanner scanner = new Scanner(System.in);
         DescriptionDAO descriptionDAO = new DescriptionDAOImpl();
         ContentDAO contentDAO = new ContentDAOImpl();
-        FeedDAO dao = new FeedDAOImpl(descriptionDAO, contentDAO);
-        FeedService service = new FeedService(dao);
+        EntryDAO dao = new EntryDAOImpl(descriptionDAO, contentDAO);
+        RSSService service = new RSSService(dao);
         App app = new App(service, scanner);
         app.run();
     }

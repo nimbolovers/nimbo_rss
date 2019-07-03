@@ -25,7 +25,7 @@ import static org.junit.Assert.*;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest(DAO.class)
-public class FeedDAOTest {
+public class EntryDAOTest {
     private DescriptionDAO descriptionDAO;
     private ContentDAO contentDAO;
     private static Connection connection;
@@ -60,14 +60,14 @@ public class FeedDAOTest {
     public void save() throws SQLException {
         descriptionDAO = PowerMockito.mock(DescriptionDAO.class);
         contentDAO = PowerMockito.mock(ContentDAO.class);
-        FeedDAO feedDAO = new FeedDAOImpl(descriptionDAO, contentDAO);
+        EntryDAO entryDAO = new EntryDAOImpl(descriptionDAO, contentDAO);
         Entry entry = new Entry();
         List<Entry> entryList = new ArrayList<>();
         SyndEntry syndEntry = new SyndEntryImpl();
         syndEntry.setPublishedDate(new Date());
         entry.setSyndEntry(syndEntry);
-        if (!feedDAO.contain(entry)) {
-            entry = feedDAO.save(entry);
+        if (!entryDAO.contain(entry)) {
+            entry = entryDAO.save(entry);
         }
         entryList.add(entry);
         syndEntry = new SyndEntryImpl();
@@ -76,8 +76,8 @@ public class FeedDAOTest {
         entry = new Entry();
         entry.setChannel("test");
         entry.setSyndEntry(syndEntry);
-        if (!feedDAO.contain(entry)) {
-            entry = feedDAO.save(entry);
+        if (!entryDAO.contain(entry)) {
+            entry = entryDAO.save(entry);
         }
         entryList.add(entry);
         PreparedStatement statement = connection.prepareStatement("SELECT COUNT(*) as cnt FROM feed");
@@ -85,12 +85,12 @@ public class FeedDAOTest {
         if (resultSet.next()) {
             int cnt = resultSet.getInt("cnt");
             assertTrue(cnt > 0);
-            assertArrayEquals(entryList.toArray(), feedDAO.getEntries().toArray());
+            assertArrayEquals(entryList.toArray(), entryDAO.getEntries().toArray());
         } else {
             fail();
         }
         entryList.remove(0);
-        assertArrayEquals(entryList.toArray(), feedDAO.getEntryByTitle("e").toArray());
+        assertArrayEquals(entryList.toArray(), entryDAO.getEntryByTitle("e").toArray());
     }
 
 }
