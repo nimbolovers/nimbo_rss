@@ -70,18 +70,18 @@ public class RSSService {
      */
     public SyndFeed fetchFromURL(String url) {
         try {
-            logger.info("fetching data from url: " + url);
+            logger.info("Fetch data of RSS from URL: " + url);
             URL url1 = new URL(Utility.encodeURL(url));
             SyndFeedInput input = new SyndFeedInput();
             SyndFeed feed = input.build(new XmlReader(url1));
-            logger.info("URL fetched successfully");
+            logger.info("RSS data fetched successfully from: "+ url);
             return feed;
         } catch (FeedException e) {
-            logger.error("Invalid RSS");
-            throw new RuntimeException("Invalid RSS", e);
+            logger.error("Invalid RSS URL: " + url);
+            throw new RuntimeException("Invalid RSS URL: " + url, e);
         } catch (MalformedURLException e) {
-            logger.error("URL not found: " + url);
-            throw new RuntimeException("URL not found: " + url, e);
+            logger.error("Illegal URL format: " + url);
+            throw new RuntimeException("Illegal URL format", e);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
