@@ -51,7 +51,7 @@ public class FeedDAOImpl extends DAO implements FeedDAO {
 
                 // fetch descriptions
                 Content content = contentDAO.getByFeedId(entry.getId());
-                entry.setContent(content);
+                entry.setContent(content.getValue());
 
                 // fetch publication data
                 syndEntry.setPublishedDate(resultSet.getDate(4));
@@ -129,7 +129,8 @@ public class FeedDAOImpl extends DAO implements FeedDAO {
             }
 
             // add entry contents
-            contentDAO.save(entry.getContent());
+            Content content = new Content(entry.getContent(), newId);
+            contentDAO.save(content);
 
         } catch (SQLException e) {
             logger.error("Unable to save entry with id=" + entry.getId() + ": " + e.getMessage());

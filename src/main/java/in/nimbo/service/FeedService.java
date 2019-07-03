@@ -1,9 +1,12 @@
 package in.nimbo.service;
 
+import com.rometools.rome.feed.synd.SyndEntry;
 import com.rometools.rome.feed.synd.SyndFeed;
 import com.rometools.rome.io.FeedException;
 import com.rometools.rome.io.SyndFeedInput;
 import com.rometools.rome.io.XmlReader;
+import de.l3s.boilerpipe.BoilerpipeProcessingException;
+import de.l3s.boilerpipe.extractors.ArticleExtractor;
 import in.nimbo.dao.FeedDAO;
 import in.nimbo.entity.Entry;
 import org.slf4j.Logger;
@@ -12,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -31,26 +35,26 @@ public class FeedService {
         return feedDAO.getEntryByTitle(title);
     }
 
-    public List<Entry> save(SyndFeed feed) throws IOException, FeedException {
-        List<Entry> entries = feed.getEntries().stream()
-                .map(syndEntry -> new Entry(feed.getTitle(), syndEntry))
-                .collect(Collectors.toList());
+    public List<Entry> save(SyndFeed feed) {
         int count = 0;
-        for (Entry entry : entries) {
+        List<Entry> resultEntries = new ArrayList<>();
+        for (SyndEntry syndEntry : feed.getEntries()) {
+            Entry entry = new Entry(feed.getTitle(), syndEntry);
+            entry.setContent(getContentOfRSSLink(syndEntry.getLink()));
             if (!feedDAO.contain(entry)) {
                 feedDAO.save(entry);
+                resultEntries.add(entry);
                 count++;
             }
         }
-        if (count == entries.size()) {
+        if (count == feed.getEntries().size()) {
             logger.info("Add " + count + " entry to database");
         } else if (count == 0) {
             logger.warn("There is no new entry");
         } else {
-            logger.info("Add " + count + "/" + entries.size() + " entries");
+            logger.info("Add " + count + "/" + feed.getEntries().size() + " entries");
         }
-
-        return entries;
+        return resultEntries;
     }
 
     public SyndFeed fetchFromURL(String url) {
@@ -69,6 +73,27 @@ public class FeedService {
             throw new RuntimeException("URL not found: " + url, e);
         } catch (IOException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * get article content of a site from a link using boilerpipe library
+     *
+     * @param link link of corresponding site
+     * @return string which is main content of site
+     * @throws RuntimeException if link is not a illegal URL or couldn't extract
+     *                          main content from url
+     */
+    public String getContentOfRSSLink(String link) {
+        try {
+            URL rssURL = new URL(link);
+            return ArticleExtractor.INSTANCE.getText(rssURL);
+        } catch (MalformedURLException e) {
+            logger.error("Unsupported URL format: " + link);
+            throw new RuntimeException("Unsupported URL format", e);
+        } catch (BoilerpipeProcessingException e) {
+            logger.error("Unable to extract content from " + link);
+            throw new RuntimeException("Unable to extract content from rss link", e);
         }
     }
 }

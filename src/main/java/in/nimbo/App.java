@@ -1,10 +1,7 @@
 package in.nimbo;
 
 import com.rometools.rome.io.FeedException;
-import in.nimbo.dao.DescriptionDAO;
-import in.nimbo.dao.DescriptionDAOImpl;
-import in.nimbo.dao.FeedDAO;
-import in.nimbo.dao.FeedDAOImpl;
+import in.nimbo.dao.*;
 import in.nimbo.entity.Entry;
 import in.nimbo.service.FeedService;
 import org.slf4j.Logger;
@@ -37,36 +34,33 @@ public class App {
     public static void main( String[] args ) throws IOException, FeedException {
         Scanner scanner = new Scanner(System.in);
         DescriptionDAO descriptionDAO = new DescriptionDAOImpl();
-        FeedDAO dao = new FeedDAOImpl(descriptionDAO);
+        ContentDAO contentDAO = new ContentDAOImpl();
+        FeedDAO dao = new FeedDAOImpl(descriptionDAO, contentDAO);
         FeedService service = new FeedService(dao);
         App app = new App(service, scanner);
         app.run();
     }
-    public void run() throws IOException, FeedException {
+    public void run() {
         logger.info("app started successfully");
         while (scanner.hasNextLine()){
             String line = scanner.nextLine();
             String[] strings = line.split(" ");
-            try {
-                switch (strings[0]) {
-                    case "save":
-                        service.save(service.fetchFromURL(properties.getProperty(strings[1])));
-                        break;
-                    case "getAll":
-                        List<Entry> feeds = service.getFeeds();
-                        show(feeds);
-                        break;
-                    case "search":
-                        List<Entry> search = service.getFeeds(strings[1]);
-                        show(search);
-                        break;
-                    case "add":
-                        properties.put(strings[1], strings[2]);
-                        logger.info("the site added to my sites " + strings[1] + " " + strings[2]);
-                        break;
-                }
-            }catch (Exception e){
-                logger.error(e.getMessage());
+            switch (strings[0]) {
+                case "save":
+                    service.save(service.fetchFromURL(properties.getProperty(strings[1])));
+                    break;
+                case "getAll":
+                    List<Entry> feeds = service.getFeeds();
+                    show(feeds);
+                    break;
+                case "search":
+                    List<Entry> search = service.getFeeds(strings[1]);
+                    show(search);
+                    break;
+                case "add":
+                    properties.put(strings[1], strings[2]);
+                    logger.info("the site added to my sites " + strings[1] + " " + strings[2]);
+                    break;
             }
         }
     }

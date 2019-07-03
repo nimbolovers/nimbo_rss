@@ -25,9 +25,9 @@ import static org.junit.Assert.*;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest(DAO.class)
-public class FeedDAOTest
-{
+public class FeedDAOTest {
     private DescriptionDAO descriptionDAO;
+    private ContentDAO contentDAO;
     private static Connection connection;
 
     private static String readFile(String path) {
@@ -59,8 +59,8 @@ public class FeedDAOTest
     @Test
     public void save() throws SQLException {
         descriptionDAO = PowerMockito.mock(DescriptionDAO.class);
-        assertEquals(DAO.getConnection(), connection);
-        FeedDAO feedDAO = new FeedDAOImpl(descriptionDAO);
+        contentDAO = PowerMockito.mock(ContentDAO.class);
+        FeedDAO feedDAO = new FeedDAOImpl(descriptionDAO, contentDAO);
         Entry entry = new Entry();
         List<Entry> entryList = new ArrayList<>();
         SyndEntry syndEntry = new SyndEntryImpl();
@@ -76,18 +76,17 @@ public class FeedDAOTest
         entry = new Entry();
         entry.setChannel("test");
         entry.setSyndEntry(syndEntry);
-        if (!feedDAO.contain(entry)){
+        if (!feedDAO.contain(entry)) {
             entry = feedDAO.save(entry);
         }
         entryList.add(entry);
         PreparedStatement statement = connection.prepareStatement("SELECT COUNT(*) as cnt FROM feed");
         ResultSet resultSet = statement.executeQuery();
-        if (resultSet.next()){
+        if (resultSet.next()) {
             int cnt = resultSet.getInt("cnt");
             assertTrue(cnt > 0);
             assertArrayEquals(entryList.toArray(), feedDAO.getEntries().toArray());
-        }
-        else {
+        } else {
             fail();
         }
         entryList.remove(0);
