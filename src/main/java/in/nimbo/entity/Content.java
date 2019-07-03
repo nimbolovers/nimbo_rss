@@ -1,24 +1,20 @@
 package in.nimbo.entity;
 
-import com.rometools.rome.feed.synd.SyndContent;
-
 /**
- * Wrapper for class SyndContent which contain more information related to content
+ * contain content of RSS which collected from link of RSS feed
  */
 public class Content {
     private int id;
-    private String relation;
-    private SyndContent syndContent;
+    private String value;
     private int feed_id;
 
     public Content() {
     }
 
-    public Content(String relation, SyndContent syndContent) {
-        this.relation = relation;
-        this.syndContent = syndContent;
+    public Content(String value, int feed_id) {
+        this.value = value;
+        this.feed_id = feed_id;
     }
-
 
     public int getFeed_id() {
         return feed_id;
@@ -36,19 +32,11 @@ public class Content {
         this.id = id;
     }
 
-    public String getRelation() {
-        return relation;
+    public String getValue() {
+        return value;
     }
 
-    public void setRelation(String relation) {
-        this.relation = relation;
-    }
-
-    public SyndContent getSyndContent() {
-        return syndContent;
-    }
-
-    public void setSyndContent(SyndContent syndContent) {
-        this.syndContent = syndContent;
+    public void setValue(String value) {
+        this.value = value;
     }
 }

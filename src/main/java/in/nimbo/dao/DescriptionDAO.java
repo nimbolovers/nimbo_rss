@@ -1,13 +1,11 @@
 package in.nimbo.dao;
 
-import in.nimbo.entity.Content;
-
-import java.util.List;
+import in.nimbo.entity.Description;
 
 public interface DescriptionDAO {
-    Content get(int id);
+    Description get(int id);
 
-    List<Content> getByFeedId(int feedId);
+    Description getByFeedId(int feedId);
 
-    Content save(Content content);
+    Description save(Description description);
 }

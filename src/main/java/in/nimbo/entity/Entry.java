@@ -8,6 +8,7 @@ import com.rometools.rome.feed.synd.SyndEntry;
 public class Entry {
     private int id;
     private String channel;
+    private Content content;
     private SyndEntry syndEntry;
 
     public Entry() {
@@ -40,6 +41,15 @@ public class Entry {
 
     public SyndEntry getSyndEntry() {
         return syndEntry;
+    }
+
+
+    public Content getContent() {
+        return content;
+    }
+
+    public void setContent(Content content) {
+        this.content = content;
     }
 
     @Override

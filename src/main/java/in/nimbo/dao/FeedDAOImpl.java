@@ -1,9 +1,9 @@
 package in.nimbo.dao;
 
-import com.rometools.rome.feed.synd.SyndContent;
 import com.rometools.rome.feed.synd.SyndEntry;
 import com.rometools.rome.feed.synd.SyndEntryImpl;
 import in.nimbo.entity.Content;
+import in.nimbo.entity.Description;
 import in.nimbo.entity.Entry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,15 +11,16 @@ import org.slf4j.LoggerFactory;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 public class FeedDAOImpl extends DAO implements FeedDAO {
     private Logger logger = LoggerFactory.getLogger(FeedDAOImpl.class);
-    private DescriptionDAO descriptionDAO;
 
-    public FeedDAOImpl(DescriptionDAO descriptionDAO) {
+    private DescriptionDAO descriptionDAO;
+    private ContentDAO contentDAO;
+
+    public FeedDAOImpl(DescriptionDAO descriptionDAO, ContentDAO contentDAO) {
         this.descriptionDAO = descriptionDAO;
+        this.contentDAO = contentDAO;
     }
 
     /**
@@ -44,19 +45,13 @@ public class FeedDAOImpl extends DAO implements FeedDAO {
                 // fetch title
                 syndEntry.setTitle(resultSet.getString(3));
 
-                List<Content> contents = descriptionDAO.getByFeedId(entry.getId());
                 // fetch description
-                Optional<Content> description = contents.stream()
-                        .filter(content -> content.getRelation().equals("description"))
-                        .findFirst();
-                description.ifPresent(content -> syndEntry.setDescription(content.getSyndContent()));
+                Description description = descriptionDAO.getByFeedId(entry.getId());
+                syndEntry.setDescription(description.getSyndContent());
 
-                // fetch contents
-                List<SyndContent> media = contents.stream()
-                        .filter(content -> content.getRelation().equals("media"))
-                        .map(Content::getSyndContent)
-                        .collect(Collectors.toList());
-                syndEntry.setContents(media);
+                // fetch descriptions
+                Content content = contentDAO.getByFeedId(entry.getId());
+                entry.setContent(content);
 
                 // fetch publication data
                 syndEntry.setPublishedDate(resultSet.getDate(4));
@@ -128,19 +123,14 @@ public class FeedDAOImpl extends DAO implements FeedDAO {
 
             // add entry description
             if (entry.getSyndEntry().getDescription() != null) {
-                Content content = new Content("description", entry.getSyndEntry().getDescription());
-                content.setFeed_id(newId);
-                descriptionDAO.save(content);
+                Description description = new Description(entry.getSyndEntry().getDescription());
+                description.setFeed_id(newId);
+                descriptionDAO.save(description);
             }
 
             // add entry contents
-            if (!entry.getSyndEntry().getContents().isEmpty()) {
-                for (SyndContent syndContent : entry.getSyndEntry().getContents()) {
-                    Content content = new Content("content", syndContent);
-                    content.setFeed_id(newId);
-                    descriptionDAO.save(content);
-                }
-            }
+            contentDAO.save(entry.getContent());
+
         } catch (SQLException e) {
             logger.error("Unable to save entry with id=" + entry.getId() + ": " + e.getMessage());
             throw new RuntimeException("Unable to save entry with id=" + entry.getId(), e);
