@@ -5,6 +5,7 @@ import com.rometools.rome.feed.synd.SyndEntryImpl;
 import in.nimbo.entity.Content;
 import in.nimbo.entity.Description;
 import in.nimbo.entity.Entry;
+import in.nimbo.exception.RecordNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,6 +26,7 @@ public class EntryDAOImpl extends DAO implements EntryDAO {
 
     /**
      * create a list of entries from a ResultSet of JDBC
+     *
      * @param resultSet resultSet of database
      * @return list of entries
      */
@@ -46,8 +48,12 @@ public class EntryDAOImpl extends DAO implements EntryDAO {
                 syndEntry.setTitle(resultSet.getString(3));
 
                 // fetch description
-                Description description = descriptionDAO.getByFeedId(entry.getId());
-                syndEntry.setDescription(description.getSyndContent());
+                try {
+                    Description description = descriptionDAO.getByFeedId(entry.getId());
+                    syndEntry.setDescription(description.getSyndContent());
+                } catch (RecordNotFoundException e) {
+                   // doesn't set description and ignore error
+                }
 
                 // fetch descriptions
                 Content content = contentDAO.getByFeedId(entry.getId());
@@ -66,15 +72,38 @@ public class EntryDAOImpl extends DAO implements EntryDAO {
     }
 
     /**
-     * find entries which their title contain a "searchString" strings
-     * @param searchString string want to be in title of entry
-     * @return list of entries which their title contain "searchString"
+     * find entries which their title contain a something
+     *
+     * @param value value want to be in title of entry
+     * @return list of entries which their title contain value
+     * @throws RuntimeException if it is unable to execute query
      */
     @Override
-    public List<Entry> getEntryByTitle(String searchString) {
+    public List<Entry> filterEntryByTitle(String value) {
         try {
             PreparedStatement preparedStatement = getConnection().prepareStatement("SELECT * FROM feed WHERE title LIKE ?");
-            preparedStatement.setString(1, "%" + searchString + "%");
+            preparedStatement.setString(1, "%" + value + "%");
+            ResultSet resultSet = preparedStatement.executeQuery();
+            return createEntryFromResultSet(resultSet);
+        } catch (SQLException e) {
+            logger.error("Unable to execute query: " + e.getMessage());
+            throw new RuntimeException("Unable to fetch data from ResultSet", e);
+        }
+    }
+
+    /**
+     * find entries which their content contain something
+     *
+     * @param value value want to be in content of entry
+     * @return list of entries which their content contain value
+     * @throws RuntimeException if it is unable to execute query
+     */
+    @Override
+    public List<Entry> filterEntryByContent(String value) {
+        try {
+            PreparedStatement preparedStatement = getConnection().prepareStatement(
+                    "SELECT * FROM feed INNER JOIN content ON feed.id=content.feed_id WHERE content.value LIKE ?");
+            preparedStatement.setString(1, "%" + value + "%");
             ResultSet resultSet = preparedStatement.executeQuery();
             return createEntryFromResultSet(resultSet);
         } catch (SQLException e) {
@@ -85,6 +114,7 @@ public class EntryDAOImpl extends DAO implements EntryDAO {
 
     /**
      * fetch all of entries in database
+     *
      * @return a list of entries
      */
     @Override
@@ -102,8 +132,9 @@ public class EntryDAOImpl extends DAO implements EntryDAO {
     /**
      * save an entry in database
      * contents of entry will be added to 'content' database
-     *      description of entry will be added as a content of type 'description'
-     *      contents of entry will be added as a content of type 'content'
+     * description of entry will be added as a content of type 'description'
+     * contents of entry will be added as a content of type 'content'
+     *
      * @param entry entry
      * @return entry which it's ID will be set after adding to database
      */
@@ -142,6 +173,7 @@ public class EntryDAOImpl extends DAO implements EntryDAO {
     /**
      * check whether database contain a same entry
      * check based on entry.title and entry.channel
+     *
      * @param entry which is checked
      * @return true if database contain same entry as given entry
      */

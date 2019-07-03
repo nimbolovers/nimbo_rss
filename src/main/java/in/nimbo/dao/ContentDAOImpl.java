@@ -1,6 +1,7 @@
 package in.nimbo.dao;
 
 import in.nimbo.entity.Content;
+import in.nimbo.exception.RecordNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -74,6 +75,7 @@ public class ContentDAOImpl extends DAO implements ContentDAO {
      *
      * @param feedId feed_id to search id
      * @return list of contents
+     * @throws RecordNotFoundException if unable to find a record with given feedId
      */
     @Override
     public Content getByFeedId(int feedId) {
@@ -84,8 +86,7 @@ public class ContentDAOImpl extends DAO implements ContentDAO {
             ResultSet resultSet = preparedStatement.executeQuery();
             return createContentFromResultSet(resultSet).get(0);
         } catch (IndexOutOfBoundsException e) {
-            logger.error("content which has feed_id=" + feedId + " not found");
-            throw new RuntimeException("content which has feed_id=" + feedId + " not found", e);
+            throw new RecordNotFoundException("content which has feed_id=" + feedId + " not found", e);
         } catch (SQLException e) {
             logger.error("Unable to execute query: " + e.getMessage());
             throw new RuntimeException("Unable to execute query", e);

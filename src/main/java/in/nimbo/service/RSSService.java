@@ -26,12 +26,16 @@ public class RSSService {
         this.entryDAO = entryDAO;
     }
 
-    public List<Entry> getFeeds() {
+    public List<Entry> filterEntryByTitle() {
         return entryDAO.getEntries();
     }
 
-    public List<Entry> getFeeds(String title) {
-        return entryDAO.getEntryByTitle(title);
+    public List<Entry> filterEntryByTitle(String title) {
+        return entryDAO.filterEntryByTitle(title);
+    }
+
+    public List<Entry> filterEntryByContent(String title) {
+        return entryDAO.filterEntryByContent(title);
     }
 
     public List<Entry> save(SyndFeed feed) {
@@ -56,6 +60,13 @@ public class RSSService {
         return resultEntries;
     }
 
+
+
+    /**
+     * Fetch an SyndFeed from RSS URL
+     * @param url url which is an RSS
+     * @return SyndFeed which contain RSS contents
+     */
     public SyndFeed fetchFromURL(String url) {
         try {
             logger.info("fetching data from url: " + url);

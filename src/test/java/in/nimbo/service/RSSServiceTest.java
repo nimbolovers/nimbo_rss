@@ -53,7 +53,7 @@ public class RSSServiceTest {
         entries.add(new Entry());
         entries.add(new Entry());
         when(dao.getEntries()).thenReturn(entries);
-        List<Entry> feeds = service.getFeeds();
+        List<Entry> feeds = service.filterEntryByTitle();
         assertEquals(feeds, entries);
     }
 
@@ -63,8 +63,8 @@ public class RSSServiceTest {
         entries.add(new Entry());
         entries.add(new Entry());
         entries.add(new Entry());
-        when(dao.getEntryByTitle("نود")).thenReturn(entries);
-        List<Entry> feeds = service.getFeeds("نود");
+        when(dao.filterEntryByTitle("نود")).thenReturn(entries);
+        List<Entry> feeds = service.filterEntryByTitle("نود");
         assertEquals(feeds, entries);
     }
 }

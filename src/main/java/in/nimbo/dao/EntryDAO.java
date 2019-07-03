@@ -5,7 +5,9 @@ import in.nimbo.entity.Entry;
 import java.util.List;
 
 public interface EntryDAO {
-    List<Entry> getEntryByTitle(String title);
+    List<Entry> filterEntryByTitle(String title);
+
+    List<Entry> filterEntryByContent(String value);
 
     List<Entry> getEntries();
 

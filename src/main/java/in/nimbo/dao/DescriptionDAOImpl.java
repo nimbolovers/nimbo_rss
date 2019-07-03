@@ -3,6 +3,7 @@ package in.nimbo.dao;
 import com.rometools.rome.feed.synd.SyndContent;
 import com.rometools.rome.feed.synd.SyndContentImpl;
 import in.nimbo.entity.Description;
+import in.nimbo.exception.RecordNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,13 +38,13 @@ public class DescriptionDAOImpl extends DAO implements DescriptionDAO {
                 syndContent.setType(resultSet.getString(2));
 
                 // fetch mode
-                syndContent.setMode(resultSet.getString(4));
+                syndContent.setMode(resultSet.getString(3));
 
                 // fetch value
-                syndContent.setValue(resultSet.getString(5));
+                syndContent.setValue(resultSet.getString(4));
 
                 // fetch feed_id
-                description.setFeed_id(resultSet.getInt(6));
+                description.setFeed_id(resultSet.getInt(5));
 
                 descriptions.add(description);
             }
@@ -70,7 +71,6 @@ public class DescriptionDAOImpl extends DAO implements DescriptionDAO {
             ResultSet resultSet = preparedStatement.executeQuery();
             return createDescriptionFromResultSet(resultSet).get(0);
         } catch (IndexOutOfBoundsException e) {
-            logger.error("description with id=" + id + " not found");
             throw new RuntimeException("description with id=" + id + " not found", e);
         } catch (SQLException e) {
             logger.error("Unable to execute query: " + e.getMessage());
@@ -83,6 +83,7 @@ public class DescriptionDAOImpl extends DAO implements DescriptionDAO {
      *
      * @param feedId feed_id to search id
      * @return list of descriptions
+     * @throws RecordNotFoundException if unable to find a record with given feedId
      */
     @Override
     public Description getByFeedId(int feedId) {
@@ -93,8 +94,7 @@ public class DescriptionDAOImpl extends DAO implements DescriptionDAO {
             ResultSet resultSet = preparedStatement.executeQuery();
             return createDescriptionFromResultSet(resultSet).get(0);
         } catch (IndexOutOfBoundsException e) {
-            logger.error("content which has feed_id=" + feedId + " not found");
-            throw new RuntimeException("content which has feed_id=" + feedId + " not found", e);
+            throw new RecordNotFoundException("content which has feed_id=" + feedId + " not found", e);
         } catch (SQLException e) {
             logger.error("Unable to execute query: " + e.getMessage());
             throw new RuntimeException("Unable to execute query", e);

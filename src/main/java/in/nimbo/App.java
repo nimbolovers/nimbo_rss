@@ -50,16 +50,19 @@ public class App {
                     service.save(service.fetchFromURL(properties.getProperty(strings[1])));
                     break;
                 case "getAll":
-                    List<Entry> feeds = service.getFeeds();
+                    List<Entry> feeds = service.filterEntryByTitle();
                     show(feeds);
                     break;
                 case "search":
-                    List<Entry> search = service.getFeeds(strings[1]);
+                    List<Entry> search = service.filterEntryByTitle(strings[1]);
                     show(search);
                     break;
                 case "add":
                     properties.put(strings[1], strings[2]);
                     logger.info("the site added to my sites " + strings[1] + " " + strings[2]);
+                    break;
+                case "get":
+                    show(service.filterEntryByContent(strings[1]));
                     break;
             }
         }
