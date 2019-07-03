@@ -90,7 +90,7 @@ public class EntryDAOTest {
             fail();
         }
         entryList.remove(0);
-        assertArrayEquals(entryList.toArray(), entryDAO.filterEntryByTitle("e").toArray());
+        assertArrayEquals(entryList.toArray(), entryDAO.filterEntryByTitle(null, "e", null, null).toArray());
     }
 
 }

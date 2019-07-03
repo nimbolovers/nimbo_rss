@@ -63,8 +63,8 @@ public class RSSServiceTest {
         entries.add(new Entry());
         entries.add(new Entry());
         entries.add(new Entry());
-        when(dao.filterEntryByTitle("نود")).thenReturn(entries);
-        List<Entry> feeds = service.filterEntryByTitle("نود");
+        when(dao.filterEntryByTitle(null, "نود", null, null)).thenReturn(entries);
+        List<Entry> feeds = service.filterEntryByTitle(null, "نود", null, null);
         assertEquals(feeds, entries);
     }
 }

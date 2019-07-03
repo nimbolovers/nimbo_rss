@@ -31,12 +31,12 @@ public class RSSService {
         return entryDAO.getEntries();
     }
 
-    public List<Entry> filterEntryByTitle(String title) {
-        return entryDAO.filterEntryByTitle(title);
+    public List<Entry> filterEntryByTitle(String channel, String title, Date startTime, Date finishTime) {
+        return entryDAO.filterEntryByTitle(channel, title, startTime, finishTime);
     }
 
-    public List<Entry> filterEntryByContent(String channel, String title, Date startTime, Date finishTime) {
-        return entryDAO.filterEntryByContent(channel, title, startTime, finishTime);
+    public List<Entry> filterEntryByContent(String channel, String content, Date startTime, Date finishTime) {
+        return entryDAO.filterEntryByContent(channel, content, startTime, finishTime);
     }
 
     public List<Entry> save(SyndFeed feed) {

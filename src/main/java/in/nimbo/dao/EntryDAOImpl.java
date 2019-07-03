@@ -81,18 +81,35 @@ public class EntryDAOImpl extends DAO implements EntryDAO {
     }
 
     /**
-     * find entries which their title contain a something
+     * find entries which their title contain something in range of date
      *
+     * @param channel channel which search for entry in it
+     *                if it is not specified (null), then search in all channels
      * @param value value want to be in title of entry
+     * @param startDate start date of fetched data
+     *                  if it is not specified (null), then there is no limitation on start time
+     * @param finishDate finish date of fetched data
+     *                   if it is not specified (null), then there is no limitation on finish time
      * @return list of entries which their title contain value
      * @throws RuntimeException if it is unable to execute query
      */
     @Override
-    public List<Entry> filterEntryByTitle(String value) {
+    public List<Entry> filterEntryByTitle(String channel, String value, Date startDate, Date finishDate) {
         try {
-            PreparedStatement preparedStatement = getConnection().prepareStatement("SELECT * FROM feed WHERE title LIKE ?");
-            preparedStatement.setString(1, "%" + value + "%");
-            ResultSet resultSet = preparedStatement.executeQuery();
+            SelectConditionStep<Record> query = DSL.using(SQLDialect.MYSQL)
+                    .select()
+                    .from("feed")
+                    .where(DSL.field("title").like("%" + value + "%"));
+            if (channel != null)
+                query = query.and(DSL.field("channel").eq(channel));
+            if (startDate != null)
+                query = query.and(DSL.field("pub_date").ge(startDate));
+            if (finishDate != null)
+                query = query.and(DSL.field("pub_date").le(finishDate));
+
+            String sqlQuery = query.getSQL(ParamType.INLINED);
+            Statement statement = getConnection().createStatement();
+            ResultSet resultSet = statement.executeQuery(sqlQuery);
             return createEntryFromResultSet(resultSet);
         } catch (SQLException e) {
             logger.error("Unable to execute query: " + e.getMessage());

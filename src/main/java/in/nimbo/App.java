@@ -58,7 +58,7 @@ public class App {
                     show(feeds);
                     break;
                 case "search":
-                    List<Entry> search = service.filterEntryByTitle(strings[1]);
+                    List<Entry> search = service.filterEntryByContent(null, strings[1], null, null);
                     show(search);
                     break;
                 case "add":
