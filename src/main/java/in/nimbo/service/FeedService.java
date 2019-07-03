@@ -13,11 +13,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class FeedService {
     private FeedDAO feedDAO;
@@ -60,7 +60,7 @@ public class FeedService {
     public SyndFeed fetchFromURL(String url) {
         try {
             logger.info("fetching data from url: " + url);
-            URL url1 = new URL(url);
+            URL url1 = new URL(Utility.encodeURL(url));
             SyndFeedInput input = new SyndFeedInput();
             SyndFeed feed = input.build(new XmlReader(url1));
             logger.info("URL fetched successfully");
@@ -86,7 +86,7 @@ public class FeedService {
      */
     public String getContentOfRSSLink(String link) {
         try {
-            URL rssURL = new URL(link);
+            URL rssURL = new URL(Utility.encodeURL(link));
             return ArticleExtractor.INSTANCE.getText(rssURL);
         } catch (MalformedURLException e) {
             logger.error("Unsupported URL format: " + link);

@@ -1,6 +1,7 @@
 -- USE `nimbo_rss`;
 
 DROP TABLE IF EXISTS `description`;
+DROP TABLE IF EXISTS `content`;
 DROP TABLE IF EXISTS `feed`;
 
 CREATE TABLE `feed` (
@@ -23,7 +24,7 @@ CREATE TABLE `description` (
                                    REFERENCES feed(id)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4;
 
-CREATE TABLE `description` (
+CREATE TABLE `content` (
                            `id` int(11) NOT NULL AUTO_INCREMENT,
                            `value` text DEFAULT NULL,
                            `feed_id` int(45) NOT NULL,

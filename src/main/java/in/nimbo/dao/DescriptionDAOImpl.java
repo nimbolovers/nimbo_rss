@@ -111,7 +111,7 @@ public class DescriptionDAOImpl extends DAO implements DescriptionDAO {
     public Description save(Description description) {
         try {
             PreparedStatement preparedStatement = getConnection().prepareStatement(
-                    "INSERT INTO description(type, mode, value, feed_id) VALUES(?, ?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
+                    "INSERT INTO description(type, mode, value, feed_id) VALUES(?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
             preparedStatement.setString(1, description.getSyndContent().getType());
             preparedStatement.setString(2, description.getSyndContent().getMode());
             preparedStatement.setString(3, description.getSyndContent().getValue());
