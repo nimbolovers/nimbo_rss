@@ -68,6 +68,9 @@ public class EntryDAOImpl extends DAO implements EntryDAO {
                 Content content = contentDAO.getByFeedId(entry.getId());
                 entry.setContent(content.getValue());
 
+                // fetch link
+                syndEntry.setLink(resultSet.getString("link"));
+
                 // fetch publication data
                 syndEntry.setPublishedDate(resultSet.getDate("pub_date"));
 
