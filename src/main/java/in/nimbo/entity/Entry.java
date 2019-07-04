@@ -2,6 +2,8 @@ package in.nimbo.entity;
 
 import com.rometools.rome.feed.synd.SyndEntry;
 
+import java.util.Objects;
+
 /**
  * Wrapper for class SyndEntry which contain more information related to entry
  */
@@ -59,11 +61,10 @@ public class Entry {
 
         Entry entry = (Entry) o;
 
-        return id == entry.id;
-    }
-
-    @Override
-    public int hashCode() {
-        return id;
+        return Objects.equals(channel, entry.channel) &&
+                Objects.equals(id, entry.id) &&
+                Objects.equals(content, entry.content) &&
+                Objects.equals(syndEntry.getTitle(), entry.syndEntry.getTitle()) &&
+                Objects.equals(syndEntry.getLink(), entry.syndEntry.getLink());
     }
 }
