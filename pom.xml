@@ -23,6 +23,7 @@
     <mockito1.version>1.10.19</mockito1.version>
     <JOOQ.version>3.11.11</JOOQ.version>
     <boilerpipe.version>1.2.3</boilerpipe.version>
+    <hikari.version>3.2.0</hikari.version>
   </properties>
 
   <dependencies>
@@ -122,6 +123,13 @@
       <version>${boilerpipe.version}</version>
     </dependency>
 
+    <!-- connection pool to database with hikari -->
+    <dependency>
+      <groupId>com.zaxxer</groupId>
+      <artifactId>HikariCP</artifactId>
+      <version>${hikari.version}</version>
+    </dependency>
+
   </dependencies>
 
   <build>
@@ -186,6 +194,28 @@
             </execution>
           </executions>
         </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-shade-plugin</artifactId>
+          <version>2.3</version>
+          <executions>
+            <!-- Run shade goal on package phase -->
+            <execution>
+              <phase>package</phase>
+              <goals>
+                <goal>shade</goal>
+              </goals>
+              <configuration>
+                <transformers>
+                  <!-- add Main-Class to manifest file -->
+                  <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                    <mainClass>in.nimbo.App</mainClass>
+                  </transformer>
+                </transformers>
+              </configuration>
+            </execution>
+          </executions>
+        </plugin>
       </plugins>
     </pluginManagement>
       <plugins>
@@ -197,6 +227,11 @@
                   <target>8</target>
               </configuration>
           </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-shade-plugin</artifactId>
+          <version>2.3</version>
+        </plugin>
           <plugin>
             <groupId>org.jacoco</groupId>
             <artifactId>jacoco-maven-plugin</artifactId>
