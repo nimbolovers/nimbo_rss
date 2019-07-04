@@ -72,7 +72,7 @@ public class EntryDAOImpl extends DAO implements EntryDAO {
                 syndEntry.setLink(resultSet.getString("link"));
 
                 // fetch publication data
-                syndEntry.setPublishedDate(resultSet.getDate("pub_date"));
+                syndEntry.setPublishedDate(resultSet.getTimestamp("pub_date"));
 
                 result.add(entry);
             }
@@ -106,9 +106,9 @@ public class EntryDAOImpl extends DAO implements EntryDAO {
             if (channel != null)
                 query = query.and(DSL.field("channel").eq(channel));
             if (startDate != null)
-                query = query.and(DSL.field("pub_date").ge(new java.sql.Date(startDate.getTime())));
+                query = query.and(DSL.field("pub_date").ge(new java.sql.Timestamp(startDate.getTime())));
             if (finishDate != null)
-                query = query.and(DSL.field("pub_date").le(new java.sql.Date(finishDate.getTime())));
+                query = query.and(DSL.field("pub_date").le(new java.sql.Timestamp(finishDate.getTime())));
 
             String sqlQuery = query.getSQL(ParamType.INLINED);
             Statement statement = getConnection().createStatement();
@@ -144,9 +144,9 @@ public class EntryDAOImpl extends DAO implements EntryDAO {
             if (channel != null)
                 query = query.and(DSL.field("feed.channel").eq(channel));
             if (startDate != null)
-                query = query.and(DSL.field("feed.pub_date").ge(new java.sql.Date(startDate.getTime())));
+                query = query.and(DSL.field("feed.pub_date").ge(new java.sql.Timestamp(startDate.getTime())));
             if (finishDate != null)
-                query = query.and(DSL.field("feed.pub_date").le(new java.sql.Date(finishDate.getTime())));
+                query = query.and(DSL.field("feed.pub_date").le(new java.sql.Timestamp(finishDate.getTime())));
 
             String sqlQuery = query.getSQL(ParamType.INLINED);
             Statement statement = getConnection().createStatement();
@@ -191,7 +191,7 @@ public class EntryDAOImpl extends DAO implements EntryDAO {
                     "INSERT INTO feed(channel, title, pub_date, link) VALUES(?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
             preparedStatement.setString(1, entry.getChannel());
             preparedStatement.setString(2, entry.getSyndEntry().getTitle());
-            preparedStatement.setDate(3, new java.sql.Date(entry.getSyndEntry().getPublishedDate().getTime()));
+            preparedStatement.setTimestamp(3, new java.sql.Timestamp(entry.getSyndEntry().getPublishedDate().getTime()));
             preparedStatement.setString(4, entry.getSyndEntry().getLink());
             preparedStatement.executeUpdate();
             ResultSet generatedKeys = preparedStatement.getGeneratedKeys();
