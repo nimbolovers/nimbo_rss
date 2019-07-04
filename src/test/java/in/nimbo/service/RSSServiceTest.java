@@ -12,6 +12,7 @@ import static org.junit.Assert.*;
 import in.nimbo.entity.Entry;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.powermock.api.mockito.PowerMockito;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -24,7 +25,8 @@ public class RSSServiceTest {
     @BeforeClass
     public static void init(){
         dao = mock(EntryDAO.class);
-        service = new RSSService(dao);
+//        service = new RSSService(dao);
+        service = spy(new RSSService(dao));
     }
     @Test
     public void save() throws IOException, FeedException {
@@ -42,6 +44,7 @@ public class RSSServiceTest {
 
         when(dao.save(entry)).thenReturn(entry);
         when(dao.contain(entry)).thenReturn(false);
+        doReturn("content").when(service).getContentOfRSSLink(syndEntry.getLink());
 
         List<Entry> savedEntries = service.save(feed);
         assertEquals(savedEntries.size(), feed.getEntries().size());

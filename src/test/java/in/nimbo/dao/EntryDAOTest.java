@@ -1,5 +1,7 @@
 package in.nimbo.dao;
 
+import com.rometools.rome.feed.synd.SyndContent;
+import com.rometools.rome.feed.synd.SyndContentImpl;
 import com.rometools.rome.feed.synd.SyndEntry;
 import com.rometools.rome.feed.synd.SyndEntryImpl;
 import in.nimbo.entity.Entry;
@@ -17,18 +19,25 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.sql.*;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.ZoneId;
+import java.time.temporal.TemporalField;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Date;
+import java.util.Random;
 
 import static org.junit.Assert.*;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest(DAO.class)
 public class EntryDAOTest {
-    private DescriptionDAO descriptionDAO;
-    private ContentDAO contentDAO;
+    private static DescriptionDAO descriptionDAO;
+    private static ContentDAO contentDAO;
     private static Connection connection;
+    private static EntryDAO entryDAO;
 
     private static String readFile(String path) {
         try {
@@ -45,6 +54,9 @@ public class EntryDAOTest {
         String queries = readFile("db/db_tables_sql.sql");
         PreparedStatement statement = connection.prepareStatement(queries);
         statement.execute();
+        descriptionDAO = new DescriptionDAOImpl();
+        contentDAO = new ContentDAOImpl();
+        entryDAO = new EntryDAOImpl(descriptionDAO, contentDAO);
     }
 
     @Before
@@ -56,41 +68,77 @@ public class EntryDAOTest {
         statement.executeUpdate();
     }
 
+    private Entry createEntry(String title, Date pubDate, String content, SyndContent desc){
+        Entry entry = new Entry();
+        SyndEntry syndEntry = new SyndEntryImpl();
+        entry.setSyndEntry(syndEntry);
+        syndEntry.setTitle(title);
+        syndEntry.setPublishedDate(pubDate);
+        syndEntry.setDescription(desc);
+        entry.setContent(content);
+        return entry;
+    }
+
     @Test
     public void save() throws SQLException {
-        descriptionDAO = PowerMockito.mock(DescriptionDAO.class);
-        contentDAO = PowerMockito.mock(ContentDAO.class);
-        EntryDAO entryDAO = new EntryDAOImpl(descriptionDAO, contentDAO);
-        Entry entry = new Entry();
         List<Entry> entryList = new ArrayList<>();
-        SyndEntry syndEntry = new SyndEntryImpl();
-        syndEntry.setPublishedDate(new Date());
-        entry.setSyndEntry(syndEntry);
-        if (!entryDAO.contain(entry)) {
-            entry = entryDAO.save(entry);
+        for (int i = 0; i < 4; i++) {
+            SyndContent content = null;
+            if ((i & 2) != 0){
+                content = new SyndContentImpl();
+                content.setType("text/html");
+                content.setValue("desc " + i);
+            }
+            Entry entry = createEntry("title " + i, new Date(), (i & 1) != 0 ? "content " + i : null, content);
+            entryDAO.save(entry);
+            entryList.add(entry);
         }
-        entryList.add(entry);
-        syndEntry = new SyndEntryImpl();
-        syndEntry.setPublishedDate(new Date());
-        syndEntry.setTitle("test");
-        entry = new Entry();
-        entry.setChannel("test");
-        entry.setSyndEntry(syndEntry);
-        if (!entryDAO.contain(entry)) {
-            entry = entryDAO.save(entry);
-        }
-        entryList.add(entry);
-        PreparedStatement statement = connection.prepareStatement("SELECT COUNT(*) as cnt FROM feed");
+        PreparedStatement statement = connection.prepareStatement("SELECT id FROM feed");
         ResultSet resultSet = statement.executeQuery();
-        if (resultSet.next()) {
-            int cnt = resultSet.getInt("cnt");
-            assertTrue(cnt > 0);
-            assertArrayEquals(entryList.toArray(), entryDAO.getEntries().toArray());
-        } else {
-            fail();
+        List<Entry> list = new ArrayList<>();
+        while (resultSet.next()){
+            Entry e = new Entry();
+            e.setId(resultSet.getInt("id"));
+            list.add(e);
         }
-        entryList.remove(0);
-        assertArrayEquals(entryList.toArray(), entryDAO.filterEntryByTitle(null, "e", null, null).toArray());
+        assertArrayEquals(entryList.toArray(), list.toArray());
+    }
+
+    private List<Entry> saveForFilter(){
+        Date date2010 = getDate(2010, 1, 1);
+        Date date2020 = getDate(2020, 1, 1);
+        Date date2030 = getDate(2030, 1, 1);
+        Entry entry2010 = createEntry("title 1", date2010, "test", null);
+        Entry entry2020 = createEntry("title 2", date2020, "test", null);
+        Entry entry2030 = createEntry("title 3", date2030, "test", null);
+        entryDAO.save(entry2010);
+        entryDAO.save(entry2020);
+        entryDAO.save(entry2030);
+        List<Entry> entries = new ArrayList<>();
+        entries.add(entry2010);
+        entries.add(entry2020);
+        entries.add(entry2030);
+        return entries;
+    }
+
+    @Test
+    public void getAllTest(){
+        List<Entry> entries = saveForFilter();
+        Date date2025 = getDate(2025, 1, 1);
+        assertArrayEquals(entries.toArray(), entryDAO.getEntries().toArray());
+    }
+
+    @Test
+    public void filterBeforeTest(){
+        List<Entry> entries = saveForFilter();
+        entries.remove(0);
+        Date date2015 = getDate(2015, 1, 1);
+        assertArrayEquals(entries.toArray(), entryDAO.filterEntryByTitle(null, "", date2015, null).toArray());
+    }
+
+    private Date getDate(int year, int month, int day){
+        LocalDateTime dateTime = LocalDateTime.of(LocalDate.of(year, month, day), LocalTime.of(0, 0));
+        return Date.from(dateTime.atZone(ZoneId.systemDefault()).toInstant());
     }
 
 }
