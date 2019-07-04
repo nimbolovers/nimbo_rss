@@ -9,5 +9,5 @@ public interface SiteDAO {
 
     List<Site> getSites();
 
-    boolean containSite(String url);
+    boolean containLink(String url);
 }

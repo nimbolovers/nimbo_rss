@@ -82,7 +82,10 @@ public class ContentDAOImpl extends DAO implements ContentDAO {
                     "INSERT INTO content(value, feed_id) VALUES(?, ?)", Statement.RETURN_GENERATED_KEYS);
             preparedStatement.setString(1, content.getValue());
             preparedStatement.setInt(2, content.getFeed_id());
-            int newId = preparedStatement.executeUpdate();
+
+            ResultSet generatedKeys = preparedStatement.getGeneratedKeys();
+            generatedKeys.next();
+            int newId = generatedKeys.getInt(1);
             content.setId(newId);
         } catch (SQLException e) {
             logger.error("Unable to execute query: " + e.getMessage());
