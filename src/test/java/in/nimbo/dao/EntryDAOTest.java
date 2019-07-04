@@ -68,8 +68,10 @@ public class EntryDAOTest {
     public void initTables() throws SQLException {
         PowerMockito.mockStatic(DAO.class);
         PowerMockito.when(DAO.getConnection()).thenReturn(connection);
-        PreparedStatement statement = connection.prepareStatement("DELETE FROM content; " +
-                "DELETE FROM description;" + "DELETE FROM feed");
+        PreparedStatement statement = connection.prepareStatement(
+                "DELETE FROM content; " +
+                "DELETE FROM description;" +
+                "DELETE FROM feed");
         statement.executeUpdate();
     }
 
@@ -106,22 +108,29 @@ public class EntryDAOTest {
         for (int i = 0; i < 4; i++) {
             Entry entry = createEntry("title " + i,
                     new Date(),
-                    (i & 1) != 0 ? "content " + i : null,
-                    (i & 2) != 0 ? "desc" + i : null,
+                    (i & 1) != 0 ? "content " + i : "",
+                    (i & 2) != 0 ? "desc" + i : "",
                     "link" + i, "test" + i);
             entryDAO.save(entry);
             entryList.add(entry);
         }
-        PreparedStatement statement = connection.prepareStatement("SELECT * FROM feed");
+        PreparedStatement statement = connection.prepareStatement(
+                "SELECT feed.*," +
+                        " content.value as cnt," +
+                        " description.value as des" +
+                        " FROM feed " +
+                "INNER JOIN content ON feed.id=content.feed_id " +
+                "INNER JOIN description ON feed.id=description.feed_id");
         ResultSet resultSet = statement.executeQuery();
         List<Entry> list = new ArrayList<>();
         while (resultSet.next()){
             Entry e = createEntry(resultSet.getString("title"),
                     resultSet.getDate("pub_date"),
-                    null,
-                    null,
+                    resultSet.getString("cnt"),
+                    resultSet.getString("des"),
                     resultSet.getString("link"),
                     resultSet.getString("channel"));
+            e.setId(resultSet.getInt("id"));
             list.add(e);
         }
         assertArrayEquals(entryList.toArray(), list.toArray());

@@ -67,4 +67,15 @@ public class Entry {
                 Objects.equals(syndEntry.getTitle(), entry.syndEntry.getTitle()) &&
                 Objects.equals(syndEntry.getLink(), entry.syndEntry.getLink());
     }
+
+    @Override
+    public String toString() {
+        return "Entry{" +
+                "id=" + id +
+                ", channel='" + channel + '\'' +
+                ", content='" + content + '\'' +
+                ", title=" + syndEntry.getTitle() + "\'" +
+                ", link=" + syndEntry.getLink() +
+                '}';
+    }
 }
