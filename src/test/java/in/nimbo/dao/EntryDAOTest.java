@@ -95,6 +95,7 @@ public class EntryDAOTest {
                 content.setValue("desc " + i);
             }
             Entry entry = createEntry("title " + i, new Date(), (i & 1) != 0 ? "content " + i : null, content);
+            entry.getSyndEntry().setLink("link " + i);
             if (!entryDAO.contain(entry)) {
                 entryDAO.save(entry);
                 entryList.add(entry);
@@ -122,6 +123,9 @@ public class EntryDAOTest {
         entry2010.setContent("test");
         entry2020.setContent("test");
         entry2030.setContent("test");
+        entry2010.getSyndEntry().setLink("2010");
+        entry2020.getSyndEntry().setLink("2020");
+        entry2030.getSyndEntry().setLink("2030");
         SyndContent content = new SyndContentImpl();
         content.setType("text/html");
         content.setValue("desc");

@@ -25,7 +25,6 @@ public class RSSServiceTest {
     @BeforeClass
     public static void init(){
         dao = mock(EntryDAO.class);
-//        service = new RSSService(dao);
         service = spy(new RSSService(dao));
     }
     @Test
