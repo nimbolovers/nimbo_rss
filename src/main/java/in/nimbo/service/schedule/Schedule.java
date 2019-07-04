@@ -38,6 +38,6 @@ public class Schedule {
             rssService.save(rssService.fetchFromURL(link));
             return null;
         };
-        scheduleWithTimeout(voidCompletableFuture, 1L, TimeUnit.MILLISECONDS, "Unable to fetch data from link: " + link);
+        scheduleWithTimeout(voidCompletableFuture, 50L, TimeUnit.SECONDS, "Unable to fetch data from link: " + link);
     }
 }

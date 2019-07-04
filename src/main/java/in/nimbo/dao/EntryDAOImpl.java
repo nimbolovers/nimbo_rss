@@ -48,13 +48,13 @@ public class EntryDAOImpl extends DAO implements EntryDAO {
                 entry.setSyndEntry(syndEntry);
 
                 // fetch id
-                entry.setId(resultSet.getInt(1));
+                entry.setId(resultSet.getInt("id"));
 
                 // fetch channel
-                entry.setChannel(resultSet.getString(2));
+                entry.setChannel(resultSet.getString("channel"));
 
                 // fetch title
-                syndEntry.setTitle(resultSet.getString(3));
+                syndEntry.setTitle(resultSet.getString("title"));
 
                 // fetch description
                 try {
@@ -69,7 +69,7 @@ public class EntryDAOImpl extends DAO implements EntryDAO {
                 entry.setContent(content.getValue());
 
                 // fetch publication data
-                syndEntry.setPublishedDate(resultSet.getDate(4));
+                syndEntry.setPublishedDate(resultSet.getDate("pub_date"));
 
                 result.add(entry);
             }
@@ -185,10 +185,11 @@ public class EntryDAOImpl extends DAO implements EntryDAO {
     public Entry save(Entry entry) {
         try {
             PreparedStatement preparedStatement = getConnection().prepareStatement(
-                    "INSERT INTO feed(channel, title, pub_date) VALUES(?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
+                    "INSERT INTO feed(channel, title, pub_date, link) VALUES(?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
             preparedStatement.setString(1, entry.getChannel());
             preparedStatement.setString(2, entry.getSyndEntry().getTitle());
             preparedStatement.setDate(3, new java.sql.Date(entry.getSyndEntry().getPublishedDate().getTime()));
+            preparedStatement.setString(4, entry.getSyndEntry().getLink());
             preparedStatement.executeUpdate();
             ResultSet generatedKeys = preparedStatement.getGeneratedKeys();
             generatedKeys.next();
@@ -224,9 +225,8 @@ public class EntryDAOImpl extends DAO implements EntryDAO {
     public boolean contain(Entry entry) {
         try {
             PreparedStatement preparedStatement = getConnection().prepareStatement(
-                    "SELECT COUNT(*) FROM feed WHERE channel=? AND title=?");
-            preparedStatement.setString(1, entry.getChannel());
-            preparedStatement.setString(2, entry.getSyndEntry().getTitle());
+                    "SELECT COUNT(*) FROM feed WHERE link=?");
+            preparedStatement.setString(1, entry.getSyndEntry().getLink());
             ResultSet resultSet = preparedStatement.executeQuery();
             resultSet.next();
             return resultSet.getInt(1) > 0;
