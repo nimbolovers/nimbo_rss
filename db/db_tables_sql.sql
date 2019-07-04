@@ -1,5 +1,6 @@
 -- USE `nimbo_rss`;
 
+DROP TABLE IF EXISTS `site`;
 DROP TABLE IF EXISTS `description`;
 DROP TABLE IF EXISTS `content`;
 DROP TABLE IF EXISTS `feed`;
@@ -32,3 +33,14 @@ CREATE TABLE `content` (
                            FOREIGN KEY (feed_id)
                                REFERENCES feed(id)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE `site` (
+                           `id` int(11) NOT NULL AUTO_INCREMENT,
+                           `name` varchar(45) DEFAULT NULL,
+                           `link` text NOT NULL,
+                           PRIMARY KEY (`id`)                       
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4;
+
+INSERT INTO site(name, link) VALUES(''navad'', ''https://90tv.ir/rss/news'');
+INSERT INTO site(name, link) VALUES(''tabnak'', ''https://www.tabnak.ir/fa/rss/allnews'');
+INSERT INTO site(name, link) VALUES(''navad'', ''https://90tv.ir/rss/news'')
