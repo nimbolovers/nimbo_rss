@@ -15,6 +15,7 @@ import org.powermock.modules.junit4.PowerMockRunner;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -24,10 +25,8 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.temporal.TemporalField;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.Date;
-import java.util.Random;
 
 import static org.junit.Assert.*;
 
@@ -54,8 +53,12 @@ public class EntryDAOTest {
     }
 
     @BeforeClass
-    public static void init() throws SQLException, FileNotFoundException {
-        connection = DriverManager.getConnection("jdbc:h2:~/h2_rss", "user", "");
+    public static void init() throws SQLException, IOException {
+        ClassLoader loader = Thread.currentThread().getContextClassLoader();
+        Properties properties = new Properties();
+        InputStream is = loader.getResourceAsStream("database.properties");
+        properties.load(is);
+        connection = DriverManager.getConnection(properties.getProperty("database.url"), properties.getProperty("database.username"), properties.getProperty("database.password"));
         String queries = readFile("db/db_tables_sql.sql");
         PreparedStatement statement = connection.prepareStatement(queries);
         statement.execute();
