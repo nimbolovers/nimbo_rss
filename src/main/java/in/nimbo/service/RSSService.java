@@ -44,8 +44,8 @@ public class RSSService {
         List<Entry> resultEntries = new ArrayList<>();
         for (SyndEntry syndEntry : feed.getEntries()) {
             Entry entry = new Entry(feed.getTitle(), syndEntry);
-            entry.setContent(getContentOfRSSLink(syndEntry.getLink()));
             if (!entryDAO.contain(entry)) {
+                entry.setContent(getContentOfRSSLink(syndEntry.getLink()));
                 entryDAO.save(entry);
                 resultEntries.add(entry);
                 count++;
