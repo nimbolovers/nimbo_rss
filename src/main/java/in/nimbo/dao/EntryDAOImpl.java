@@ -103,9 +103,9 @@ public class EntryDAOImpl extends DAO implements EntryDAO {
             if (channel != null)
                 query = query.and(DSL.field("channel").eq(channel));
             if (startDate != null)
-                query = query.and(DSL.field("pub_date").ge(startDate));
+                query = query.and(DSL.field("pub_date").ge(new java.sql.Date(startDate.getTime())));
             if (finishDate != null)
-                query = query.and(DSL.field("pub_date").le(finishDate));
+                query = query.and(DSL.field("pub_date").le(new java.sql.Date(finishDate.getTime())));
 
             String sqlQuery = query.getSQL(ParamType.INLINED);
             Statement statement = getConnection().createStatement();
@@ -141,9 +141,9 @@ public class EntryDAOImpl extends DAO implements EntryDAO {
             if (channel != null)
                 query = query.and(DSL.field("feed.channel").eq(channel));
             if (startDate != null)
-                query = query.and(DSL.field("feed.pub_date").ge(startDate));
+                query = query.and(DSL.field("feed.pub_date").ge(new java.sql.Date(startDate.getTime())));
             if (finishDate != null)
-                query = query.and(DSL.field("feed.pub_date").le(finishDate));
+                query = query.and(DSL.field("feed.pub_date").le(new java.sql.Date(finishDate.getTime())));
 
             String sqlQuery = query.getSQL(ParamType.INLINED);
             Statement statement = getConnection().createStatement();
