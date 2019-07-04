@@ -39,6 +39,11 @@ public class EntryDAOTest {
     private static Connection connection;
     private static EntryDAO entryDAO;
 
+    static {
+        // disable logs of JOOQ for query
+        System.getProperties().setProperty("org.jooq.no-logo", "true");
+    }
+
     private static String readFile(String path) {
         try {
             byte[] bytes = Files.readAllBytes(Paths.get(path));
@@ -64,7 +69,7 @@ public class EntryDAOTest {
         PowerMockito.mockStatic(DAO.class);
         PowerMockito.when(DAO.getConnection()).thenReturn(connection);
         PreparedStatement statement = connection.prepareStatement("DELETE FROM content; " +
-                "DELETE FROM feed");
+                "DELETE FROM description;" + "DELETE FROM feed");
         statement.executeUpdate();
     }
 
@@ -90,8 +95,10 @@ public class EntryDAOTest {
                 content.setValue("desc " + i);
             }
             Entry entry = createEntry("title " + i, new Date(), (i & 1) != 0 ? "content " + i : null, content);
-            entryDAO.save(entry);
-            entryList.add(entry);
+            if (!entryDAO.contain(entry)) {
+                entryDAO.save(entry);
+                entryList.add(entry);
+            }
         }
         PreparedStatement statement = connection.prepareStatement("SELECT id FROM feed");
         ResultSet resultSet = statement.executeQuery();
@@ -111,6 +118,15 @@ public class EntryDAOTest {
         Entry entry2010 = createEntry("title 1", date2010, "test", null);
         Entry entry2020 = createEntry("title 2", date2020, "test", null);
         Entry entry2030 = createEntry("title 3", date2030, "test", null);
+        entry2020.setChannel("test");
+        entry2010.setContent("test");
+        entry2020.setContent("test");
+        entry2030.setContent("test");
+        SyndContent content = new SyndContentImpl();
+        content.setType("text/html");
+        content.setValue("desc");
+        entry2030.getSyndEntry().setDescription(content);
+        entry2030.setChannel("test");
         entryDAO.save(entry2010);
         entryDAO.save(entry2020);
         entryDAO.save(entry2030);
@@ -124,7 +140,6 @@ public class EntryDAOTest {
     @Test
     public void getAllTest(){
         List<Entry> entries = saveForFilter();
-        Date date2025 = getDate(2025, 1, 1);
         assertArrayEquals(entries.toArray(), entryDAO.getEntries().toArray());
     }
 
@@ -133,7 +148,26 @@ public class EntryDAOTest {
         List<Entry> entries = saveForFilter();
         entries.remove(0);
         Date date2015 = getDate(2015, 1, 1);
-        assertArrayEquals(entries.toArray(), entryDAO.filterEntryByTitle(null, "", date2015, null).toArray());
+        assertArrayEquals(entries.toArray(), entryDAO.filterEntryByTitle("test", "", date2015, null).toArray());
+    }
+
+    @Test
+    public void filterAfterTest(){
+        List<Entry> entries = saveForFilter();
+        entries.remove(2);
+        Date date2025 = getDate(2025, 1, 1);
+        assertArrayEquals(entries.toArray(), entryDAO.filterEntryByTitle(null, "", null, date2025).toArray());
+    }
+
+    @Test
+    public void contentTest(){
+        List<Entry> entries = saveForFilter();
+        entries.remove(2);
+        entries.remove(0);
+
+        Date date2025 = getDate(2025, 1, 1);
+        Date date2015 = getDate(2015, 1, 1);
+        assertArrayEquals(entries.toArray(), entryDAO.filterEntryByContent("test", "", date2015, date2025).toArray());
     }
 
     private Date getDate(int year, int month, int day){
