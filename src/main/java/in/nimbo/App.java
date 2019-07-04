@@ -1,9 +1,9 @@
 package in.nimbo;
 
-import com.rometools.rome.io.FeedException;
 import in.nimbo.dao.*;
 import in.nimbo.entity.Entry;
 import in.nimbo.service.RSSService;
+import in.nimbo.service.Utility;
 import in.nimbo.service.schedule.Schedule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,45 +15,46 @@ import java.util.Properties;
 import java.util.Scanner;
 
 public class App {
-    private RSSService service;
-    private Scanner scanner;
-    private Properties properties;
-    private Logger logger = LoggerFactory.getLogger(App.class);
+    private static Logger logger = LoggerFactory.getLogger(App.class);
+    private static Properties siteProp = new Properties();
+    private static Schedule schedule;
 
-    static {
-        // disable logs of JOOQ for query
-        System.getProperties().setProperty("org.jooq.no-logo", "true");
-    }
 
-    public App(RSSService service, Scanner scanner) throws IOException {
-        this.service = service;
-        this.scanner = scanner;
-        ClassLoader loader = Thread.currentThread().getContextClassLoader();
-        properties = new Properties();
-        InputStream is = loader.getResourceAsStream("sites.properties");
-        properties.load(is);
-
-    }
-
-    public static void main(String[] args) throws IOException, FeedException {
-        Scanner scanner = new Scanner(System.in);
+    public static void main(String[] args) throws IOException {
+        // Initialization
+        // Dependency Injection
         DescriptionDAO descriptionDAO = new DescriptionDAOImpl();
         ContentDAO contentDAO = new ContentDAOImpl();
-        EntryDAO dao = new EntryDAOImpl(descriptionDAO, contentDAO);
-        RSSService service = new RSSService(dao);
-        App app = new App(service, scanner);
-        app.run();
+        EntryDAO entryDAO = new EntryDAOImpl(descriptionDAO, contentDAO);
+        RSSService service = new RSSService(entryDAO);
+
+        // Load sites
+        ClassLoader loader = Thread.currentThread().getContextClassLoader();
+        InputStream is = loader.getResourceAsStream("sites.properties");
+        siteProp.load(is);
+
+        Utility.disableJOOQLogo();
+
+        // Initialize Schedule Service
+        schedule = new Schedule(service);
+
+        logger.info("Application started successfully");
+
+        // UI interface
+        runUI();
     }
 
-    public void run() {
-        Schedule schedule = new Schedule(service);
-        logger.info("app started successfully");
+    private static void runUI() {
+        Scanner scanner = new Scanner(System.in);
         while (scanner.hasNextLine()) {
-            String line = scanner.nextLine();
-            String[] strings = line.split(" ");
-            switch (strings[0]) {
-                case "save":
-                    schedule.scheduleRSSLink(properties.getProperty(strings[1]));
+            String command = scanner.next();
+            switch (command) {
+                case "add":
+                    String url = scanner.next();
+                    if (siteProp.getProperty(url) != null) {
+                        logger.warn("URL ");
+                    }
+                    schedule.scheduleRSSLink(siteProp.getProperty(strings[1]));
                     break;
                 case "getAll":
                     List<Entry> feeds = service.filterEntryByTitle();
@@ -64,7 +65,7 @@ public class App {
                     show(search);
                     break;
                 case "add":
-                    properties.put(strings[1], strings[2]);
+                    siteProp.put(strings[1], strings[2]);
                     logger.info("the site added to my sites " + strings[1] + " " + strings[2]);
                     break;
                 case "get":

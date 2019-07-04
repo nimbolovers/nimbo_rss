@@ -27,21 +27,14 @@ public class ScheduleWatcher<T> implements Callable<Void> {
     }
 
     @Override
-    public Void call() throws TimeoutException {
-//        if (task.isCompletedExceptionally()) {
-//            logger.warn(timeoutMessage);
-//            throw new TimeoutException();
-//        }
+    public Void call() {
+        if (task.isCompletedExceptionally()) {
+            logger.warn(timeoutMessage);
+        }
         if (!task.isDone()) {
             task.completeExceptionally(new TimeoutException());
             wrappedFuture.cancel(true);
-//            try {
-//                TimeUnit.MILLISECONDS.sleep(100);
-//            } catch (InterruptedException e) {
-//                e.printStackTrace();
-//            }
             logger.warn(timeoutMessage);
-//            throw new TimeoutException();
         }
         return null;
     }
