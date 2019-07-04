@@ -4,6 +4,7 @@ import com.rometools.rome.io.FeedException;
 import in.nimbo.dao.*;
 import in.nimbo.entity.Entry;
 import in.nimbo.service.RSSService;
+import in.nimbo.service.schedule.Schedule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,13 +46,14 @@ public class App {
     }
 
     public void run() {
+        Schedule schedule = new Schedule(service);
         logger.info("app started successfully");
         while (scanner.hasNextLine()) {
             String line = scanner.nextLine();
             String[] strings = line.split(" ");
             switch (strings[0]) {
                 case "save":
-                    service.save(service.fetchFromURL(properties.getProperty(strings[1])));
+                    schedule.scheduleRSSLink(properties.getProperty(strings[1]));
                     break;
                 case "getAll":
                     List<Entry> feeds = service.filterEntryByTitle();

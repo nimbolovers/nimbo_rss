@@ -12,13 +12,19 @@ public class Utility {
     /**
      * encode a url which maybe contain UTF-8 characters
      * @param urlLink link
-     * @return encoded URL link
+     * @return encoded URL
      */
-    public static String encodeURL(String urlLink) {
+    public static URL encodeURL(String urlLink) {
         try {
-            URL url = new URL(urlLink);
-            URI uri = new URI(url.getProtocol(), url.getUserInfo(), url.getHost(), url.getPort(), url.getPath(), url.getQuery(), url.getRef());
-            return uri.toASCIIString();
+            if (urlLink.contains("%")) // it is encoded, so just return
+                return new URL(urlLink);
+            else
+            {
+                // encode url link
+                URL url = new URL(urlLink);
+                URI uri = new URI(url.getProtocol(), url.getUserInfo(), url.getHost(), url.getPort(), url.getPath(), url.getQuery(), url.getRef());
+                return new URL(uri.toASCIIString());
+            }
         } catch (MalformedURLException e) {
             throw new RuntimeException(e);
         } catch (URISyntaxException e) {
