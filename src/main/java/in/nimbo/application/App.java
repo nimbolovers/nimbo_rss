@@ -35,15 +35,14 @@ public class App {
 
         Utility.disableJOOQLogo();
 
+        // Initialize Schedule Service
+        schedule = new Schedule(service, sites);
+
         // Load sites
         sites = siteDAO.getSites();
         for (Site site : sites) {
-            schedule.scheduleRSSLink(site.getLink());
+            schedule.scheduleSite(site);
         }
-
-        // Initialize Schedule Service
-        schedule = new Schedule(service, sites);
-        schedule.runScheduleUpdator();
 
         logger.info("Application started successfully");
 
@@ -73,8 +72,9 @@ public class App {
                         logger.warn("Duplicate URL: " + link);
                         continue;
                     }
-                    sites.add(new Site(name, link));
-                    schedule.scheduleRSSLink(link);
+                    Site newSite = new Site(name, link);
+                    sites.add(newSite);
+                    schedule.scheduleSite(newSite);
                     break;
                 case "search":
                     String paramLine = input.nextLine().trim();

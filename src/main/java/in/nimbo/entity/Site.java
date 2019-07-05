@@ -1,11 +1,15 @@
 package in.nimbo.entity;
 
+import java.util.Date;
 import java.util.List;
 
 public class Site {
     private int id;
     private String name;
     private String link;
+    private long newsCount;
+    private long avgUpdateTime;
+    private Date lastUpdate;
 
     public Site() {
     }
@@ -17,6 +21,30 @@ public class Site {
 
     public static boolean containLink(List<Site> sites, String link) {
         return sites.stream().map(Site::getLink).anyMatch(l -> l.equals(link));
+    }
+
+    public long getAvgUpdateTime() {
+        return avgUpdateTime;
+    }
+
+    public void setAvgUpdateTime(long avgUpdateTime) {
+        this.avgUpdateTime = avgUpdateTime;
+    }
+
+    public long getNewsCount() {
+        return newsCount;
+    }
+
+    public Date getLastUpdate() {
+        return lastUpdate;
+    }
+
+    public void setLastUpdate(Date lastUpdate) {
+        this.lastUpdate = lastUpdate;
+    }
+
+    public void increaseNewsCount(long value) {
+        this.newsCount += value;
     }
 
     public int getId() {

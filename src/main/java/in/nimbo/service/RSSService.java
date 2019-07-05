@@ -9,6 +9,7 @@ import de.l3s.boilerpipe.BoilerpipeProcessingException;
 import de.l3s.boilerpipe.extractors.ArticleExtractor;
 import in.nimbo.dao.EntryDAO;
 import in.nimbo.entity.Entry;
+import in.nimbo.entity.Site;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,45 +36,41 @@ public class RSSService {
         return entryDAO.filterEntryByContent(channel, content, startTime, finishTime);
     }
 
-    public List<Entry> getEntries() {
-        return entryDAO.getEntries();
-    }
-
-    public List<Entry> save(SyndFeed feed) {
-        int count = 0;
-        List<Entry> resultEntries = new ArrayList<>();
+    public List<Entry> addSiteEntries(Site site, SyndFeed feed) {
+        List<Entry> newEntries = new ArrayList<>();
         for (SyndEntry syndEntry : feed.getEntries()) {
             Entry entry = new Entry(feed.getTitle(), syndEntry);
             if (!entryDAO.contain(entry)) {
+                // fetch content of entry from link and save it in database
                 entry.setContent(getContentOfRSSLink(syndEntry.getLink()));
+
                 entryDAO.save(entry);
-                resultEntries.add(entry);
-                count++;
+                newEntries.add(entry);
             }
         }
-        if (count == feed.getEntries().size()) {
-            logger.info("Add " + count + " entry to database");
-        } else if (count == 0) {
-            logger.warn("There is no new entry");
+        if (newEntries.size() == feed.getEntries().size()) {
+            logger.info("Add " + newEntries.size() + " entries from: " + site.getLink());
+        } else if (newEntries.isEmpty()) {
+            logger.warn("There is no new entry from: " + site.getLink());
         } else {
-            logger.info("Add " + count + "/" + feed.getEntries().size() + " entries");
+            logger.info("Add " + newEntries.size() + "/" + feed.getEntries().size() + " entries from: " + site.getLink());
         }
-        return resultEntries;
+
+        return newEntries;
     }
-
-
 
     /**
      * Fetch an SyndFeed from RSS URL
      * @param url url which is an RSS
      * @return SyndFeed which contain RSS contents
+     * @throws RuntimeException if RSS url link is not valid or unable to fetch data from url
      */
     public SyndFeed fetchFromURL(String url) {
         try {
             logger.info("Fetch data of RSS from URL: " + url);
-            URL url1 = Utility.encodeURL(url);
+            URL encodedURL = Utility.encodeURL(url);
             SyndFeedInput input = new SyndFeedInput();
-            SyndFeed feed = input.build(new XmlReader(url1));
+            SyndFeed feed = input.build(new XmlReader(encodedURL));
             logger.info("RSS data fetched successfully from: "+ url);
             return feed;
         } catch (FeedException e) {

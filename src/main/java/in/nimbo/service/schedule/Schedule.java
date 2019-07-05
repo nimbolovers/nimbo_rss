@@ -37,15 +37,15 @@ public class Schedule {
         scheduleService.schedule(new ScheduleWatcher<>(timeoutMessage, taskCF, future), timeout, unit);
     }
 
-    public void scheduleRSSLink(String link) {
-        Supplier<Void> voidCompletableFuture = () -> {
-            rssService.save(rssService.fetchFromURL(link));
-            return null;
-        };
-        scheduleWithTimeout(voidCompletableFuture, 20L, TimeUnit.SECONDS, "Unable to fetch data from link: " + link);
-    }
+//    public void scheduleRSSLink(String link) {
+//        Supplier<Void> voidCompletableFuture = () -> {
+//            rssService.save(rssService.fetchFromURL(link));
+//            return null;
+//        };
+//        scheduleWithTimeout(voidCompletableFuture, 20L, TimeUnit.SECONDS, "Unable to fetch data from link: " + link);
+//    }
 
-    public void runScheduleUpdator() {
-        scheduleService.schedule(new ScheduleUpdator(sites), 1L, TimeUnit.MINUTES);
+    public void scheduleSite(Site site) {
+        scheduleService.schedule(new ScheduleUpdater(site, scheduleService, rssService, 5), 5L, TimeUnit.SECONDS);
     }
 }
