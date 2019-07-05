@@ -38,6 +38,14 @@ public class RSSService {
         return entryDAO.filterEntryByContent(channel, content, startTime, finishTime);
     }
 
+    /**
+     * add all of new entries of site to database
+     *  if unable to get content of one site, add it to database with empty content
+     * @param site site of feed
+     * @param feed contain all feeds of site RSS url
+     * @return list of all new entries which saved in database
+     *
+     */
     public List<Entry> addSiteEntries(Site site, SyndFeed feed) {
         List<Entry> newEntries = new ArrayList<>();
         for (SyndEntry syndEntry : feed.getEntries()) {

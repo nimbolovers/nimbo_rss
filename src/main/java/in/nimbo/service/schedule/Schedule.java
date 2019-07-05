@@ -38,6 +38,13 @@ public class Schedule {
     }
 
     public void scheduleSite(Site site) {
-        scheduleService.schedule(new ScheduleUpdater(site, scheduleService, rssService, 5), 5L, TimeUnit.SECONDS);
+        scheduleService.schedule(new ScheduleUpdater(site, scheduleService, rssService, site.getAvgUpdateTime()), 5L, TimeUnit.SECONDS);
+    }
+
+    /**
+     * stop schedule service from getting more information
+     */
+    public void stopService() {
+        scheduleService.shutdownNow();
     }
 }

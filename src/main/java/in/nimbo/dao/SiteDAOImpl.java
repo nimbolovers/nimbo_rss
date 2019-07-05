@@ -1,6 +1,11 @@
 package in.nimbo.dao;
 
 import in.nimbo.entity.Site;
+import org.jooq.Record;
+import org.jooq.SQLDialect;
+import org.jooq.SelectConditionStep;
+import org.jooq.Table;
+import org.jooq.impl.DSL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -97,6 +102,38 @@ public class SiteDAOImpl extends DAO implements SiteDAO {
             generatedKeys.next();
             int newId = generatedKeys.getInt(1);
             site.setId(newId);
+        } catch (SQLException e) {
+            logger.error("Unable to execute query: " + e.getMessage());
+            throw new RuntimeException("Unable to execute query", e);
+        }
+        return site;
+    }
+
+    /**
+     * update an site in database
+     *
+     * @param site site which is update
+     * @return given site
+     * @throws IllegalAccessError if site id is not set
+     */
+    @Override
+    public Site update(Site site) {
+        if (site.getId() == 0)
+            throw new IllegalArgumentException("Site id must be set for update operation");
+        try {
+            PreparedStatement preparedStatement = getConnection().prepareStatement(
+                    "UPDATE site SET link = ?, name = ?, news_count = ?, avg_update_time = ?, last_update = ? WHERE id = ?");
+            preparedStatement.setString(1, site.getLink());
+            preparedStatement.setString(2, site.getName());
+            preparedStatement.setLong(3, site.getNewsCount());
+            preparedStatement.setLong(4, site.getAvgUpdateTime());
+            if (site.getLastUpdate() != null)
+                preparedStatement.setTimestamp(5, new java.sql.Timestamp(site.getLastUpdate().getTime()));
+            else
+                preparedStatement.setTimestamp(5, null);
+            preparedStatement.setInt(6, site.getId());
+
+            preparedStatement.executeUpdate();
         } catch (SQLException e) {
             logger.error("Unable to execute query: " + e.getMessage());
             throw new RuntimeException("Unable to execute query", e);

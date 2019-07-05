@@ -49,9 +49,13 @@ public class App {
         // UI interface
         runUI();
 
+        schedule.stopService();
+
         // Save sites before exit
         for (Site site : sites) {
             if (site.getId() != 0)
+                siteDAO.update(site);
+            else
                 siteDAO.save(site);
         }
     }

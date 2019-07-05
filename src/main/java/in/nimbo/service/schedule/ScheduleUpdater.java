@@ -9,7 +9,6 @@ import in.nimbo.service.RSSService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
@@ -21,6 +20,7 @@ import java.util.stream.IntStream;
 
 public class ScheduleUpdater implements Callable<Void> {
     private Logger logger = LoggerFactory.getLogger(ScheduleUpdater.class);
+    private static final long DEFAULT_UPDATE_INTERVAL = 5;
 
     private Site site;
     private ScheduledExecutorService scheduledService;
@@ -37,6 +37,8 @@ public class ScheduleUpdater implements Callable<Void> {
         this.scheduledService = scheduledService;
         this.rssService = rssService;
         this.updateInterval = updateInterval;
+        if (updateInterval == 0)
+            this.updateInterval = DEFAULT_UPDATE_INTERVAL;
     }
 
     @Override
@@ -80,7 +82,7 @@ public class ScheduleUpdater implements Callable<Void> {
 
             newAverageUpdateTime /= 1000; //convert milliseconds to seconds
             if (newAverageUpdateTime <= 0)
-                newAverageUpdateTime = 1;
+                newAverageUpdateTime = DEFAULT_UPDATE_INTERVAL;
 
             site.setAvgUpdateTime(newAverageUpdateTime);
             site.setLastUpdate(pubDates.get(pubDates.size() - 1));

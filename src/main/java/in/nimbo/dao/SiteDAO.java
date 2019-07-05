@@ -7,5 +7,7 @@ import java.util.List;
 public interface SiteDAO {
     Site save(Site site);
 
+    Site update(Site site);
+
     List<Site> getSites();
 }
