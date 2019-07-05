@@ -4,6 +4,7 @@ import com.rometools.rome.feed.synd.SyndEntry;
 import com.rometools.rome.feed.synd.SyndFeed;
 import in.nimbo.entity.Entry;
 import in.nimbo.entity.Site;
+import in.nimbo.exception.CalculateAverageUpdateException;
 import in.nimbo.service.RSSService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -39,22 +41,29 @@ public class ScheduleUpdater implements Callable<Void> {
 
     @Override
     public Void call() {
-        List<Entry> newEntries = null;
         try {
-            SyndFeed syndFeed = rssService.fetchFromURL(site.getLink());
-            newEntries = rssService.addSiteEntries(site, syndFeed);
-        } catch (RuntimeException e) {
-            // unable to fetch data from url
-            // so we will try it later
-        }
+            List<Entry> newEntries;
+            try {
+                SyndFeed syndFeed = rssService.fetchFromURL(site.getLink());
+                newEntries = rssService.addSiteEntries(site, syndFeed);
+            } catch (RuntimeException e) {
+                throw new CalculateAverageUpdateException("Unable to fetch data from url: " + site.getLink());
+            }
 
-        if (newEntries != null && !newEntries.isEmpty()) {
-            // sort entries based on their publication date
-            newEntries.sort(Comparator.comparing(o -> o.getSyndEntry().getPublishedDate()));
+            if (newEntries.isEmpty())
+                throw new CalculateAverageUpdateException("There is no entry with publication date to calculate average time");
 
             List<Date> pubDates = newEntries.stream().map(Entry::getSyndEntry)
                     .map(SyndEntry::getPublishedDate)
+                    .filter(Objects::nonNull)
                     .collect(Collectors.toList());
+
+            if (pubDates.isEmpty())
+                throw new CalculateAverageUpdateException("There is no entry with publication date to calculate average time");
+
+            // sort entries based on their publication date
+            pubDates.sort(Date::compareTo);
+
             long sumOfIntervals = IntStream.range(0, pubDates.size() - 1)
                     .mapToLong(i -> pubDates.get(i + 1).getTime() - pubDates.get(i).getTime())
                     .sum();
@@ -62,9 +71,11 @@ public class ScheduleUpdater implements Callable<Void> {
                 sumOfIntervals += pubDates.get(0).getTime() - site.getLastUpdate().getTime();
 
             long newAverageUpdateTime;
-            if (site.getAvgUpdateTime() > 0)
-                newAverageUpdateTime = (site.getAvgUpdateTime() * site.getNewsCount() + sumOfIntervals) / (site.getNewsCount() + newEntries.size());
-            else
+            if (site.getAvgUpdateTime() > 0) {
+                // number of news before adding new news
+                long lastNewsCount = site.getNewsCount() - newEntries.size();
+                newAverageUpdateTime = (site.getAvgUpdateTime() * lastNewsCount  + sumOfIntervals) / (lastNewsCount + newEntries.size());
+            } else
                 newAverageUpdateTime = sumOfIntervals / newEntries.size();
 
             newAverageUpdateTime /= 1000; //convert milliseconds to seconds
@@ -73,10 +84,9 @@ public class ScheduleUpdater implements Callable<Void> {
 
             site.setAvgUpdateTime(newAverageUpdateTime);
             site.setLastUpdate(pubDates.get(pubDates.size() - 1));
-            site.increaseNewsCount(newEntries.size());
 
             updateInterval = newAverageUpdateTime;
-        } else {
+        } catch (CalculateAverageUpdateException e) {
             updateInterval *= 2;
         }
 

@@ -191,7 +191,10 @@ public class EntryDAOImpl extends DAO implements EntryDAO {
                     "INSERT INTO feed(channel, title, pub_date, link) VALUES(?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
             preparedStatement.setString(1, entry.getChannel());
             preparedStatement.setString(2, entry.getSyndEntry().getTitle());
-            preparedStatement.setTimestamp(3, new java.sql.Timestamp(entry.getSyndEntry().getPublishedDate().getTime()));
+            if (entry.getSyndEntry().getPublishedDate() != null)
+                preparedStatement.setTimestamp(3, new java.sql.Timestamp(entry.getSyndEntry().getPublishedDate().getTime()));
+            else
+                preparedStatement.setTimestamp(3, null);
             preparedStatement.setString(4, entry.getSyndEntry().getLink());
             preparedStatement.executeUpdate();
             ResultSet generatedKeys = preparedStatement.getGeneratedKeys();
