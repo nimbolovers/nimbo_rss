@@ -8,6 +8,4 @@ public interface SiteDAO {
     Site save(Site site);
 
     List<Site> getSites();
-
-    boolean containLink(String url);
 }

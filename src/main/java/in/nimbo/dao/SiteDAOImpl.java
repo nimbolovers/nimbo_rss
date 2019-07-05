@@ -86,26 +86,4 @@ public class SiteDAOImpl extends DAO implements SiteDAO {
         }
         return site;
     }
-
-    /**
-     * Check whether an link exists in database
-     *
-     * @param link which is checked
-     * @return true if link exists in database
-     */
-    @Override
-    public boolean containLink(String link) {
-        try {
-            PreparedStatement preparedStatement = getConnection().prepareStatement(
-                    "SELECT COUNT(*) FROM site WHERE link=?");
-            preparedStatement.setString(1, link);
-
-            ResultSet resultSet = preparedStatement.executeQuery();
-            resultSet.next();
-            return resultSet.getInt(1) > 0;
-        } catch (SQLException e) {
-            logger.error("Unable to execute query: " + e.getMessage());
-            throw new RuntimeException("Unable to execute query", e);
-        }
-    }
 }

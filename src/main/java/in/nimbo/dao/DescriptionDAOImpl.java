@@ -56,29 +56,6 @@ public class DescriptionDAOImpl extends DAO implements DescriptionDAO {
     }
 
     /**
-     * fetch a content with specific id
-     *
-     * @param id id of content
-     * @return content with specific id
-     * @throws RuntimeException if content with specific id not found
-     */
-    @Override
-    public Description get(int id) {
-        try {
-            PreparedStatement preparedStatement = getConnection().prepareStatement(
-                    "SELECT * FROM description WHERE id=?");
-            preparedStatement.setInt(1, id);
-            ResultSet resultSet = preparedStatement.executeQuery();
-            return createDescriptionFromResultSet(resultSet).get(0);
-        } catch (IndexOutOfBoundsException e) {
-            throw new RuntimeException("description with id=" + id + " not found", e);
-        } catch (SQLException e) {
-            logger.error("Unable to execute query: " + e.getMessage());
-            throw new RuntimeException("Unable to execute query", e);
-        }
-    }
-
-    /**
      * get list of descriptions from database which their feed_id is given
      *
      * @param feedId feed_id to search id
