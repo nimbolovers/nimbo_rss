@@ -47,6 +47,10 @@ public class Site {
         this.newsCount += value;
     }
 
+    public void setNewsCount(long newsCount) {
+        this.newsCount = newsCount;
+    }
+
     public int getId() {
         return id;
     }

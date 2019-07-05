@@ -28,13 +28,22 @@ public class SiteDAOImpl extends DAO implements SiteDAO {
                 Site site = new Site();
 
                 // fetch id
-                site.setId(resultSet.getInt(1));
+                site.setId(resultSet.getInt("id"));
 
                 // fetch name
-                site.setName(resultSet.getString(2));
+                site.setName(resultSet.getString("name"));
 
                 // fetch link
-                site.setLink(resultSet.getString(3));
+                site.setLink(resultSet.getString("link"));
+
+                // fetch newsCount
+                site.setNewsCount(resultSet.getLong("news_count"));
+
+                // fetch average update time
+                site.setAvgUpdateTime(resultSet.getLong("avg_update_time"));
+
+                // fetch last update
+                site.setLastUpdate(resultSet.getTimestamp("last_update"));
 
                 sites.add(site);
             }
@@ -72,9 +81,17 @@ public class SiteDAOImpl extends DAO implements SiteDAO {
     public Site save(Site site) {
         try {
             PreparedStatement preparedStatement = getConnection().prepareStatement(
-                    "INSERT INTO site(name, link) VALUES(?, ?)", Statement.RETURN_GENERATED_KEYS);
+                    "INSERT INTO site(name, link, news_count, avg_update_time, last_update) VALUES(?, ?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
             preparedStatement.setString(1, site.getName());
             preparedStatement.setString(2, site.getLink());
+            preparedStatement.setLong(3, site.getNewsCount());
+            preparedStatement.setLong(4, site.getAvgUpdateTime());
+            if (site.getLastUpdate() != null)
+                preparedStatement.setTimestamp(5, new java.sql.Timestamp(site.getLastUpdate().getTime()));
+            else
+                preparedStatement.setTimestamp(5, null);
+
+            preparedStatement.executeUpdate();
 
             ResultSet generatedKeys = preparedStatement.getGeneratedKeys();
             generatedKeys.next();
