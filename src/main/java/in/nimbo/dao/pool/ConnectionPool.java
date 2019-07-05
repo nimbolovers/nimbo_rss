@@ -1,11 +1,10 @@
-package in.nimbo.dao;
+package in.nimbo.dao.pool;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Properties;
 
@@ -28,7 +27,10 @@ public class ConnectionPool {
         return hikariProperties;
     }
 
-    static {
+    /**
+     * initialize and configure datasource
+     */
+    private static void init() {
         HikariConfig cfg = new HikariConfig();
         getProperties();
         cfg.setJdbcUrl(databaseProp.getProperty("database.url"));
@@ -65,7 +67,13 @@ public class ConnectionPool {
      * create a connection to database
      * @return connection which is created
      */
-    public static Connection getConnection() throws SQLException {
-        return dataSource.getConnection();
+    public static ConnectionWrapper getConnection(){
+        if (dataSource == null)
+            init();
+        try {
+            return new ConnectionWrapper(dataSource.getConnection());
+        } catch (SQLException e) {
+            throw new RuntimeException("Unable to get connection from datasource", e);
+        }
     }
 }

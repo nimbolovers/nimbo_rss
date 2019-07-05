@@ -2,6 +2,8 @@ package in.nimbo.dao;
 
 import com.rometools.rome.feed.synd.SyndEntry;
 import com.rometools.rome.feed.synd.SyndEntryImpl;
+import in.nimbo.dao.pool.ConnectionPool;
+import in.nimbo.dao.pool.ConnectionWrapper;
 import in.nimbo.entity.Content;
 import in.nimbo.entity.Description;
 import in.nimbo.entity.Entry;
@@ -14,15 +16,12 @@ import org.jooq.impl.DSL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-public class EntryDAOImpl extends DAO implements EntryDAO {
+public class EntryDAOImpl implements EntryDAO {
     private Logger logger = LoggerFactory.getLogger(EntryDAOImpl.class);
 
     private DescriptionDAO descriptionDAO;
@@ -98,7 +97,7 @@ public class EntryDAOImpl extends DAO implements EntryDAO {
      */
     @Override
     public List<Entry> filterEntryByTitle(String channel, String value, Date startDate, Date finishDate) {
-        try {
+        try (ConnectionWrapper connection = ConnectionPool.getConnection()) {
             SelectConditionStep<Record> query = DSL.using(SQLDialect.MYSQL)
                     .select()
                     .from("feed")
@@ -111,7 +110,7 @@ public class EntryDAOImpl extends DAO implements EntryDAO {
                 query = query.and(DSL.field("pub_date").le(new java.sql.Timestamp(finishDate.getTime())));
 
             String sqlQuery = query.getSQL(ParamType.INLINED);
-            Statement statement = getConnection().createStatement();
+            Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery(sqlQuery);
             return createEntryFromResultSet(resultSet);
         } catch (SQLException e) {
@@ -135,7 +134,7 @@ public class EntryDAOImpl extends DAO implements EntryDAO {
      */
     @Override
     public List<Entry> filterEntryByContent(String channel, String value, Date startDate, Date finishDate) {
-        try {
+        try (ConnectionWrapper connection = ConnectionPool.getConnection()) {
             SelectConditionStep<Record> query = DSL.using(SQLDialect.MYSQL)
                     .select()
                     .from("feed")
@@ -149,7 +148,7 @@ public class EntryDAOImpl extends DAO implements EntryDAO {
                 query = query.and(DSL.field("feed.pub_date").le(new java.sql.Timestamp(finishDate.getTime())));
 
             String sqlQuery = query.getSQL(ParamType.INLINED);
-            Statement statement = getConnection().createStatement();
+            Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery(sqlQuery);
             return createEntryFromResultSet(resultSet);
         } catch (SQLException e) {
@@ -165,8 +164,8 @@ public class EntryDAOImpl extends DAO implements EntryDAO {
      */
     @Override
     public List<Entry> getEntries() {
-        try {
-            PreparedStatement preparedStatement = getConnection().prepareStatement("SELECT * FROM feed");
+        try (ConnectionWrapper connection = ConnectionPool.getConnection()) {
+            PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM feed");
             ResultSet resultSet = preparedStatement.executeQuery();
             return createEntryFromResultSet(resultSet);
         } catch (SQLException e) {
@@ -186,8 +185,8 @@ public class EntryDAOImpl extends DAO implements EntryDAO {
      */
     @Override
     public Entry save(Entry entry) {
-        try {
-            PreparedStatement preparedStatement = getConnection().prepareStatement(
+        try (ConnectionWrapper connection = ConnectionPool.getConnection()) {
+            PreparedStatement preparedStatement = connection.prepareStatement(
                     "INSERT INTO feed(channel, title, pub_date, link) VALUES(?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
             preparedStatement.setString(1, entry.getChannel());
             preparedStatement.setString(2, entry.getSyndEntry().getTitle());
@@ -229,8 +228,8 @@ public class EntryDAOImpl extends DAO implements EntryDAO {
      */
     @Override
     public boolean contain(Entry entry) {
-        try {
-            PreparedStatement preparedStatement = getConnection().prepareStatement(
+        try (ConnectionWrapper connection = ConnectionPool.getConnection()) {
+            PreparedStatement preparedStatement = connection.prepareStatement(
                     "SELECT COUNT(*) FROM feed WHERE link=?");
             preparedStatement.setString(1, entry.getSyndEntry().getLink());
             ResultSet resultSet = preparedStatement.executeQuery();

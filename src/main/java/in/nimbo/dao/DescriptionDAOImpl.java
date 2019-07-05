@@ -2,6 +2,8 @@ package in.nimbo.dao;
 
 import com.rometools.rome.feed.synd.SyndContent;
 import com.rometools.rome.feed.synd.SyndContentImpl;
+import in.nimbo.dao.pool.ConnectionPool;
+import in.nimbo.dao.pool.ConnectionWrapper;
 import in.nimbo.entity.Description;
 import in.nimbo.exception.RecordNotFoundException;
 import org.slf4j.Logger;
@@ -14,7 +16,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
-public class DescriptionDAOImpl extends DAO implements DescriptionDAO {
+public class DescriptionDAOImpl implements DescriptionDAO {
     private Logger logger = LoggerFactory.getLogger(DescriptionDAOImpl.class);
 
     /**
@@ -64,8 +66,8 @@ public class DescriptionDAOImpl extends DAO implements DescriptionDAO {
      */
     @Override
     public Description getByFeedId(int feedId) {
-        try {
-            PreparedStatement preparedStatement = getConnection().prepareStatement(
+        try (ConnectionWrapper connection = ConnectionPool.getConnection()) {
+            PreparedStatement preparedStatement = connection.prepareStatement(
                     "SELECT * FROM description WHERE feed_id=?");
             preparedStatement.setInt(1, feedId);
             ResultSet resultSet = preparedStatement.executeQuery();
@@ -86,8 +88,8 @@ public class DescriptionDAOImpl extends DAO implements DescriptionDAO {
      */
     @Override
     public Description save(Description description) {
-        try {
-            PreparedStatement preparedStatement = getConnection().prepareStatement(
+        try (ConnectionWrapper connection = ConnectionPool.getConnection()) {
+            PreparedStatement preparedStatement = connection.prepareStatement(
                     "INSERT INTO description(type, mode, value, feed_id) VALUES(?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
             preparedStatement.setString(1, description.getSyndContent().getType());
             preparedStatement.setString(2, description.getSyndContent().getMode());

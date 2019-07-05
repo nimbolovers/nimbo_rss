@@ -4,6 +4,8 @@ import com.rometools.rome.feed.synd.SyndContent;
 import com.rometools.rome.feed.synd.SyndContentImpl;
 import com.rometools.rome.feed.synd.SyndEntry;
 import com.rometools.rome.feed.synd.SyndEntryImpl;
+import in.nimbo.dao.pool.ConnectionPool;
+import in.nimbo.dao.pool.ConnectionWrapper;
 import in.nimbo.entity.Entry;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -13,7 +15,6 @@ import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -23,20 +24,18 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneId;
-import java.time.temporal.TemporalField;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Date;
-import java.util.Random;
 
 import static org.junit.Assert.*;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest(DAO.class)
+@PrepareForTest(ConnectionPool.class)
 public class EntryDAOTest {
     private static DescriptionDAO descriptionDAO;
     private static ContentDAO contentDAO;
-    private static Connection connection;
+    private static ConnectionWrapper connection;
     private static EntryDAO entryDAO;
 
     static {
@@ -54,8 +53,8 @@ public class EntryDAOTest {
     }
 
     @BeforeClass
-    public static void init() throws SQLException, FileNotFoundException {
-        connection = DriverManager.getConnection("jdbc:h2:~/h2_rss", "user", "");
+    public static void init() throws SQLException {
+        connection = new ConnectionWrapper(DriverManager.getConnection("jdbc:h2:~/h2_rss", "user", ""));
         String queries = readFile("db/db_tables_sql.sql");
         PreparedStatement statement = connection.prepareStatement(queries);
         statement.execute();
@@ -66,8 +65,8 @@ public class EntryDAOTest {
 
     @Before
     public void initTables() throws SQLException {
-        PowerMockito.mockStatic(DAO.class);
-        PowerMockito.when(DAO.getConnection()).thenReturn(connection);
+        PowerMockito.mockStatic(ConnectionPool.class);
+        PowerMockito.when(ConnectionPool.getConnection()).thenReturn(connection);
         PreparedStatement statement = connection.prepareStatement(
                 "DELETE FROM content; " +
                 "DELETE FROM description;" +

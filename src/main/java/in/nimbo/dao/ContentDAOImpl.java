@@ -1,18 +1,17 @@
 package in.nimbo.dao;
 
+import in.nimbo.dao.pool.ConnectionPool;
+import in.nimbo.dao.pool.ConnectionWrapper;
 import in.nimbo.entity.Content;
 import in.nimbo.exception.RecordNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ContentDAOImpl extends DAO implements ContentDAO {
+public class ContentDAOImpl implements ContentDAO {
     private Logger logger = LoggerFactory.getLogger(ContentDAOImpl.class);
 
     /**
@@ -55,8 +54,8 @@ public class ContentDAOImpl extends DAO implements ContentDAO {
      */
     @Override
     public Content getByFeedId(int feedId) {
-        try {
-            PreparedStatement preparedStatement = getConnection().prepareStatement(
+        try (ConnectionWrapper connection = ConnectionPool.getConnection()) {
+            PreparedStatement preparedStatement = connection.prepareStatement(
                     "SELECT * FROM content WHERE feed_id=?");
             preparedStatement.setInt(1, feedId);
             ResultSet resultSet = preparedStatement.executeQuery();
@@ -77,8 +76,8 @@ public class ContentDAOImpl extends DAO implements ContentDAO {
      */
     @Override
     public Content save(Content content) {
-        try {
-            PreparedStatement preparedStatement = getConnection().prepareStatement(
+        try (ConnectionWrapper connection = ConnectionPool.getConnection()) {
+            PreparedStatement preparedStatement = connection.prepareStatement(
                     "INSERT INTO content(value, feed_id) VALUES(?, ?)", Statement.RETURN_GENERATED_KEYS);
             preparedStatement.setString(1, content.getValue());
             preparedStatement.setInt(2, content.getFeed_id());

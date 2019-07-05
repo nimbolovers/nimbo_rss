@@ -1,11 +1,8 @@
 package in.nimbo.dao;
 
+import in.nimbo.dao.pool.ConnectionPool;
+import in.nimbo.dao.pool.ConnectionWrapper;
 import in.nimbo.entity.Site;
-import org.jooq.Record;
-import org.jooq.SQLDialect;
-import org.jooq.SelectConditionStep;
-import org.jooq.Table;
-import org.jooq.impl.DSL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,7 +13,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SiteDAOImpl extends DAO implements SiteDAO {
+public class SiteDAOImpl implements SiteDAO {
     private Logger logger = LoggerFactory.getLogger(SiteDAOImpl.class);
 
     /**
@@ -66,8 +63,8 @@ public class SiteDAOImpl extends DAO implements SiteDAO {
      */
     @Override
     public List<Site> getSites() {
-        try {
-            PreparedStatement preparedStatement = getConnection().prepareStatement("SELECT * FROM site");
+        try (ConnectionWrapper connection = ConnectionPool.getConnection()) {
+            PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM site");
             ResultSet resultSet = preparedStatement.executeQuery();
             return createSiteFromResultSet(resultSet);
         } catch (SQLException e) {
@@ -84,8 +81,8 @@ public class SiteDAOImpl extends DAO implements SiteDAO {
      */
     @Override
     public Site save(Site site) {
-        try {
-            PreparedStatement preparedStatement = getConnection().prepareStatement(
+        try (ConnectionWrapper connection = ConnectionPool.getConnection()) {
+            PreparedStatement preparedStatement = connection.prepareStatement(
                     "INSERT INTO site(name, link, news_count, avg_update_time, last_update) VALUES(?, ?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
             preparedStatement.setString(1, site.getName());
             preparedStatement.setString(2, site.getLink());
@@ -120,8 +117,8 @@ public class SiteDAOImpl extends DAO implements SiteDAO {
     public Site update(Site site) {
         if (site.getId() == 0)
             throw new IllegalArgumentException("Site id must be set for update operation");
-        try {
-            PreparedStatement preparedStatement = getConnection().prepareStatement(
+        try (ConnectionWrapper connection = ConnectionPool.getConnection()) {
+            PreparedStatement preparedStatement = connection.prepareStatement(
                     "UPDATE site SET link = ?, name = ?, news_count = ?, avg_update_time = ?, last_update = ? WHERE id = ?");
             preparedStatement.setString(1, site.getLink());
             preparedStatement.setString(2, site.getName());
