@@ -63,7 +63,7 @@ public class EntryDAOImpl implements EntryDAO {
                    // doesn't set description and ignore error
                 }
 
-                // fetch descriptions
+                // fetch content
                 Content content = contentDAO.getByFeedId(entry.getId());
                 entry.setContent(content.getValue());
 

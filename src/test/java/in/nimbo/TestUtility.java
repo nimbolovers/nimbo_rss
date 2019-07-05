@@ -12,6 +12,23 @@ public class TestUtility {
     private TestUtility() {
     }
 
+    /**
+     * disable JOOQ library logger
+     */
+    public static void disableJOOQLogo() {
+        System.getProperties().setProperty("org.jooq.no-logo", "true");
+    }
+
+    /**
+     * create an entity for test purpose
+     * @param channel channel
+     * @param title title
+     * @param link link
+     * @param pubDate publication date
+     * @param content content
+     * @param description description
+     * @return entry which is created
+     */
     public static Entry createEntry(String channel, String title,
                                     String link, Date pubDate,
                                     String content,

@@ -28,13 +28,13 @@ public class ContentDAOImpl implements ContentDAO {
                 Content content = new Content();
 
                 // fetch id
-                content.setId(resultSet.getInt(1));
+                content.setId(resultSet.getInt("id"));
 
                 // fetch value
-                content.setValue(resultSet.getString(2));
+                content.setValue(resultSet.getString("value"));
 
                 // fetch feed_id
-                content.setFeed_id(resultSet.getInt(3));
+                content.setFeed_id(resultSet.getInt("feed_id"));
 
                 contents.add(content);
             }

@@ -31,6 +31,7 @@ public class RSSServiceTest {
 
     @BeforeClass
     public static void init() {
+        TestUtility.disableJOOQLogo();
         entryDAO = PowerMockito.mock(EntryDAO.class);
         service = spy(new RSSService(entryDAO));
     }

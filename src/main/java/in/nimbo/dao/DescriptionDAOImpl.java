@@ -34,19 +34,19 @@ public class DescriptionDAOImpl implements DescriptionDAO {
                 description.setSyndContent(syndContent);
 
                 // fetch id
-                description.setId(resultSet.getInt(1));
+                description.setId(resultSet.getInt("id"));
 
                 // fetch type
-                syndContent.setType(resultSet.getString(2));
+                syndContent.setType(resultSet.getString("type"));
 
                 // fetch mode
-                syndContent.setMode(resultSet.getString(3));
+                syndContent.setMode(resultSet.getString("mode"));
 
                 // fetch value
-                syndContent.setValue(resultSet.getString(4));
+                syndContent.setValue(resultSet.getString("value"));
 
                 // fetch feed_id
-                description.setFeed_id(resultSet.getInt(5));
+                description.setFeed_id(resultSet.getInt("feed_id"));
 
                 descriptions.add(description);
             }
