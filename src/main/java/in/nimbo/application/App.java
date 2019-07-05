@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -34,14 +35,15 @@ public class App {
 
         Utility.disableJOOQLogo();
 
-        // Initialize Schedule Service
-        schedule = new Schedule(service);
-
         // Load sites
         sites = siteDAO.getSites();
         for (Site site : sites) {
             schedule.scheduleRSSLink(site.getLink());
         }
+
+        // Initialize Schedule Service
+        schedule = new Schedule(service, sites);
+        schedule.runScheduleUpdator();
 
         logger.info("Application started successfully");
 
@@ -55,6 +57,9 @@ public class App {
         }
     }
 
+    /**
+     * User interface of application
+     */
     private static void runUI() {
         Scanner input = new Scanner(System.in);
         Outer:
@@ -96,12 +101,22 @@ public class App {
                     if (params.containsKey("channel"))
                         channel = params.get("channel");
                     if (params.containsKey("startDate")) {
-                        LocalDateTime startLocalDate = LocalDateTime.parse(params.get("startDate"), formatter);
-                        startDate = Date.from(startLocalDate.atZone(ZoneId.systemDefault()).toInstant());
+                        try {
+                            LocalDateTime startLocalDate = LocalDateTime.parse(params.get("startDate"), formatter);
+                            startDate = Date.from(startLocalDate.atZone(ZoneId.systemDefault()).toInstant());
+                        } catch (DateTimeParseException e) {
+                            System.out.println("Illegal start date: " + params.get("startDate"));
+                            continue;
+                        }
                     }
                     if (params.containsKey("finishDate")) {
-                        LocalDateTime startLocalDate = LocalDateTime.parse(params.get("finishDate"), formatter);
-                        finishDate = Date.from(startLocalDate.atZone(ZoneId.systemDefault()).toInstant());
+                        try {
+                            LocalDateTime startLocalDate = LocalDateTime.parse(params.get("finishDate"), formatter);
+                            finishDate = Date.from(startLocalDate.atZone(ZoneId.systemDefault()).toInstant());
+                        } catch (DateTimeParseException e) {
+                            System.out.println("Illegal finish date: " + params.get("finishDate"));
+                            continue;
+                        }
                     }
                     List<Entry> resultEntry;
                     if (params.containsKey("content"))

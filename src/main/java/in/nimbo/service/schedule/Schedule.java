@@ -1,19 +1,23 @@
 package in.nimbo.service.schedule;
 
+import in.nimbo.entity.Site;
 import in.nimbo.service.RSSService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
 import java.util.concurrent.*;
 import java.util.function.Supplier;
 
 public class Schedule {
     private Logger logger = LoggerFactory.getLogger(Schedule.class);
-    private ScheduledExecutorService scheduleService;
+    private static ScheduledExecutorService scheduleService;
     private RSSService rssService;
+    private List<Site> sites;
 
-    public Schedule(RSSService rssService) {
+    public Schedule(RSSService rssService, List<Site> sites) {
         this.rssService = rssService;
+        this.sites = sites;
         scheduleService = Executors.newScheduledThreadPool(100);
 
     }
@@ -38,6 +42,10 @@ public class Schedule {
             rssService.save(rssService.fetchFromURL(link));
             return null;
         };
-        scheduleWithTimeout(voidCompletableFuture, 50L, TimeUnit.SECONDS, "Unable to fetch data from link: " + link);
+        scheduleWithTimeout(voidCompletableFuture, 20L, TimeUnit.SECONDS, "Unable to fetch data from link: " + link);
+    }
+
+    public void runScheduleUpdator() {
+        scheduleService.schedule(new ScheduleUpdator(sites), 1L, TimeUnit.MINUTES);
     }
 }
