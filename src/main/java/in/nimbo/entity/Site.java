@@ -70,4 +70,15 @@ public class Site {
     public void setLink(String link) {
         this.link = link;
     }
+
+    @Override
+    public String toString() {
+        return "Site{" +
+                "name='" + name + '\'' +
+                ", link='" + link + '\'' +
+                ", newsCount=" + newsCount +
+                ", avgUpdateTime=" + avgUpdateTime +
+                ", lastUpdate=" + lastUpdate +
+                '}';
+    }
 }

@@ -66,6 +66,11 @@ public class ScheduleUpdater implements Callable<Void> {
                 newAverageUpdateTime = (site.getAvgUpdateTime() * site.getNewsCount() + sumOfIntervals) / (site.getNewsCount() + newEntries.size());
             else
                 newAverageUpdateTime = sumOfIntervals / newEntries.size();
+
+            newAverageUpdateTime /= 1000; //convert milliseconds to seconds
+            if (newAverageUpdateTime <= 0)
+                newAverageUpdateTime = 1;
+
             site.setAvgUpdateTime(newAverageUpdateTime);
             site.setLastUpdate(pubDates.get(pubDates.size() - 1));
             site.increaseNewsCount(newEntries.size());
@@ -77,6 +82,9 @@ public class ScheduleUpdater implements Callable<Void> {
 
         if (updateInterval > 60 * 60) // more than one hour
             updateInterval = 3 * 60 * 60; // set to 3 hours
+
+        System.out.println(site);
+        System.out.println("Update time: " + updateInterval);
 
         scheduledService.schedule(this, updateInterval, TimeUnit.SECONDS);
         return null;

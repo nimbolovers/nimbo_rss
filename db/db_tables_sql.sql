@@ -23,6 +23,7 @@ CREATE TABLE `description` (
                                PRIMARY KEY (`id`),
                                FOREIGN KEY (feed_id)
                                    REFERENCES feed(id)
+                                   ON DELETE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE `content` (
@@ -32,6 +33,7 @@ CREATE TABLE `content` (
                            PRIMARY KEY (`id`),
                            FOREIGN KEY (feed_id)
                                REFERENCES feed(id)
+                               ON DELETE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE `site` (

@@ -66,18 +66,18 @@ public class RSSService {
      * @throws RuntimeException if RSS url link is not valid or unable to fetch data from url
      */
     public SyndFeed fetchFromURL(String url) {
+        URL encodedURL = Utility.encodeURL(url);
         try {
             logger.info("Fetch data of RSS from URL: " + url);
-            URL encodedURL = Utility.encodeURL(url);
             SyndFeedInput input = new SyndFeedInput();
             SyndFeed feed = input.build(new XmlReader(encodedURL));
             logger.info("RSS data fetched successfully from: "+ url);
             return feed;
         } catch (FeedException e) {
-            logger.error("Invalid RSS URL: " + url);
+            logger.error("Invalid RSS URL: " + encodedURL);
             throw new RuntimeException("Invalid RSS URL: " + url, e);
         } catch (MalformedURLException e) {
-            logger.error("Illegal URL format: " + url);
+            logger.error("Illegal URL format: " + encodedURL);
             throw new RuntimeException("Illegal URL format", e);
         } catch (IOException e) {
             throw new RuntimeException(e);
