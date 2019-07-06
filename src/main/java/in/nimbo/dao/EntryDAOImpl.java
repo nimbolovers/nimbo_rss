@@ -2,10 +2,14 @@ package in.nimbo.dao;
 
 import com.rometools.rome.feed.synd.SyndEntry;
 import com.rometools.rome.feed.synd.SyndEntryImpl;
+import in.nimbo.dao.pool.ConnectionPool;
+import in.nimbo.dao.pool.ConnectionWrapper;
 import in.nimbo.entity.Content;
 import in.nimbo.entity.Description;
 import in.nimbo.entity.Entry;
+import in.nimbo.exception.QueryException;
 import in.nimbo.exception.RecordNotFoundException;
+import in.nimbo.exception.ResultSetFetchException;
 import org.jooq.Record;
 import org.jooq.SQLDialect;
 import org.jooq.SelectConditionStep;
@@ -14,15 +18,12 @@ import org.jooq.impl.DSL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-public class EntryDAOImpl extends DAO implements EntryDAO {
+public class EntryDAOImpl implements EntryDAO {
     private Logger logger = LoggerFactory.getLogger(EntryDAOImpl.class);
 
     private DescriptionDAO descriptionDAO;
@@ -48,13 +49,13 @@ public class EntryDAOImpl extends DAO implements EntryDAO {
                 entry.setSyndEntry(syndEntry);
 
                 // fetch id
-                entry.setId(resultSet.getInt(1));
+                entry.setId(resultSet.getInt("id"));
 
                 // fetch channel
-                entry.setChannel(resultSet.getString(2));
+                entry.setChannel(resultSet.getString("channel"));
 
                 // fetch title
-                syndEntry.setTitle(resultSet.getString(3));
+                syndEntry.setTitle(resultSet.getString("title"));
 
                 // fetch description
                 try {
@@ -64,19 +65,22 @@ public class EntryDAOImpl extends DAO implements EntryDAO {
                    // doesn't set description and ignore error
                 }
 
-                // fetch descriptions
+                // fetch content
                 Content content = contentDAO.getByFeedId(entry.getId());
                 entry.setContent(content.getValue());
 
+                // fetch link
+                syndEntry.setLink(resultSet.getString("link"));
+
                 // fetch publication data
-                syndEntry.setPublishedDate(resultSet.getDate(4));
+                syndEntry.setPublishedDate(resultSet.getTimestamp("pub_date"));
 
                 result.add(entry);
             }
             return result;
         } catch (SQLException e) {
             logger.error("Unable to fetch data from ResultSet: " + e.getMessage());
-            throw new RuntimeException("Unable to fetch data from ResultSet", e);
+            throw new ResultSetFetchException("Unable to fetch data from ResultSet", e);
         }
     }
 
@@ -95,7 +99,7 @@ public class EntryDAOImpl extends DAO implements EntryDAO {
      */
     @Override
     public List<Entry> filterEntryByTitle(String channel, String value, Date startDate, Date finishDate) {
-        try {
+        try (ConnectionWrapper connection = ConnectionPool.getConnection()) {
             SelectConditionStep<Record> query = DSL.using(SQLDialect.MYSQL)
                     .select()
                     .from("feed")
@@ -103,17 +107,17 @@ public class EntryDAOImpl extends DAO implements EntryDAO {
             if (channel != null)
                 query = query.and(DSL.field("channel").eq(channel));
             if (startDate != null)
-                query = query.and(DSL.field("pub_date").ge(new java.sql.Date(startDate.getTime())));
+                query = query.and(DSL.field("pub_date").ge(new java.sql.Timestamp(startDate.getTime())));
             if (finishDate != null)
-                query = query.and(DSL.field("pub_date").le(new java.sql.Date(finishDate.getTime())));
+                query = query.and(DSL.field("pub_date").le(new java.sql.Timestamp(finishDate.getTime())));
 
             String sqlQuery = query.getSQL(ParamType.INLINED);
-            Statement statement = getConnection().createStatement();
+            Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery(sqlQuery);
             return createEntryFromResultSet(resultSet);
         } catch (SQLException e) {
             logger.error("Unable to execute query: " + e.getMessage());
-            throw new RuntimeException("Unable to fetch data from ResultSet", e);
+            throw new QueryException("Unable to execute query", e);
         }
     }
 
@@ -132,7 +136,7 @@ public class EntryDAOImpl extends DAO implements EntryDAO {
      */
     @Override
     public List<Entry> filterEntryByContent(String channel, String value, Date startDate, Date finishDate) {
-        try {
+        try (ConnectionWrapper connection = ConnectionPool.getConnection()) {
             SelectConditionStep<Record> query = DSL.using(SQLDialect.MYSQL)
                     .select()
                     .from("feed")
@@ -141,17 +145,17 @@ public class EntryDAOImpl extends DAO implements EntryDAO {
             if (channel != null)
                 query = query.and(DSL.field("feed.channel").eq(channel));
             if (startDate != null)
-                query = query.and(DSL.field("feed.pub_date").ge(new java.sql.Date(startDate.getTime())));
+                query = query.and(DSL.field("feed.pub_date").ge(new java.sql.Timestamp(startDate.getTime())));
             if (finishDate != null)
-                query = query.and(DSL.field("feed.pub_date").le(new java.sql.Date(finishDate.getTime())));
+                query = query.and(DSL.field("feed.pub_date").le(new java.sql.Timestamp(finishDate.getTime())));
 
             String sqlQuery = query.getSQL(ParamType.INLINED);
-            Statement statement = getConnection().createStatement();
+            Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery(sqlQuery);
             return createEntryFromResultSet(resultSet);
         } catch (SQLException e) {
             logger.error("Unable to execute query: " + e.getMessage());
-            throw new RuntimeException("Unable to fetch data from ResultSet", e);
+            throw new QueryException("Unable to execute query", e);
         }
     }
 
@@ -162,13 +166,13 @@ public class EntryDAOImpl extends DAO implements EntryDAO {
      */
     @Override
     public List<Entry> getEntries() {
-        try {
-            PreparedStatement preparedStatement = getConnection().prepareStatement("SELECT * FROM feed");
+        try (ConnectionWrapper connection = ConnectionPool.getConnection()) {
+            PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM feed");
             ResultSet resultSet = preparedStatement.executeQuery();
             return createEntryFromResultSet(resultSet);
         } catch (SQLException e) {
             logger.error("Unable to execute query: " + e.getMessage());
-            throw new RuntimeException("Unable to execute query", e);
+            throw new QueryException("Unable to execute query", e);
         }
     }
 
@@ -183,12 +187,16 @@ public class EntryDAOImpl extends DAO implements EntryDAO {
      */
     @Override
     public Entry save(Entry entry) {
-        try {
-            PreparedStatement preparedStatement = getConnection().prepareStatement(
-                    "INSERT INTO feed(channel, title, pub_date) VALUES(?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
+        try (ConnectionWrapper connection = ConnectionPool.getConnection()) {
+            PreparedStatement preparedStatement = connection.prepareStatement(
+                    "INSERT INTO feed(channel, title, pub_date, link) VALUES(?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
             preparedStatement.setString(1, entry.getChannel());
             preparedStatement.setString(2, entry.getSyndEntry().getTitle());
-            preparedStatement.setDate(3, new java.sql.Date(entry.getSyndEntry().getPublishedDate().getTime()));
+            if (entry.getSyndEntry().getPublishedDate() != null)
+                preparedStatement.setTimestamp(3, new java.sql.Timestamp(entry.getSyndEntry().getPublishedDate().getTime()));
+            else
+                preparedStatement.setTimestamp(3, null);
+            preparedStatement.setString(4, entry.getSyndEntry().getLink());
             preparedStatement.executeUpdate();
             ResultSet generatedKeys = preparedStatement.getGeneratedKeys();
             generatedKeys.next();
@@ -208,7 +216,7 @@ public class EntryDAOImpl extends DAO implements EntryDAO {
 
         } catch (SQLException e) {
             logger.error("Unable to save entry with id=" + entry.getId() + ": " + e.getMessage());
-            throw new RuntimeException("Unable to save entry with id=" + entry.getId(), e);
+            throw new QueryException("Unable to save entry with id=" + entry.getId(), e);
         }
         return entry;
     }
@@ -222,17 +230,16 @@ public class EntryDAOImpl extends DAO implements EntryDAO {
      */
     @Override
     public boolean contain(Entry entry) {
-        try {
-            PreparedStatement preparedStatement = getConnection().prepareStatement(
-                    "SELECT COUNT(*) FROM feed WHERE channel=? AND title=?");
-            preparedStatement.setString(1, entry.getChannel());
-            preparedStatement.setString(2, entry.getSyndEntry().getTitle());
+        try (ConnectionWrapper connection = ConnectionPool.getConnection()) {
+            PreparedStatement preparedStatement = connection.prepareStatement(
+                    "SELECT COUNT(*) FROM feed WHERE link=?");
+            preparedStatement.setString(1, entry.getSyndEntry().getLink());
             ResultSet resultSet = preparedStatement.executeQuery();
             resultSet.next();
             return resultSet.getInt(1) > 0;
         } catch (SQLException e) {
             logger.error("Unable to execute query: " + e.getMessage());
-            throw new RuntimeException("Unable to execute query", e);
+            throw new QueryException("Unable to execute query", e);
         }
     }
 }

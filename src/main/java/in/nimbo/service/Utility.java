@@ -10,6 +10,13 @@ public class Utility {
     private Utility() {}
 
     /**
+     * disable JOOQ library logger
+     */
+    public static void disableJOOQLogo() {
+        System.getProperties().setProperty("org.jooq.no-logo", "true");
+    }
+
+    /**
      * encode a url which maybe contain UTF-8 characters
      * @param urlLink link
      * @return encoded URL
