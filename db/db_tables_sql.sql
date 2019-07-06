@@ -49,5 +49,5 @@ CREATE TABLE `site` (
 INSERT INTO site(name, link, news_count, avg_update_time) VALUES('navad', 'https://90tv.ir/rss/news', 0, 0);
 INSERT INTO site(name, link, news_count, avg_update_time) VALUES('tabnak', 'https://www.tabnak.ir/fa/rss/allnews', 0, 0);
 INSERT INTO site(name, link, news_count, avg_update_time) VALUES('varzesh', 'https://www.varzesh3.com/rss/all', 0, 0);
--- INSERT INTO site(name, link, news_count, avg_update_time) VALUES('yjc', 'https://www.yjc.ir/fa/rss/allnews', 0, 0);
+INSERT INTO site(name, link, news_count, avg_update_time) VALUES('yjc', 'https://www.yjc.ir/fa/rss/allnews', 0, 0);
 INSERT INTO site(name, link, news_count, avg_update_time) VALUES('mspoweruser', 'https://mspoweruser.com/feed', 0, 0);
