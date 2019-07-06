@@ -24,6 +24,8 @@
     <JOOQ.version>3.11.11</JOOQ.version>
     <boilerpipe.version>1.2.3</boilerpipe.version>
     <hikari.version>3.2.0</hikari.version>
+    <readability.version>1.0.3</readability.version>
+    <JSoup.version>1.12.1</JSoup.version>
   </properties>
 
   <dependencies>
@@ -117,10 +119,25 @@
     </dependency>
 
     <!--Article Extractor (boilerpipe) from Google-->
+<!--    <dependency>-->
+<!--      <groupId>com.robbypond</groupId>-->
+<!--      <artifactId>boilerpipe</artifactId>-->
+<!--      <version>${boilerpipe.version}</version>-->
+<!--    </dependency>-->
+
+    <!--Reader from firefox-->
     <dependency>
-      <groupId>com.robbypond</groupId>
-      <artifactId>boilerpipe</artifactId>
-      <version>${boilerpipe.version}</version>
+      <groupId>net.dankito.readability4j</groupId>
+      <artifactId>readability4j</artifactId>
+      <version>${readability.version}</version>
+    </dependency>
+
+
+    <!--JSoup library for working with html-->
+    <dependency>
+      <groupId>org.jsoup</groupId>
+      <artifactId>jsoup</artifactId>
+      <version>${JSoup.version}</version>
     </dependency>
 
     <!-- connection pool to database with hikari -->

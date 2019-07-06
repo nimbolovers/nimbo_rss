@@ -1,18 +1,19 @@
 package in.nimbo.dao;
 
+import in.nimbo.dao.pool.ConnectionPool;
+import in.nimbo.dao.pool.ConnectionWrapper;
 import in.nimbo.entity.Content;
+import in.nimbo.exception.QueryException;
 import in.nimbo.exception.RecordNotFoundException;
+import in.nimbo.exception.ResultSetFetchException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ContentDAOImpl extends DAO implements ContentDAO {
+public class ContentDAOImpl implements ContentDAO {
     private Logger logger = LoggerFactory.getLogger(ContentDAOImpl.class);
 
     /**
@@ -29,45 +30,21 @@ public class ContentDAOImpl extends DAO implements ContentDAO {
                 Content content = new Content();
 
                 // fetch id
-                content.setId(resultSet.getInt(1));
+                content.setId(resultSet.getInt("id"));
 
                 // fetch value
-                content.setValue(resultSet.getString(2));
+                content.setValue(resultSet.getString("value"));
 
                 // fetch feed_id
-                content.setFeed_id(resultSet.getInt(3));
+                content.setFeed_id(resultSet.getInt("feed_id"));
 
                 contents.add(content);
             }
         } catch (SQLException e) {
             logger.error("Unable to fetch data from ResultSet: " + e.getMessage());
-            throw new RuntimeException("Unable to fetch data from ResultSet", e);
+            throw new ResultSetFetchException("Unable to fetch data from ResultSet", e);
         }
         return contents;
-    }
-
-    /**
-     * fetch a content with specific id
-     *
-     * @param id id of content
-     * @return content with specific id
-     * @throws RuntimeException if content with specific id not found
-     */
-    @Override
-    public Content get(int id) {
-        try {
-            PreparedStatement preparedStatement = getConnection().prepareStatement(
-                    "SELECT * FROM content WHERE id=?");
-            preparedStatement.setInt(1, id);
-            ResultSet resultSet = preparedStatement.executeQuery();
-            return createContentFromResultSet(resultSet).get(0);
-        } catch (IndexOutOfBoundsException e) {
-            logger.error("content with id=" + id + " not found");
-            throw new RuntimeException("content with id=" + id + " not found", e);
-        } catch (SQLException e) {
-            logger.error("Unable to execute query: " + e.getMessage());
-            throw new RuntimeException("Unable to execute query", e);
-        }
     }
 
     /**
@@ -79,8 +56,8 @@ public class ContentDAOImpl extends DAO implements ContentDAO {
      */
     @Override
     public Content getByFeedId(int feedId) {
-        try {
-            PreparedStatement preparedStatement = getConnection().prepareStatement(
+        try (ConnectionWrapper connection = ConnectionPool.getConnection()) {
+            PreparedStatement preparedStatement = connection.prepareStatement(
                     "SELECT * FROM content WHERE feed_id=?");
             preparedStatement.setInt(1, feedId);
             ResultSet resultSet = preparedStatement.executeQuery();
@@ -89,7 +66,7 @@ public class ContentDAOImpl extends DAO implements ContentDAO {
             throw new RecordNotFoundException("content which has feed_id=" + feedId + " not found", e);
         } catch (SQLException e) {
             logger.error("Unable to execute query: " + e.getMessage());
-            throw new RuntimeException("Unable to execute query", e);
+            throw new QueryException("Unable to execute query", e);
         }
     }
 
@@ -101,16 +78,19 @@ public class ContentDAOImpl extends DAO implements ContentDAO {
      */
     @Override
     public Content save(Content content) {
-        try {
-            PreparedStatement preparedStatement = getConnection().prepareStatement(
+        try (ConnectionWrapper connection = ConnectionPool.getConnection()) {
+            PreparedStatement preparedStatement = connection.prepareStatement(
                     "INSERT INTO content(value, feed_id) VALUES(?, ?)", Statement.RETURN_GENERATED_KEYS);
             preparedStatement.setString(1, content.getValue());
             preparedStatement.setInt(2, content.getFeed_id());
-            int newId = preparedStatement.executeUpdate();
+            preparedStatement.executeUpdate();
+            ResultSet generatedKeys = preparedStatement.getGeneratedKeys();
+            generatedKeys.next();
+            int newId = generatedKeys.getInt(1);
             content.setId(newId);
         } catch (SQLException e) {
             logger.error("Unable to execute query: " + e.getMessage());
-            throw new RuntimeException("Unable to execute query", e);
+            throw new QueryException("Unable to execute query", e);
         }
         return content;
     }
