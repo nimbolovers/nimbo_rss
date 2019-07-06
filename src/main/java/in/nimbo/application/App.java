@@ -88,7 +88,10 @@ public class App {
                                 .filter(s -> !s.trim().isEmpty())
                                 .collect(Collectors.toMap(
                                         (String x) -> x.trim().split("=")[0],
-                                        (String y) -> y.trim().split("=")[1]));
+                                        (String y) -> {
+                                            String value = y.trim().split("=")[1];
+                                            return value.substring(1, value.length() - 1);
+                                        }));
                     } catch (IndexOutOfBoundsException e) {
                         System.out.println("Illegal parameter format");
                         continue;

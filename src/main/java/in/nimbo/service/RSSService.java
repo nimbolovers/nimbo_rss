@@ -17,6 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.io.StringReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -143,8 +144,9 @@ public class RSSService {
         try {
             URL encodedURL = Utility.encodeURL(url);
             logger.info("Fetch data of RSS from URL: " + url);
+            String htmlContent = Jsoup.connect(encodedURL.toString()).get().html();
             SyndFeedInput input = new SyndFeedInput();
-            SyndFeed feed = input.build(new XmlReader(encodedURL));
+            SyndFeed feed = input.build(new StringReader(htmlContent));
             logger.info("RSS data fetched successfully from: "+ url);
             return feed;
         } catch (FeedException e) {

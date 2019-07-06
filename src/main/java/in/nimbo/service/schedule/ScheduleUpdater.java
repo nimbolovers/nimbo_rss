@@ -95,8 +95,8 @@ public class ScheduleUpdater implements Callable<Void> {
         if (updateInterval > 60 * 60) // more than one hour
             updateInterval = 3 * 60 * 60; // set to 3 hours
 
-        System.out.println(site);
-        System.out.println("Update time: " + updateInterval);
+//        System.out.println(site);
+//        System.out.println("Update time: " + updateInterval);
 
         scheduledService.schedule(this, updateInterval, TimeUnit.SECONDS);
         return null;
