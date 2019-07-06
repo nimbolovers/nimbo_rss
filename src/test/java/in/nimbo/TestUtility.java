@@ -6,6 +6,15 @@ import com.rometools.rome.feed.synd.SyndEntry;
 import com.rometools.rome.feed.synd.SyndEntryImpl;
 import in.nimbo.entity.Entry;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.ZoneId;
 import java.util.Date;
 
 public class TestUtility {
@@ -52,5 +61,32 @@ public class TestUtility {
         entry.setSyndEntry(syndEntry);
         entry.setContent(content);
         return entry;
+    }
+
+    /**
+     * get content a file as string
+     * @param path path of file
+     * @return content of file
+     * @throws RuntimeException if unable to get content of file
+     */
+    public static String getFileContent(Path path) {
+        try {
+            byte[] bytes = Files.readAllBytes(path);
+            return new String(bytes, StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            throw new RuntimeException("Couldn't read file: " + path, e);
+        }
+    }
+
+    /**
+     * create java.util.date with given input
+     * @param year year
+     * @param month month
+     * @param day day
+     * @return date with given inputs
+     */
+    public static Date getDate(int year, int month, int day) {
+        LocalDateTime dateTime = LocalDateTime.of(LocalDate.of(year, month, day), LocalTime.of(0, 0));
+        return Date.from(dateTime.atZone(ZoneId.systemDefault()).toInstant());
     }
 }
