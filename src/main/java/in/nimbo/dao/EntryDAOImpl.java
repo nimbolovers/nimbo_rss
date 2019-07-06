@@ -170,7 +170,7 @@ public class EntryDAOImpl implements EntryDAO {
             return createEntryFromResultSet(resultSet);
         } catch (SQLException e) {
             logger.error("Unable to execute query: " + e.getMessage());
-            throw new RuntimeException("Unable to execute query: " + e.getMessage(), e);
+            throw new RuntimeException("Unable to execute query", e);
         }
     }
 

@@ -4,6 +4,7 @@ import in.nimbo.TestUtility;
 import in.nimbo.dao.pool.ConnectionPool;
 import in.nimbo.dao.pool.ConnectionWrapper;
 import in.nimbo.entity.Entry;
+import in.nimbo.exception.RecordNotFoundException;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -24,8 +25,9 @@ import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
-import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.*;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest(ConnectionPool.class)
@@ -54,80 +56,125 @@ public class EntryDAOTest {
         PowerMockito.doNothing().when(connection).close();
 
         connection.prepareStatement("DELETE FROM content;" +
-                        "DELETE FROM description;" +
-                        "DELETE FROM feed").executeUpdate();
+                "DELETE FROM description;" +
+                "DELETE FROM feed").executeUpdate();
+    }
+
+    private List<Entry> createExampleEntries1() {
+        List<Entry> entries = new ArrayList<>();
+        for (int i = 0; i < 4; i++) {
+            Entry entry = TestUtility.createEntry("channel-" + i, "title-" + i, "link-" + i,
+                    (i & 1) != 0 ? new Date() : null,
+                    "content-" + i,
+                    (i & 2) != 0 ? "desc-" + i : null);
+            entries.add(entry);
+        }
+        return entries;
     }
 
     @Test
     public void save() throws SQLException {
-        List<Entry> entryList = new ArrayList<>();
-        for (int i = 0; i < 4; i++) {
-            Entry entry = TestUtility.createEntry("channel-" + i, "title-" + i, "link-" + i, new Date(),
-                    (i & 1) != 0 ? "content-" + i : "",
-                    (i & 2) != 0 ? "desc-" + i : ""
-            );
+        List<Entry> entries = createExampleEntries1();
+        for (Entry entry : entries) {
             entryDAO.save(entry);
-            entryList.add(entry);
         }
+
         PreparedStatement statement = connection.prepareStatement(
                 "SELECT feed.*, content.value as cnt FROM feed " +
                         "INNER JOIN content ON feed.id=content.feed_id");
         ResultSet resultSet = statement.executeQuery();
-        List<Entry> list = new ArrayList<>();
+        List<Entry> fetchedEntries = new ArrayList<>();
         while (resultSet.next()) {
             Entry e = TestUtility.createEntry(resultSet.getString("channel"), resultSet.getString("title"),
                     resultSet.getString("link"), resultSet.getDate("pub_date"),
                     resultSet.getString("cnt"), "");
             e.setId(resultSet.getInt("id"));
-            list.add(e);
+            fetchedEntries.add(e);
         }
-        assertArrayEquals(entryList.toArray(), list.toArray());
+
+        assertEquals(entries, fetchedEntries);
     }
 
-    private List<Entry> saveForFilter() {
-        Entry entry2010 = TestUtility.createEntry("test", "title 1", "2010", TestUtility.getDate(2010, 1, 1), "test", "desc");
-        Entry entry2020 = TestUtility.createEntry("test", "title 2", "2020", TestUtility.getDate(2020, 1, 1), "test", "desc");
-        Entry entry2030 = TestUtility.createEntry("test", "title 3", "2030", TestUtility.getDate(2030, 1, 1), "test", "desc");
-        entryDAO.save(entry2010);
-        entryDAO.save(entry2020);
-        entryDAO.save(entry2030);
+    @Test
+    public void getEntries() {
+        List<Entry> entries = createExampleEntries1();
+        for (Entry entry : entries) {
+            entryDAO.save(entry);
+        }
+
+        assertEquals(entries, entryDAO.getEntries());
+    }
+
+    @Test(expected = RecordNotFoundException.class)
+    public void getEntriesWithoutContent() throws SQLException {
+        connection.prepareStatement("INSERT INTO feed(channel, title, link) VALUES('channel', 'title', 'link')").executeUpdate();
+        entryDAO.getEntries();
+    }
+
+    private List<Entry> createExampleEntries2() {
         List<Entry> entries = new ArrayList<>();
-        entries.add(entry2010);
-        entries.add(entry2020);
-        entries.add(entry2030);
+        entries.add(TestUtility.createEntry("channel 1", "title 1", "2010", TestUtility.getDate(2010, 1, 1), "content 1", "desc 1"));
+        entries.add(TestUtility.createEntry("channel 2", "title 2", "2020", TestUtility.getDate(2020, 1, 1), "content 2", "desc 2"));
         return entries;
     }
 
     @Test
-    public void getAll() {
-        List<Entry> entries = saveForFilter();
-        assertArrayEquals(entries.toArray(), entryDAO.getEntries().toArray());
+    public void filterEntryByTitle() {
+        List<Entry> entries = createExampleEntries2();
+        for (Entry entry : entries) {
+            entryDAO.save(entry);
+        }
+
+        // test before
+        Date beforeDate = TestUtility.getDate(2000, 1, 1);
+        assertEquals(entries.stream().filter(entry -> entry.getSyndEntry().getPublishedDate()
+                        .compareTo(beforeDate) >= 0).collect(Collectors.toList()),
+                entryDAO.filterEntryByTitle(null, "title", beforeDate, null));
+        // test after
+        Date afterDate = TestUtility.getDate(2030, 1, 1);
+        assertEquals(entries.stream().filter(entry -> entry.getSyndEntry().getPublishedDate()
+                        .compareTo(beforeDate) >= 0).collect(Collectors.toList()),
+                entryDAO.filterEntryByTitle(null, "title", null, afterDate));
+        // test between
+        assertEquals(entries.stream().filter(entry -> entry.getSyndEntry().getPublishedDate()
+                        .compareTo(beforeDate) >= 0).collect(Collectors.toList()),
+                entryDAO.filterEntryByTitle(null, "title", beforeDate, afterDate));
     }
 
     @Test
-    public void filterBeforeTest() {
-        List<Entry> entries = saveForFilter();
-        entries.remove(0);
-        Date date2015 = TestUtility.getDate(2015, 1, 1);
-        assertArrayEquals(entries.toArray(), entryDAO.filterEntryByTitle("test", "", date2015, null).toArray());
+    public void filterEntryByContent() {
+        List<Entry> entries = createExampleEntries2();
+        for (Entry entry : entries) {
+            entryDAO.save(entry);
+        }
+
+        // test before
+        Date beforeDate = TestUtility.getDate(2000, 1, 1);
+        assertEquals(entries.stream().filter(entry -> entry.getSyndEntry().getPublishedDate()
+                        .compareTo(beforeDate) >= 0).collect(Collectors.toList()),
+                entryDAO.filterEntryByContent(null, "content", beforeDate, null));
+        // test after
+        Date afterDate = TestUtility.getDate(2030, 1, 1);
+        assertEquals(entries.stream().filter(entry -> entry.getSyndEntry().getPublishedDate()
+                        .compareTo(beforeDate) >= 0).collect(Collectors.toList()),
+                entryDAO.filterEntryByContent(null, "content", null, afterDate));
+        // test between
+        assertEquals(entries.stream().filter(entry -> entry.getSyndEntry().getPublishedDate()
+                        .compareTo(beforeDate) >= 0).collect(Collectors.toList()),
+                entryDAO.filterEntryByContent(null, "content", beforeDate, afterDate));
     }
 
     @Test
-    public void filterAfterTest() {
-        List<Entry> entries = saveForFilter();
-        entries.remove(2);
-        Date date2025 = TestUtility.getDate(2025, 1, 1);
-        assertArrayEquals(entries.toArray(), entryDAO.filterEntryByTitle(null, "", null, date2025).toArray());
-    }
+    public void contain() {
+        List<Entry> entries = new ArrayList<>();
+        entries.add(TestUtility.createEntry("channel 1", "title 1", "link 1", new Date(), "content 1", "desc 1"));
+        entries.add(TestUtility.createEntry("channel 2", "title 2", "link 2", new Date(), "content 2", "desc 2"));
+        for (Entry entry : entries) {
+            entryDAO.save(entry);
+        }
 
-    @Test
-    public void contentTest() {
-        List<Entry> entries = saveForFilter();
-        entries.remove(2);
-        entries.remove(0);
-
-        Date date2025 = TestUtility.getDate(2025, 1, 1);
-        Date date2015 = TestUtility.getDate(2015, 1, 1);
-        assertArrayEquals(entries.toArray(), entryDAO.filterEntryByContent("test", "", date2015, date2025).toArray());
+        assertTrue(entryDAO.contain(TestUtility.createEntry("channel-test", "title-test", "link 1", new Date(), "content-test", "desc-test")));
+        assertTrue(entryDAO.contain(TestUtility.createEntry("channel-test", "title-test", "link 2", new Date(), "content-test", "desc-test")));
+        assertFalse(entryDAO.contain(TestUtility.createEntry("channel-test", "title-test", "link 3", new Date(), "content-test", "desc-test")));
     }
 }
