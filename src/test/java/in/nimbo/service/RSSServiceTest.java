@@ -1,8 +1,6 @@
 package in.nimbo.service;
 
-import com.rometools.rome.feed.synd.SyndEntry;
-import com.rometools.rome.feed.synd.SyndFeed;
-import com.rometools.rome.feed.synd.SyndFeedImpl;
+import com.rometools.rome.feed.synd.*;
 import in.nimbo.TestUtility;
 import in.nimbo.dao.EntryDAO;
 import in.nimbo.entity.Entry;
@@ -36,19 +34,15 @@ public class RSSServiceTest {
 
     @Test
     public void addSiteEntries() {
-        SyndFeed feed = new SyndFeedImpl();
-
         Entry entry = TestUtility.createEntry("channel", "title", "link", new Date(), "content", "description");
         Site site = new Site("site-name", "site-link");
-
-        List<SyndEntry> entries = new ArrayList<>();
-        entries.add(entry.getSyndEntry());
-        feed.setEntries(entries);
+        List<Entry> entries = new ArrayList<>();
+        entries.add(entry);
 
         when(entryDAO.save(entry)).thenReturn(entry);
-        doReturn("content").when(service).getContentOfRSSLink(entry.getSyndEntry().getLink());
+        doReturn("content").when(service).getContentOfRSSLink(entry.getLink());
 
-        List<Entry> savedEntries = service.addSiteEntries(site, feed);
-        assertEquals(savedEntries.size(), feed.getEntries().size());
+        List<Entry> savedEntries = service.addSiteEntries(site, entries);
+        assertEquals(savedEntries.size(), entries.size());
     }
 }

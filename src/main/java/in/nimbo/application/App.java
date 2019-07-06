@@ -143,7 +143,7 @@ public class App {
     private static void show(List<Entry> entries) {
         for (Entry entry : entries) {
             System.out.println("Channel: " + entry.getChannel());
-            System.out.println("Title: " + entry.getSyndEntry().getTitle());
+            System.out.println("Title: " + entry.getTitle());
         }
     }
 }

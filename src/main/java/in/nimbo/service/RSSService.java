@@ -6,6 +6,7 @@ import com.rometools.rome.io.FeedException;
 import com.rometools.rome.io.SyndFeedInput;
 import com.rometools.rome.io.XmlReader;
 import in.nimbo.dao.EntryDAO;
+import in.nimbo.entity.Description;
 import in.nimbo.entity.Entry;
 import in.nimbo.entity.Site;
 import in.nimbo.exception.ContentExtractingException;
@@ -57,22 +58,21 @@ public class RSSService {
      * add all of new entries of site to database
      *  if unable to get content of one site, add it to database with empty content
      * @param site site of feed
-     * @param feed contain all feeds of site RSS url
+     * @param entries contain all entries of site
      * @return list of all new entries which saved in database
      *
      */
-    public List<Entry> addSiteEntries(Site site, SyndFeed feed) {
+    public List<Entry> addSiteEntries(Site site, List<Entry> entries) {
         List<Entry> newEntries = new ArrayList<>();
-        for (SyndEntry syndEntry : feed.getEntries()) {
-            Entry entry = new Entry(feed.getTitle(), syndEntry);
+        for (Entry entry : entries) {
             if (!entryDAO.contain(entry)) {
                 // fetch content of entry from link and save it in database
                 // if unable to get one of entry, ignore it
                 String contentOfRSSLink = "";
                 try {
-                    contentOfRSSLink = getContentOfRSSLink(syndEntry.getLink());
+                    contentOfRSSLink = getContentOfRSSLink(entry.getLink());
                 } catch (ContentExtractingException e) {
-                    logger.warn("Unable to extract content (ignored): " + syndEntry.getLink());
+                    logger.warn("Unable to extract content (ignored): " + entry.getLink());
                 }
                 entry.setContent(contentOfRSSLink);
 
@@ -80,15 +80,36 @@ public class RSSService {
                 newEntries.add(entry);
             }
         }
-        if (newEntries.size() == feed.getEntries().size()) {
+        if (newEntries.size() == entries.size()) {
             logger.info("Add " + newEntries.size() + " entries from: " + site.getLink());
         } else if (newEntries.isEmpty()) {
             logger.warn("There is no new entry from: " + site.getLink());
         } else {
-            logger.info("Add " + newEntries.size() + "/" + feed.getEntries().size() + " entries from: " + site.getLink());
+            logger.info("Add " + newEntries.size() + "/" + entries.size() + " entries from: " + site.getLink());
         }
 
         site.increaseNewsCount(newEntries.size());
+        return newEntries;
+    }
+
+    /**
+     * convert feed to a list of entry which it's entry content is not initialized
+     * @param feed data fetched from site with roman library
+     * @return entry
+     */
+    public List<Entry> getEntries(SyndFeed feed) {
+        List<Entry> newEntries = new ArrayList<>();
+        for (SyndEntry syndEntry : feed.getEntries()) {
+            Entry entry = new Entry(feed.getTitle(), syndEntry.getTitle());
+            if (syndEntry.getDescription() != null)
+                entry.setDescription(new Description(
+                        syndEntry.getDescription().getType(),
+                        syndEntry.getDescription().getMode(),
+                        syndEntry.getDescription().getValue()));
+            entry.setLink(syndEntry.getLink());
+            entry.setPublicationDate(syndEntry.getPublishedDate());
+            newEntries.add(entry);
+        }
         return newEntries;
     }
 

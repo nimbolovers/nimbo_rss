@@ -32,20 +32,18 @@ public class DescriptionDAOImpl implements DescriptionDAO {
         try {
             while (resultSet.next()) {
                 Description description = new Description();
-                SyndContent syndContent = new SyndContentImpl();
-                description.setSyndContent(syndContent);
 
                 // fetch id
                 description.setId(resultSet.getInt("id"));
 
                 // fetch type
-                syndContent.setType(resultSet.getString("type"));
+                description.setType(resultSet.getString("type"));
 
                 // fetch mode
-                syndContent.setMode(resultSet.getString("mode"));
+                description.setMode(resultSet.getString("mode"));
 
                 // fetch value
-                syndContent.setValue(resultSet.getString("value"));
+                description.setValue(resultSet.getString("value"));
 
                 // fetch feed_id
                 description.setFeed_id(resultSet.getInt("feed_id"));
@@ -93,9 +91,9 @@ public class DescriptionDAOImpl implements DescriptionDAO {
         try (ConnectionWrapper connection = ConnectionPool.getConnection()) {
             PreparedStatement preparedStatement = connection.prepareStatement(
                     "INSERT INTO description(type, mode, value, feed_id) VALUES(?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
-            preparedStatement.setString(1, description.getSyndContent().getType());
-            preparedStatement.setString(2, description.getSyndContent().getMode());
-            preparedStatement.setString(3, description.getSyndContent().getValue());
+            preparedStatement.setString(1, description.getType());
+            preparedStatement.setString(2, description.getMode());
+            preparedStatement.setString(3, description.getValue());
             preparedStatement.setInt(4, description.getFeed_id());
             int newId = preparedStatement.executeUpdate();
             description.setId(newId);

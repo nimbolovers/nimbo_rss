@@ -4,6 +4,7 @@ import com.rometools.rome.feed.synd.SyndContent;
 import com.rometools.rome.feed.synd.SyndContentImpl;
 import com.rometools.rome.feed.synd.SyndEntry;
 import com.rometools.rome.feed.synd.SyndEntryImpl;
+import in.nimbo.entity.Description;
 import in.nimbo.entity.Entry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -71,23 +72,20 @@ public class TestUtility {
                                     String content,
                                     String description) {
         Entry entry = new Entry();
-        SyndEntry syndEntry = new SyndEntryImpl();
-        SyndContent desc = null;
+        Description desc = null;
 
         if (description != null) {
-            desc = new SyndContentImpl();
+            desc = new Description();
             desc.setType("text/html");
             desc.setValue(description);
         }
 
-        syndEntry.setTitle(title);
-        syndEntry.setPublishedDate(pubDate);
-        syndEntry.setLink(link);
-        syndEntry.setDescription(desc);
-
+        entry.setDescription(desc);
         entry.setChannel(channel);
-        entry.setSyndEntry(syndEntry);
         entry.setContent(content);
+        entry.setPublicationDate(pubDate);
+        entry.setLink(link);
+        entry.setTitle(title);
         return entry;
     }
 

@@ -47,7 +47,8 @@ public class ScheduleUpdater implements Callable<Void> {
             List<Entry> newEntries;
             try {
                 SyndFeed syndFeed = rssService.fetchFromURL(site.getLink());
-                newEntries = rssService.addSiteEntries(site, syndFeed);
+                List<Entry> entries = rssService.getEntries(syndFeed);
+                newEntries = rssService.addSiteEntries(site, entries);
             } catch (RuntimeException e) {
                 throw new CalculateAverageUpdateException("Unable to fetch data from url: " + site.getLink());
             }
@@ -55,8 +56,7 @@ public class ScheduleUpdater implements Callable<Void> {
             if (newEntries.isEmpty())
                 throw new CalculateAverageUpdateException("There is no entry with publication date to calculate average time");
 
-            List<Date> pubDates = newEntries.stream().map(Entry::getSyndEntry)
-                    .map(SyndEntry::getPublishedDate)
+            List<Date> pubDates = newEntries.stream().map(Entry::getPublicationDate)
                     .filter(Objects::nonNull)
                     .collect(Collectors.toList());
 

@@ -139,16 +139,16 @@ public class EntryDAOTest {
 
         // test before
         Date beforeDate = TestUtility.createDate(2000, 1, 1);
-        assertEquals(entries.stream().filter(entry -> entry.getSyndEntry().getPublishedDate()
+        assertEquals(entries.stream().filter(entry -> entry.getPublicationDate()
                         .compareTo(beforeDate) >= 0).collect(Collectors.toList()),
                 entryDAO.filterEntryByTitle("channel", "title", beforeDate, null));
         // test after
         Date afterDate = TestUtility.createDate(2030, 1, 1);
-        assertEquals(entries.stream().filter(entry -> entry.getSyndEntry().getPublishedDate()
+        assertEquals(entries.stream().filter(entry -> entry.getPublicationDate()
                         .compareTo(beforeDate) >= 0).collect(Collectors.toList()),
                 entryDAO.filterEntryByTitle("channel", "title", null, afterDate));
         // test between
-        assertEquals(entries.stream().filter(entry -> entry.getSyndEntry().getPublishedDate()
+        assertEquals(entries.stream().filter(entry -> entry.getPublicationDate()
                         .compareTo(beforeDate) >= 0).collect(Collectors.toList()),
                 entryDAO.filterEntryByTitle("channel", "title", beforeDate, afterDate));
     }
@@ -162,16 +162,16 @@ public class EntryDAOTest {
 
         // test before
         Date beforeDate = TestUtility.createDate(2000, 1, 1);
-        assertEquals(entries.stream().filter(entry -> entry.getSyndEntry().getPublishedDate()
+        assertEquals(entries.stream().filter(entry -> entry.getPublicationDate()
                         .compareTo(beforeDate) >= 0).collect(Collectors.toList()),
                 entryDAO.filterEntryByContent("channel", "content", beforeDate, null));
         // test after
         Date afterDate = TestUtility.createDate(2030, 1, 1);
-        assertEquals(entries.stream().filter(entry -> entry.getSyndEntry().getPublishedDate()
+        assertEquals(entries.stream().filter(entry -> entry.getPublicationDate()
                         .compareTo(beforeDate) >= 0).collect(Collectors.toList()),
                 entryDAO.filterEntryByContent("channel", "content", null, afterDate));
         // test between
-        assertEquals(entries.stream().filter(entry -> entry.getSyndEntry().getPublishedDate()
+        assertEquals(entries.stream().filter(entry -> entry.getPublicationDate()
                         .compareTo(beforeDate) >= 0).collect(Collectors.toList()),
                 entryDAO.filterEntryByContent("channel", "content", beforeDate, afterDate));
     }

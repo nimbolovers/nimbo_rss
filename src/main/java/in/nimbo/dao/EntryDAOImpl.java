@@ -45,8 +45,6 @@ public class EntryDAOImpl implements EntryDAO {
         try {
             while (resultSet.next()) {
                 Entry entry = new Entry();
-                SyndEntry syndEntry = new SyndEntryImpl();
-                entry.setSyndEntry(syndEntry);
 
                 // fetch id
                 entry.setId(resultSet.getInt("id"));
@@ -55,12 +53,12 @@ public class EntryDAOImpl implements EntryDAO {
                 entry.setChannel(resultSet.getString("channel"));
 
                 // fetch title
-                syndEntry.setTitle(resultSet.getString("title"));
+                entry.setTitle(resultSet.getString("title"));
 
                 // fetch description
                 try {
                     Description description = descriptionDAO.getByFeedId(entry.getId());
-                    syndEntry.setDescription(description.getSyndContent());
+                    entry.setDescription(description);
                 } catch (RecordNotFoundException e) {
                    // doesn't set description and ignore error
                 }
@@ -70,10 +68,10 @@ public class EntryDAOImpl implements EntryDAO {
                 entry.setContent(content.getValue());
 
                 // fetch link
-                syndEntry.setLink(resultSet.getString("link"));
+                entry.setLink(resultSet.getString("link"));
 
                 // fetch publication data
-                syndEntry.setPublishedDate(resultSet.getTimestamp("pub_date"));
+                entry.setPublicationDate(resultSet.getTimestamp("pub_date"));
 
                 result.add(entry);
             }
@@ -191,12 +189,12 @@ public class EntryDAOImpl implements EntryDAO {
             PreparedStatement preparedStatement = connection.prepareStatement(
                     "INSERT INTO feed(channel, title, pub_date, link) VALUES(?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
             preparedStatement.setString(1, entry.getChannel());
-            preparedStatement.setString(2, entry.getSyndEntry().getTitle());
-            if (entry.getSyndEntry().getPublishedDate() != null)
-                preparedStatement.setTimestamp(3, new java.sql.Timestamp(entry.getSyndEntry().getPublishedDate().getTime()));
+            preparedStatement.setString(2, entry.getTitle());
+            if (entry.getPublicationDate() != null)
+                preparedStatement.setTimestamp(3, new java.sql.Timestamp(entry.getPublicationDate().getTime()));
             else
                 preparedStatement.setTimestamp(3, null);
-            preparedStatement.setString(4, entry.getSyndEntry().getLink());
+            preparedStatement.setString(4, entry.getLink());
             preparedStatement.executeUpdate();
             ResultSet generatedKeys = preparedStatement.getGeneratedKeys();
             generatedKeys.next();
@@ -204,10 +202,9 @@ public class EntryDAOImpl implements EntryDAO {
             entry.setId(newId);
 
             // add entry description
-            if (entry.getSyndEntry().getDescription() != null) {
-                Description description = new Description(entry.getSyndEntry().getDescription());
-                description.setFeed_id(newId);
-                descriptionDAO.save(description);
+            if (entry.getDescription() != null) {
+                entry.getDescription().setFeed_id(newId);
+                descriptionDAO.save(entry.getDescription());
             }
 
             // add entry contents
@@ -233,7 +230,7 @@ public class EntryDAOImpl implements EntryDAO {
         try (ConnectionWrapper connection = ConnectionPool.getConnection()) {
             PreparedStatement preparedStatement = connection.prepareStatement(
                     "SELECT COUNT(*) FROM feed WHERE link=?");
-            preparedStatement.setString(1, entry.getSyndEntry().getLink());
+            preparedStatement.setString(1, entry.getLink());
             ResultSet resultSet = preparedStatement.executeQuery();
             resultSet.next();
             return resultSet.getInt(1) > 0;
