@@ -5,10 +5,6 @@ import com.rometools.rome.feed.synd.SyndFeed;
 import com.rometools.rome.feed.synd.SyndFeedImpl;
 import in.nimbo.TestUtility;
 import in.nimbo.dao.EntryDAO;
-
-import static org.mockito.Mockito.*;
-import static org.junit.Assert.*;
-
 import in.nimbo.entity.Entry;
 import in.nimbo.entity.Site;
 import org.junit.BeforeClass;
@@ -21,7 +17,9 @@ import org.powermock.modules.junit4.PowerMockRunner;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.stream.Collectors;
+
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.*;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({EntryDAO.class, Entry.class})

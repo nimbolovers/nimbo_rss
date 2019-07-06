@@ -30,10 +30,25 @@ public class RSSService {
         this.entryDAO = entryDAO;
     }
 
+
+    /**
+     * @param channel is the channel of entry! If null don't affect on result
+     * @param title is the title of entry! It checks entry title contains this title or not! If null don't affect on result
+     * @param startTime is the lower bound for publication date of entries! If null don't affect on result
+     * @param finishTime is the upper bound for publication date of entries! If null don't affect on result
+     * @return entries that accepted all filters
+     */
     public List<Entry> filterEntryByTitle(String channel, String title, Date startTime, Date finishTime) {
         return entryDAO.filterEntryByTitle(channel, title, startTime, finishTime);
     }
 
+    /**
+     * @param channel is the channel of entry! If null don't affect on result
+     * @param content is the content of entry! It checks entry content contains this content or not! If null don't affect on result
+     * @param startTime is the lower bound for publication date of entries! If null don't affect on result
+     * @param finishTime is the upper bound for publication date of entries! If null don't affect on result
+     * @return entries that accepted all filters
+     */
     public List<Entry> filterEntryByContent(String channel, String content, Date startTime, Date finishTime) {
         return entryDAO.filterEntryByContent(channel, content, startTime, finishTime);
     }

@@ -14,6 +14,8 @@ import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Paths;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -22,6 +24,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Properties;
 import java.util.stream.Collectors;
 
 import static org.junit.Assert.*;
@@ -33,16 +36,25 @@ public class EntryDAOTest {
     private static EntryDAO entryDAO;
 
     @BeforeClass
-    public static void init() throws SQLException, ClassNotFoundException {
+    public static void init() throws SQLException, ClassNotFoundException, IOException {
         TestUtility.disableJOOQLogo();
 
         DescriptionDAO descriptionDAO = new DescriptionDAOImpl();
         ContentDAO contentDAO = new ContentDAOImpl();
         entryDAO = new EntryDAOImpl(descriptionDAO, contentDAO);
 
+        ClassLoader loader = Thread.currentThread().getContextClassLoader();
+        Properties properties = new Properties();
+        InputStream is = loader.getResourceAsStream("database.properties");
+        properties.load(is);
+
         String initialH2Query = TestUtility.getFileContent(Paths.get("db/db_tables_sql.sql"));
         Class.forName("org.h2.Driver");
-        connection = new ConnectionWrapper(DriverManager.getConnection("jdbc:h2:mem:test/h2_rss", "user", ""));
+        connection = new ConnectionWrapper(DriverManager.getConnection(
+                properties.getProperty("database.url"),
+                properties.getProperty("database.username"),
+                properties.getProperty("database.password"))
+        );
         connection.prepareStatement(initialH2Query).executeUpdate();
         connection = PowerMockito.spy(connection);
     }
