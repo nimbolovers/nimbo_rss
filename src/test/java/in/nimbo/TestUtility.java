@@ -85,7 +85,7 @@ public class TestUtility {
      * @param day day
      * @return date with given inputs
      */
-    public static Date getDate(int year, int month, int day) {
+    public static Date createDate(int year, int month, int day) {
         LocalDateTime dateTime = LocalDateTime.of(LocalDate.of(year, month, day), LocalTime.of(0, 0));
         return Date.from(dateTime.atZone(ZoneId.systemDefault()).toInstant());
     }

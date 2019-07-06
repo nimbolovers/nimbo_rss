@@ -7,7 +7,9 @@ import in.nimbo.dao.pool.ConnectionWrapper;
 import in.nimbo.entity.Content;
 import in.nimbo.entity.Description;
 import in.nimbo.entity.Entry;
+import in.nimbo.exception.QueryException;
 import in.nimbo.exception.RecordNotFoundException;
+import in.nimbo.exception.ResultSetFetchException;
 import org.jooq.Record;
 import org.jooq.SQLDialect;
 import org.jooq.SelectConditionStep;
@@ -78,7 +80,7 @@ public class EntryDAOImpl implements EntryDAO {
             return result;
         } catch (SQLException e) {
             logger.error("Unable to fetch data from ResultSet: " + e.getMessage());
-            throw new RuntimeException("Unable to fetch data from ResultSet", e);
+            throw new ResultSetFetchException("Unable to fetch data from ResultSet", e);
         }
     }
 
@@ -115,7 +117,7 @@ public class EntryDAOImpl implements EntryDAO {
             return createEntryFromResultSet(resultSet);
         } catch (SQLException e) {
             logger.error("Unable to execute query: " + e.getMessage());
-            throw new RuntimeException("Unable to fetch data from ResultSet", e);
+            throw new QueryException("Unable to execute query", e);
         }
     }
 
@@ -153,7 +155,7 @@ public class EntryDAOImpl implements EntryDAO {
             return createEntryFromResultSet(resultSet);
         } catch (SQLException e) {
             logger.error("Unable to execute query: " + e.getMessage());
-            throw new RuntimeException("Unable to fetch data from ResultSet", e);
+            throw new QueryException("Unable to execute query", e);
         }
     }
 
@@ -170,7 +172,7 @@ public class EntryDAOImpl implements EntryDAO {
             return createEntryFromResultSet(resultSet);
         } catch (SQLException e) {
             logger.error("Unable to execute query: " + e.getMessage());
-            throw new RuntimeException("Unable to execute query", e);
+            throw new QueryException("Unable to execute query", e);
         }
     }
 
@@ -214,7 +216,7 @@ public class EntryDAOImpl implements EntryDAO {
 
         } catch (SQLException e) {
             logger.error("Unable to save entry with id=" + entry.getId() + ": " + e.getMessage());
-            throw new RuntimeException("Unable to save entry with id=" + entry.getId(), e);
+            throw new QueryException("Unable to save entry with id=" + entry.getId(), e);
         }
         return entry;
     }
@@ -237,7 +239,7 @@ public class EntryDAOImpl implements EntryDAO {
             return resultSet.getInt(1) > 0;
         } catch (SQLException e) {
             logger.error("Unable to execute query: " + e.getMessage());
-            throw new RuntimeException("Unable to execute query", e);
+            throw new QueryException("Unable to execute query", e);
         }
     }
 }

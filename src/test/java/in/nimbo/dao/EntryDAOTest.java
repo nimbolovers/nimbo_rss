@@ -5,6 +5,7 @@ import in.nimbo.dao.pool.ConnectionPool;
 import in.nimbo.dao.pool.ConnectionWrapper;
 import in.nimbo.entity.Entry;
 import in.nimbo.exception.RecordNotFoundException;
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -18,10 +19,6 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -36,7 +33,7 @@ public class EntryDAOTest {
     private static EntryDAO entryDAO;
 
     @BeforeClass
-    public static void init() throws SQLException {
+    public static void init() throws SQLException, ClassNotFoundException {
         TestUtility.disableJOOQLogo();
 
         DescriptionDAO descriptionDAO = new DescriptionDAOImpl();
@@ -44,9 +41,16 @@ public class EntryDAOTest {
         entryDAO = new EntryDAOImpl(descriptionDAO, contentDAO);
 
         String initialH2Query = TestUtility.getFileContent(Paths.get("db/db_tables_sql.sql"));
+        Class.forName("org.h2.Driver");
         connection = new ConnectionWrapper(DriverManager.getConnection("jdbc:h2:mem:test/h2_rss", "user", ""));
         connection.prepareStatement(initialH2Query).executeUpdate();
         connection = PowerMockito.spy(connection);
+    }
+
+    @AfterClass
+    public static void finish() throws SQLException {
+        if (connection != null)
+            connection.close();
     }
 
     @Before
@@ -113,8 +117,8 @@ public class EntryDAOTest {
 
     private List<Entry> createExampleEntries2() {
         List<Entry> entries = new ArrayList<>();
-        entries.add(TestUtility.createEntry("channel 1", "title 1", "2010", TestUtility.getDate(2010, 1, 1), "content 1", "desc 1"));
-        entries.add(TestUtility.createEntry("channel 2", "title 2", "2020", TestUtility.getDate(2020, 1, 1), "content 2", "desc 2"));
+        entries.add(TestUtility.createEntry("channel", "title 1", "2010", TestUtility.createDate(2010, 1, 1), "content 1", "desc 1"));
+        entries.add(TestUtility.createEntry("channel", "title 2", "2020", TestUtility.createDate(2020, 1, 1), "content 2", "desc 2"));
         return entries;
     }
 
@@ -126,19 +130,19 @@ public class EntryDAOTest {
         }
 
         // test before
-        Date beforeDate = TestUtility.getDate(2000, 1, 1);
+        Date beforeDate = TestUtility.createDate(2000, 1, 1);
         assertEquals(entries.stream().filter(entry -> entry.getSyndEntry().getPublishedDate()
                         .compareTo(beforeDate) >= 0).collect(Collectors.toList()),
-                entryDAO.filterEntryByTitle(null, "title", beforeDate, null));
+                entryDAO.filterEntryByTitle("channel", "title", beforeDate, null));
         // test after
-        Date afterDate = TestUtility.getDate(2030, 1, 1);
+        Date afterDate = TestUtility.createDate(2030, 1, 1);
         assertEquals(entries.stream().filter(entry -> entry.getSyndEntry().getPublishedDate()
                         .compareTo(beforeDate) >= 0).collect(Collectors.toList()),
-                entryDAO.filterEntryByTitle(null, "title", null, afterDate));
+                entryDAO.filterEntryByTitle("channel", "title", null, afterDate));
         // test between
         assertEquals(entries.stream().filter(entry -> entry.getSyndEntry().getPublishedDate()
                         .compareTo(beforeDate) >= 0).collect(Collectors.toList()),
-                entryDAO.filterEntryByTitle(null, "title", beforeDate, afterDate));
+                entryDAO.filterEntryByTitle("channel", "title", beforeDate, afterDate));
     }
 
     @Test
@@ -149,19 +153,19 @@ public class EntryDAOTest {
         }
 
         // test before
-        Date beforeDate = TestUtility.getDate(2000, 1, 1);
+        Date beforeDate = TestUtility.createDate(2000, 1, 1);
         assertEquals(entries.stream().filter(entry -> entry.getSyndEntry().getPublishedDate()
                         .compareTo(beforeDate) >= 0).collect(Collectors.toList()),
-                entryDAO.filterEntryByContent(null, "content", beforeDate, null));
+                entryDAO.filterEntryByContent("channel", "content", beforeDate, null));
         // test after
-        Date afterDate = TestUtility.getDate(2030, 1, 1);
+        Date afterDate = TestUtility.createDate(2030, 1, 1);
         assertEquals(entries.stream().filter(entry -> entry.getSyndEntry().getPublishedDate()
                         .compareTo(beforeDate) >= 0).collect(Collectors.toList()),
-                entryDAO.filterEntryByContent(null, "content", null, afterDate));
+                entryDAO.filterEntryByContent("channel", "content", null, afterDate));
         // test between
         assertEquals(entries.stream().filter(entry -> entry.getSyndEntry().getPublishedDate()
                         .compareTo(beforeDate) >= 0).collect(Collectors.toList()),
-                entryDAO.filterEntryByContent(null, "content", beforeDate, afterDate));
+                entryDAO.filterEntryByContent("channel", "content", beforeDate, afterDate));
     }
 
     @Test

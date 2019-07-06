@@ -3,7 +3,9 @@ package in.nimbo.dao;
 import in.nimbo.dao.pool.ConnectionPool;
 import in.nimbo.dao.pool.ConnectionWrapper;
 import in.nimbo.entity.Content;
+import in.nimbo.exception.QueryException;
 import in.nimbo.exception.RecordNotFoundException;
+import in.nimbo.exception.ResultSetFetchException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,7 +42,7 @@ public class ContentDAOImpl implements ContentDAO {
             }
         } catch (SQLException e) {
             logger.error("Unable to fetch data from ResultSet: " + e.getMessage());
-            throw new RuntimeException("Unable to fetch data from ResultSet", e);
+            throw new ResultSetFetchException("Unable to fetch data from ResultSet", e);
         }
         return contents;
     }
@@ -64,7 +66,7 @@ public class ContentDAOImpl implements ContentDAO {
             throw new RecordNotFoundException("content which has feed_id=" + feedId + " not found", e);
         } catch (SQLException e) {
             logger.error("Unable to execute query: " + e.getMessage());
-            throw new RuntimeException("Unable to execute query", e);
+            throw new QueryException("Unable to execute query", e);
         }
     }
 
@@ -88,7 +90,7 @@ public class ContentDAOImpl implements ContentDAO {
             content.setId(newId);
         } catch (SQLException e) {
             logger.error("Unable to execute query: " + e.getMessage());
-            throw new RuntimeException("Unable to execute query", e);
+            throw new QueryException("Unable to execute query", e);
         }
         return content;
     }

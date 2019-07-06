@@ -2,6 +2,7 @@ package in.nimbo.entity;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
 public class Site {
     private int id;
@@ -76,13 +77,14 @@ public class Site {
     }
 
     @Override
-    public String toString() {
-        return "Site{" +
-                "name='" + name + '\'' +
-                ", link='" + link + '\'' +
-                ", newsCount=" + newsCount +
-                ", avgUpdateTime=" + avgUpdateTime +
-                ", lastUpdate=" + lastUpdate +
-                '}';
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Site site = (Site) o;
+        return newsCount == site.newsCount &&
+                avgUpdateTime == site.avgUpdateTime &&
+                Objects.equals(name, site.name) &&
+                Objects.equals(link, site.link) &&
+                Objects.equals(lastUpdate, site.lastUpdate);
     }
 }
