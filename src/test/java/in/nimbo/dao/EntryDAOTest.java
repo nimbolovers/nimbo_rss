@@ -36,25 +36,21 @@ public class EntryDAOTest {
     private static EntryDAO entryDAO;
 
     @BeforeClass
-    public static void init() throws SQLException, ClassNotFoundException, IOException {
+    public static void init() throws SQLException, ClassNotFoundException {
         TestUtility.disableJOOQLogo();
 
         DescriptionDAO descriptionDAO = new DescriptionDAOImpl();
         ContentDAO contentDAO = new ContentDAOImpl();
         entryDAO = new EntryDAOImpl(descriptionDAO, contentDAO);
 
-        ClassLoader loader = Thread.currentThread().getContextClassLoader();
-        Properties properties = new Properties();
-        InputStream is = loader.getResourceAsStream("database.properties");
-        properties.load(is);
-
         String initialH2Query = TestUtility.getFileContent(Paths.get("db/db_tables_sql.sql"));
-        Class.forName("org.h2.Driver");
+        Class.forName(TestUtility.getDatabaseProperties().getProperty("database.driver"));
         connection = new ConnectionWrapper(DriverManager.getConnection(
-                properties.getProperty("database.url"),
-                properties.getProperty("database.username"),
-                properties.getProperty("database.password"))
+                TestUtility.getDatabaseProperties().getProperty("database.url"),
+                TestUtility.getDatabaseProperties().getProperty("database.username"),
+                TestUtility.getDatabaseProperties().getProperty("database.password"))
         );
+
         connection.prepareStatement(initialH2Query).executeUpdate();
         connection = PowerMockito.spy(connection);
     }

@@ -5,19 +5,28 @@ import com.rometools.rome.feed.synd.SyndContentImpl;
 import com.rometools.rome.feed.synd.SyndEntry;
 import com.rometools.rome.feed.synd.SyndEntryImpl;
 import in.nimbo.entity.Entry;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.util.Date;
+import java.util.Properties;
 
+/**
+ * Utility class for do same work between tests
+ */
 public class TestUtility {
+    private static Properties databaseProp;
+    private static Logger logger = LoggerFactory.getLogger(TestUtility.class);
+
     private TestUtility() {
     }
 
@@ -26,6 +35,25 @@ public class TestUtility {
      */
     public static void disableJOOQLogo() {
         System.getProperties().setProperty("org.jooq.no-logo", "true");
+    }
+
+    /**
+     *
+     * @return property for get properties of database
+     */
+    public static Properties getDatabaseProperties() {
+        if (databaseProp != null)
+            return databaseProp;
+        try {
+            ClassLoader loader = TestUtility.class.getClassLoader();
+            databaseProp = new Properties();
+            InputStream is = loader.getResourceAsStream("database.properties");
+            databaseProp.load(is);
+            return databaseProp;
+        } catch (IOException e) {
+            logger.error("Unable to load database properties", e);
+            throw new RuntimeException("Unable to load database properties", e);
+        }
     }
 
     /**
@@ -74,6 +102,7 @@ public class TestUtility {
             byte[] bytes = Files.readAllBytes(path);
             return new String(bytes, StandardCharsets.UTF_8);
         } catch (IOException e) {
+            logger.error("Couldn't read file: " + path, e);
             throw new RuntimeException("Couldn't read file: " + path, e);
         }
     }
