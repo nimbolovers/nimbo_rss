@@ -10,4 +10,6 @@ public interface SiteDAO {
     Site update(Site site);
 
     List<Site> getSites();
+
+    int getCount();
 }

@@ -1,15 +1,15 @@
 package in.nimbo.service;
 
-import com.google.protobuf.ServiceException;
 import com.rometools.rome.feed.synd.SyndEntry;
 import com.rometools.rome.feed.synd.SyndFeed;
 import com.rometools.rome.io.FeedException;
 import com.rometools.rome.io.SyndFeedInput;
 import in.nimbo.application.Utility;
 import in.nimbo.dao.EntryDAO;
-import in.nimbo.entity.Description;
-import in.nimbo.entity.Entry;
-import in.nimbo.entity.Site;
+import in.nimbo.dao.SiteDAO;
+import in.nimbo.entity.*;
+import in.nimbo.entity.report.HourReport;
+import in.nimbo.entity.report.DateReport;
 import in.nimbo.exception.ContentExtractingException;
 import in.nimbo.exception.QueryException;
 import in.nimbo.exception.ResultSetFetchException;
@@ -30,10 +30,13 @@ import java.util.List;
 
 public class RSSService {
     private EntryDAO entryDAO;
+    private SiteDAO siteDAO;
     private Logger logger = LoggerFactory.getLogger(RSSService.class);
+    private int DAY_COUNT = 3;
 
-    public RSSService(EntryDAO entryDAO) {
+    public RSSService(EntryDAO entryDAO, SiteDAO siteDAO) {
         this.entryDAO = entryDAO;
+        this.siteDAO = siteDAO;
     }
 
     /**
@@ -161,5 +164,24 @@ public class RSSService {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    /**
+     * count of news for each day for each site
+     * @param title string which must appeared in the title (optional)
+     * @return sorted list of HourReport by year and month and day
+     *          (average report for each site is DAY_COUNT)
+     */
+    public List<DateReport> getReports(String title){
+        return entryDAO.getDateReports(title, DAY_COUNT * siteDAO.getCount());
+    }
+
+    /**
+     * count of news for each hour for each site
+     * @param title string which must appeared in the title (optional)
+     * @return list of HourReport
+     */
+    public List<HourReport> getHourReports(String title){
+        return entryDAO.getHourReports(title);
     }
 }

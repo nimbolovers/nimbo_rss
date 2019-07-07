@@ -3,8 +3,11 @@ package in.nimbo.service;
 import com.rometools.rome.feed.synd.*;
 import in.nimbo.TestUtility;
 import in.nimbo.dao.EntryDAO;
+import in.nimbo.dao.SiteDAO;
 import in.nimbo.entity.Entry;
 import in.nimbo.entity.Site;
+import in.nimbo.entity.report.HourReport;
+import in.nimbo.entity.report.DateReport;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -16,6 +19,8 @@ import org.powermock.modules.junit4.PowerMockRunner;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.*;
@@ -25,6 +30,7 @@ import static org.mockito.Mockito.*;
 public class RSSServiceTest {
     private static EntryDAO entryDAO;
     private static RSSService rssService;
+    private static SiteDAO siteDAO;
 
     @BeforeClass
     public static void init() {
@@ -34,7 +40,8 @@ public class RSSServiceTest {
     @Before
     public void beforeAnyTest() {
         entryDAO = PowerMockito.mock(EntryDAO.class);
-        rssService = spy(new RSSService(entryDAO));
+        siteDAO = PowerMockito.mock(SiteDAO.class);
+        rssService = spy(new RSSService(entryDAO, siteDAO));
     }
 
     @Test
@@ -78,5 +85,30 @@ public class RSSServiceTest {
         }
 
         assertEquals(entries, rssService.getEntries(syndFeed));
+    }
+
+    @Test
+    public void getDateReportsTest(){
+        when(siteDAO.getCount()).thenReturn(2);
+        List<DateReport> reports = new ArrayList<>();
+        int limit = 6;
+        for (int i = 0; i < limit; i++) {
+            DateReport report = new DateReport("test" , i + 1, new Date());
+            reports.add(report);
+        }
+        when(entryDAO.getDateReports("test", limit)).thenReturn(reports);
+        List<DateReport> test = rssService.getReports("test");
+        assertEquals(test, reports);
+    }
+
+    @Test
+    public void getHourReportTest(){
+        List<HourReport> reports = new ArrayList<>();
+        for (int i = 0; i < 5; i++) {
+            reports.add(new HourReport("channel", i + 1, i));
+        }
+        when(entryDAO.getHourReports("test")).thenReturn(reports);
+
+        assertEquals(reports, rssService.getHourReports("test"));
     }
 }

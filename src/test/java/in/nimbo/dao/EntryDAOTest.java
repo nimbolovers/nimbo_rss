@@ -4,6 +4,8 @@ import in.nimbo.TestUtility;
 import in.nimbo.dao.pool.ConnectionPool;
 import in.nimbo.dao.pool.ConnectionWrapper;
 import in.nimbo.entity.Entry;
+import in.nimbo.entity.report.HourReport;
+import in.nimbo.entity.report.DateReport;
 import in.nimbo.exception.RecordNotFoundException;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -14,17 +16,13 @@ import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.Paths;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 
 import static org.junit.Assert.*;
@@ -169,5 +167,62 @@ public class EntryDAOTest {
         assertTrue(entryDAO.contain(TestUtility.createEntry("channel-test", "title-test", "link 1", new Date(), "content-test", "desc-test")));
         assertTrue(entryDAO.contain(TestUtility.createEntry("channel-test", "title-test", "link 2", new Date(), "content-test", "desc-test")));
         assertFalse(entryDAO.contain(TestUtility.createEntry("channel-test", "title-test", "link 3", new Date(), "content-test", "desc-test")));
+    }
+
+    @Test
+    public void getDateReportsTest() throws SQLException {
+        String sql = "insert into feed (channel, title, pub_date) values (?, ?, ?)";
+        List<DateReport> reports = new ArrayList<>();
+        String channel = "test";
+        String title = "test";
+        int limit = 10;
+        for (int i = 0; i < limit; i++) {
+            int count = ThreadLocalRandom.current().nextInt(10) + 1;
+            for (int j = 0; j < count; j++) {
+                PreparedStatement statement = connection.prepareStatement(sql);
+                statement.setString(1, channel);
+                statement.setString(2, title);
+                statement.setTimestamp(3, new java.sql.Timestamp(TestUtility.createDate(2010, 6, i + 1).getTime()));
+                statement.executeUpdate();
+            }
+            int year = 2010;
+            int month = 6;
+            int day = i + 1;
+            DateReport report = new DateReport(channel, count, TestUtility.createDate(year, month, day));
+            reports.add(report);
+        }
+
+        Collections.reverse(reports);
+
+        assertEquals(reports, entryDAO.getDateReports("", limit));
+    }
+
+    @Test
+    public void getHourReportTest() throws SQLException {
+        String sql = "insert into feed (channel, title, pub_date) values (?, ?, ?)";
+        Set<HourReport> reports = new HashSet<>();
+        String channel = "test";
+        String title = "test";
+        int limit = 10;
+        for (int i = 0; i < limit; i++) {
+            int count = ThreadLocalRandom.current().nextInt(limit) + 1;
+            for (int j = 0; j < count; j++) {
+                Date date = TestUtility.createDate(2010, 6, i + 1);
+                date.setTime(date.getTime() + i * 3600 * 1000);
+                ConnectionWrapper connection = ConnectionPool.getConnection();
+                PreparedStatement statement = connection.prepareStatement(sql);
+                statement.setString(1, channel);
+                statement.setString(2, title);
+                statement.setTimestamp(3, new java.sql.Timestamp(date.getTime()));
+                statement.executeUpdate();
+            }
+            HourReport report = new HourReport(channel, count, i);
+            reports.add(report);
+        }
+
+        List<HourReport> realAnswer = entryDAO.getHourReports(title);
+        Set<HourReport> hourReports = new HashSet<>();
+        hourReports.addAll(realAnswer);
+        assertEquals(hourReports, reports);
     }
 }

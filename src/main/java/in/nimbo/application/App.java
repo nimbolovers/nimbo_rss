@@ -26,14 +26,14 @@ public class App {
         DescriptionDAO descriptionDAO = new DescriptionDAOImpl();
         ContentDAO contentDAO = new ContentDAOImpl();
         EntryDAO entryDAO = new EntryDAOImpl(descriptionDAO, contentDAO);
-        RSSService rssService = new RSSService(entryDAO);
+        SiteDAO siteDAO = new SiteDAOImpl();
+        RSSService rssService = new RSSService(entryDAO, siteDAO);
 
         // Initialize Schedule Service
         List<Site> sites = new ArrayList<>();
         Schedule schedule = new Schedule(rssService, sites);
 
         // Load sites
-        SiteDAO siteDAO = new SiteDAOImpl();
         sites = siteDAO.getSites();
         for (Site site : sites) {
             schedule.scheduleSite(site);

@@ -1,6 +1,5 @@
 package in.nimbo;
 
-import in.nimbo.application.App;
 import in.nimbo.application.Utility;
 import in.nimbo.application.cli.AddCLI;
 import in.nimbo.dao.SiteDAO;
