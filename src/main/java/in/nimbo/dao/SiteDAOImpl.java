@@ -52,7 +52,7 @@ public class SiteDAOImpl implements SiteDAO {
                 sites.add(site);
             }
         } catch (SQLException e) {
-            logger.error("Unable to fetch data from ResultSet: " + e.getMessage());
+            logger.error("Unable to fetch data from ResultSet: " + e.getMessage(), e);
             throw new ResultSetFetchException("Unable to fetch data from ResultSet", e);
         }
         return sites;
@@ -70,7 +70,7 @@ public class SiteDAOImpl implements SiteDAO {
             ResultSet resultSet = preparedStatement.executeQuery();
             return createSiteFromResultSet(resultSet);
         } catch (SQLException e) {
-            logger.error("Unable to execute query: " + e.getMessage());
+            logger.error("Unable to execute query: " + e.getMessage(), e);
             throw new QueryException("Unable to execute query", e);
         }
     }
@@ -102,7 +102,7 @@ public class SiteDAOImpl implements SiteDAO {
             int newId = generatedKeys.getInt(1);
             site.setId(newId);
         } catch (SQLException e) {
-            logger.error("Unable to execute query: " + e.getMessage());
+            logger.error("Unable to execute query: " + e.getMessage(), e);
             throw new QueryException("Unable to execute query", e);
         }
         return site;
@@ -134,7 +134,7 @@ public class SiteDAOImpl implements SiteDAO {
 
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
-            logger.error("Unable to execute query: " + e.getMessage());
+            logger.error("Unable to execute query: " + e.getMessage(), e);
             throw new QueryException("Unable to execute query", e);
         }
         return site;

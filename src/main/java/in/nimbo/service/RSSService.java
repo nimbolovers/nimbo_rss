@@ -73,7 +73,7 @@ public class RSSService {
                 try {
                     contentOfRSSLink = getContentOfRSSLink(entry.getLink());
                 } catch (ContentExtractingException e) {
-                    logger.warn("Unable to extract content (ignored): " + entry.getLink());
+                    logger.warn("Unable to extract content (ignored): " + entry.getLink(), e);
                 }
                 entry.setContent(contentOfRSSLink);
 
@@ -150,10 +150,10 @@ public class RSSService {
             logger.info("RSS data fetched successfully from: "+ url);
             return feed;
         } catch (FeedException e) {
-            logger.error("Invalid RSS URL: " + url);
+            logger.error("Invalid RSS URL: " + url, e);
             throw new RuntimeException("Invalid RSS URL: " + url, e);
         } catch (MalformedURLException e) {
-            logger.error("Illegal URL format: " + url);
+            logger.error("Illegal URL format: " + url, e);
             throw new RuntimeException("Illegal URL format", e);
         } catch (IOException e) {
             throw new RuntimeException(e);

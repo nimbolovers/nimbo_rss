@@ -41,7 +41,7 @@ public class ContentDAOImpl implements ContentDAO {
                 contents.add(content);
             }
         } catch (SQLException e) {
-            logger.error("Unable to fetch data from ResultSet: " + e.getMessage());
+            logger.error("Unable to fetch data from ResultSet: " + e.getMessage(), e);
             throw new ResultSetFetchException("Unable to fetch data from ResultSet", e);
         }
         return contents;
@@ -65,7 +65,7 @@ public class ContentDAOImpl implements ContentDAO {
         } catch (IndexOutOfBoundsException e) {
             throw new RecordNotFoundException("content which has feed_id=" + feedId + " not found", e);
         } catch (SQLException e) {
-            logger.error("Unable to execute query: " + e.getMessage());
+            logger.error("Unable to execute query: " + e.getMessage(), e);
             throw new QueryException("Unable to execute query", e);
         }
     }
@@ -89,7 +89,7 @@ public class ContentDAOImpl implements ContentDAO {
             int newId = generatedKeys.getInt(1);
             content.setId(newId);
         } catch (SQLException e) {
-            logger.error("Unable to execute query: " + e.getMessage());
+            logger.error("Unable to execute query: " + e.getMessage(), e);
             throw new QueryException("Unable to execute query", e);
         }
         return content;
