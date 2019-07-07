@@ -27,7 +27,7 @@ public class Utility {
      * @param urlLink link
      * @return encoded URL
      */
-    public static URL encodeURL(String urlLink) {
+    public static URL encodeURL(String urlLink) throws MalformedURLException {
         try {
             if (urlLink.contains("%")) // it is encoded, so just return
                 return new URL(urlLink);
@@ -38,10 +38,8 @@ public class Utility {
                 URI uri = new URI(url.getProtocol(), url.getUserInfo(), url.getHost(), url.getPort(), url.getPath(), url.getQuery(), url.getRef());
                 return new URL(uri.toASCIIString());
             }
-        } catch (MalformedURLException e) {
-            throw new RuntimeException(e);
-        } catch (URISyntaxException e) {
-            throw new RuntimeException("Illegal URI syntax", e);
+        } catch (MalformedURLException | URISyntaxException e) {
+            throw new MalformedURLException("Illegal URI syntax: " + urlLink);
         }
     }
 
