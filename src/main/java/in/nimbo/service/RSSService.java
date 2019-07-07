@@ -48,7 +48,7 @@ public class RSSService {
      * @return entries that accepted all filters
      * @throws RssServiceException if any exception happen during fetching data from DAO
      */
-    public List<Entry> filterEntry(String channel, String contentValue, String titleValue, Date startTime, Date finishTime) {
+    public List<Entry> filterEntry(String channel, String contentValue, String titleValue, Date startTime, Date finishTime) throws RssServiceException {
         try {
             return entryDAO.filterEntry(channel, contentValue, titleValue, startTime, finishTime);
         } catch (QueryException | ResultSetFetchException | IllegalArgumentException e) {

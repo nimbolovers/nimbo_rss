@@ -1,6 +1,6 @@
 package in.nimbo.exception;
 
-public class RssServiceException extends RuntimeException {
+public class RssServiceException extends Exception {
     public RssServiceException() {
         super();
     }

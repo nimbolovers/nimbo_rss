@@ -27,7 +27,7 @@ public class RssCLI implements Callable<Void> {
         return app;
     }
 
-    @CommandLine.Option(names = {"help"}, usageHelp = true,
+    @CommandLine.Option(names = {"--help"}, usageHelp = true,
             description = "Display help")
     boolean usageHelpRequested;
 

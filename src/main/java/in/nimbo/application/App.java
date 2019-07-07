@@ -10,6 +10,8 @@ import picocli.CommandLine;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class App {
     SiteDAO siteDAO;
@@ -62,14 +64,18 @@ public class App {
     private void run() {
         System.out.println("Welcome to the RSS service.");
         System.out.println();
-        System.out.println("Type 'help' for help.");
+        System.out.println("Type '--help' for help.");
 
         // UI interface
-        Scanner input = new Scanner(System.in);
+        Scanner in = new Scanner(System.in);
         System.out.print("rss> ");
-        while (input.hasNextLine()) {
-            String[] args = input.nextLine().trim().split(" ");
-            CommandLine.call(new RssCLI(this), args);
+        while (in.hasNextLine()) {
+            String input = in.nextLine().trim();
+            List<String> args = new ArrayList<>();
+            Matcher m = Pattern.compile("(([^\\s\"]+|\".*?\")+)").matcher(input);
+            while (m.find())
+                args.add(m.group(1));
+            CommandLine.call(new RssCLI(this), args.toArray(new String[0]));
             System.out.print("rss> ");
         }
     }

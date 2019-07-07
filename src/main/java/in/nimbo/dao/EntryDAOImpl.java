@@ -108,14 +108,14 @@ public class EntryDAOImpl implements EntryDAO {
                             DSL.field("content.value").like("%" + contentValue + "%")
                                     .and(DSL.field("title").like("%" + titleValue + "%"))
                     );
-            if (channel != null)
+            if (channel != null && !channel.isEmpty())
                 query = query.and(DSL.field("feed.channel").eq(channel));
             if (startDate != null)
                 query = query.and(DSL.field("feed.pub_date").ge(new java.sql.Timestamp(startDate.getTime())));
             if (finishDate != null)
                 query = query.and(DSL.field("feed.pub_date").le(new java.sql.Timestamp(finishDate.getTime())));
 
-            String sqlQuery = query.getSQL(ParamType.INLINED);
+            String sqlQuery = query.getQuery().toString();
             Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery(sqlQuery);
             return createEntryFromResultSet(resultSet);

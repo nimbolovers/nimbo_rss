@@ -54,7 +54,7 @@ public class AppTest {
         List<Site> sites = createExampleSites();
 
         PowerMockito.when(schedule.getSites()).thenReturn(sites);
-        AddCLI addCLI = PowerMockito.mock(AddCLI.class);
+        AddCLI addCLI = PowerMockito.spy(new AddCLI());
         addCLI.addSite(schedule, "site 1", "link 1");
     }
 
@@ -63,7 +63,7 @@ public class AppTest {
         List<Site> sites = createExampleSites();
 
         PowerMockito.when(schedule.getSites()).thenReturn(sites);
-        AddCLI addCLI = PowerMockito.mock(AddCLI.class);
+        AddCLI addCLI = PowerMockito.spy(new AddCLI());
         addCLI.addSite(schedule, "site 4", "link 4");
         assertEquals(4, sites.size());
         assertTrue(sites.contains(new Site("site 4", "link 4")));

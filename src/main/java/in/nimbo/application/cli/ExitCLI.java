@@ -29,6 +29,8 @@ public class ExitCLI implements Callable<Void> {
             else
                 app.getSiteDAO().save(site);
         }
+
+        System.exit(0);
         return null;
     }
 }

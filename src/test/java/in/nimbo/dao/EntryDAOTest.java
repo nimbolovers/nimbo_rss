@@ -144,18 +144,18 @@ public class EntryDAOTest {
         assertEquals(entries.stream()
                         .filter(entry -> entry.getPublicationDate().compareTo(beforeDate) >= 0)
                         .collect(Collectors.toList()),
-                entryDAO.filterEntry("channel", "title", "content", beforeDate, null));
+                entryDAO.filterEntry("channel", "content", "title", beforeDate, null));
         // test after
         assertEquals(entries.stream()
                         .filter(entry -> entry.getPublicationDate().compareTo(beforeDate) >= 0)
                         .filter(entry -> entry.getPublicationDate().compareTo(afterDate) <= 0)
                         .collect(Collectors.toList()),
-                entryDAO.filterEntry("channel", "title", "content", beforeDate, afterDate));
+                entryDAO.filterEntry("channel", "content", "title", beforeDate, afterDate));
         // test between
         assertEquals(entries.stream()
                         .filter(entry -> entry.getPublicationDate().compareTo(afterDate) <= 0)
                         .collect(Collectors.toList()),
-                entryDAO.filterEntry("channel", "title", "content", null, afterDate));
+                entryDAO.filterEntry("channel", "content", "title", null, afterDate));
     }
 
     public void contain() {

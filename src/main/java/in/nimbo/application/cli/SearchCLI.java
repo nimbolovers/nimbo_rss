@@ -18,15 +18,15 @@ public class SearchCLI implements Callable<Void> {
     private RssCLI rssCLI;
 
     @CommandLine.Option(names = {"--channel"}, paramLabel = "STRING",
-            description = "Channel of entry")
+            description = "Channel of entry (default: \"${DEFAULT-VALUE}\")")
     private String channel = "";
 
     @CommandLine.Option(names = {"--title"}, paramLabel = "STRING",
-            description = "The text should be appear in title")
+            description = "The text should be appear in title (default: \"${DEFAULT-VALUE}\")")
     private String title = "";
 
     @CommandLine.Option(names = {"--content"}, paramLabel = "STRING",
-            description = "The text should be appear in content")
+            description = "The text should be appear in content (default: \"${DEFAULT-VALUE}\")")
     private String content = "";
 
     @CommandLine.Option(names = {"--start"}, paramLabel = "DATE",
@@ -44,10 +44,16 @@ public class SearchCLI implements Callable<Void> {
     @Override
     public Void call() {
         try {
-            Date startDate = Utility.getDate(start);
-            Date finishDate = Utility.getDate(end);
+            Date startDate = null, finishDate = null;
+            if (start != null)
+                startDate = Utility.getDate(removeQuotation(start));
+            if (end != null)
+                finishDate = Utility.getDate(removeQuotation(end));
             List<Entry> resultEntry = rssCLI.getApp().getRssService().
-                    filterEntry(channel, content, title, startDate, finishDate);
+                    filterEntry(removeQuotation(channel),
+                            removeQuotation(content),
+                            removeQuotation(title),
+                            startDate, finishDate);
             showEntries(resultEntry);
         } catch (IllegalArgumentException e) {
             System.out.println(e.getMessage());
@@ -57,12 +63,20 @@ public class SearchCLI implements Callable<Void> {
         return null;
     }
 
+    public String removeQuotation(String value) {
+        if (value != null && value.length() >= 2 &&
+                value.charAt(0) == '\"' &&
+                value.charAt(value.length() - 1) == '\"')
+            return value.substring(1, value.length() - 1);
+        return value;
+    }
+
     /**
      * show a list of entries in tabular format
      *
      * @param entries entries to print
      */
-    public static void showEntries(List<Entry> entries) {
+    public void showEntries(List<Entry> entries) {
         for (Entry entry : entries) {
             System.out.println("Channel: " + entry.getChannel());
             System.out.println("Title: " + entry.getTitle());
