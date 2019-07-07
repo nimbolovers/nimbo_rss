@@ -37,32 +37,20 @@ public class RSSService {
     }
 
     /**
-     * @param channel is the channel of entry! If null don't affect on result
-     * @param title is the title of entry! It checks entry title contains this title or not! If null don't affect on result
-     * @param startTime is the lower bound for publication date of entries! If null don't affect on result
-     * @param finishTime is the upper bound for publication date of entries! If null don't affect on result
+     * @param channel channel of entry
+     *                If it is null, ignore it
+     * @param contentValue content of entry (required)
+     * @param titleValue title of entry (required)
+     * @param startTime is the lower bound for publication date of entries
+     *                  If it is null, ignore it
+     * @param finishTime is the upper bound for publication date of entries
+     *                   If it is null, ignore it
      * @return entries that accepted all filters
      * @throws RssServiceException if any exception happen during fetching data from DAO
      */
-    public List<Entry> filterEntryByTitle(String channel, String title, Date startTime, Date finishTime) {
+    public List<Entry> filterEntry(String channel, String contentValue, String titleValue, Date startTime, Date finishTime) throws RssServiceException {
         try {
-            return entryDAO.filterEntryByTitle(channel, title, startTime, finishTime);
-        } catch (QueryException | ResultSetFetchException | IllegalArgumentException e) {
-            throw new RssServiceException(e.getMessage(), e);
-        }
-    }
-
-    /**
-     * @param channel is the channel of entry! If null don't affect on result
-     * @param content is the content of entry! It checks entry content contains this content or not! If null don't affect on result
-     * @param startTime is the lower bound for publication date of entries! If null don't affect on result
-     * @param finishTime is the upper bound for publication date of entries! If null don't affect on result
-     * @return entries that accepted all filters
-     * @throws RssServiceException if any exception happen during fetching data from DAO
-     */
-    public List<Entry> filterEntryByContent(String channel, String content, Date startTime, Date finishTime) {
-        try {
-            return entryDAO.filterEntryByContent(channel, content, startTime, finishTime);
+            return entryDAO.filterEntry(channel, contentValue, titleValue, startTime, finishTime);
         } catch (QueryException | ResultSetFetchException | IllegalArgumentException e) {
             throw new RssServiceException(e.getMessage(), e);
         }
