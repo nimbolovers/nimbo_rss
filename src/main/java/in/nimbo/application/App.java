@@ -14,9 +14,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class App {
-    SiteDAO siteDAO;
-    public Schedule schedule;
-    RSSService rssService;
+    private SiteDAO siteDAO;
+    private Schedule schedule;
+    private RSSService rssService;
 
     public static void main(String[] args) {
         Utility.disableJOOQLogo();
