@@ -32,7 +32,6 @@ public class RSSService {
         this.entryDAO = entryDAO;
     }
 
-
     /**
      * @param channel is the channel of entry! If null don't affect on result
      * @param title is the title of entry! It checks entry title contains this title or not! If null don't affect on result
@@ -115,7 +114,7 @@ public class RSSService {
     }
 
     /**
-     * get article content of a site from a link using boilerpipe library
+     * get article content of a site from a link
      *
      * @param link link of corresponding site
      * @return string which is main content of site
