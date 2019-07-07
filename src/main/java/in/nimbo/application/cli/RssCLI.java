@@ -4,15 +4,17 @@ import in.nimbo.application.App;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 
-import java.util.Arrays;
 import java.util.concurrent.Callable;
 
 @Command(name = "rss",
-        mixinStandardHelpOptions = true,
-//        abbreviateSynopsis = true,
         version = RssCLI.version,
-        description = "Hello to world!",
-        subcommands = {SearchCLI.class, AddCLI.class})
+        description = "Rss application to fetch data from RSS link",
+        synopsisHeading      = "%nUsage:%n%n",
+        descriptionHeading   = "%nDescription:%n%n",
+        parameterListHeading = "%nParameters:%n%n",
+        optionListHeading    = "%nOptions:%n%n",
+        commandListHeading   = "%nCommands:%n%n",
+        subcommands = {SearchCLI.class, AddCLI.class, ExitCLI.class})
 public class RssCLI implements Callable<Void> {
     private App app;
     static final String version = "RSS v1.0";
@@ -25,12 +27,12 @@ public class RssCLI implements Callable<Void> {
         return app;
     }
 
-    @CommandLine.Parameters
-    private String[] parms;
+    @CommandLine.Option(names = {"help"}, usageHelp = true,
+            description = "Display help")
+    boolean usageHelpRequested;
 
     @Override
     public Void call() {
-        System.out.println(Arrays.toString(parms));
         return null;
     }
 }

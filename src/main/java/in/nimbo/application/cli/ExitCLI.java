@@ -8,14 +8,15 @@ import picocli.CommandLine;
 import java.util.concurrent.Callable;
 
 @CommandLine.Command(name = "exit",
-        mixinStandardHelpOptions = true,
-//        abbreviateSynopsis = true,
         version = RssCLI.version,
         description = "Save data and exit")
 public class ExitCLI implements Callable<Void> {
     @CommandLine.ParentCommand
     private RssCLI rssCLI;
 
+    @CommandLine.Option(names = {"--help"}, usageHelp = true,
+            description = "Display help")
+    boolean usageHelpRequested;
     @Override
     public Void call() {
         App app = rssCLI.getApp();

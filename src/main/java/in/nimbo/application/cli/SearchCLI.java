@@ -11,28 +11,35 @@ import java.util.List;
 import java.util.concurrent.Callable;
 
 @Command(name = "search",
-        mixinStandardHelpOptions = true,
-//        abbreviateSynopsis = true,
         version = RssCLI.version,
-        description = "Search in news")
+        description = "Search in entries")
 public class SearchCLI implements Callable<Void> {
     @CommandLine.ParentCommand
     private RssCLI rssCLI;
 
-    @CommandLine.Option(names = {"--channel"}, paramLabel = "STRING", description = "The name alias for link")
+    @CommandLine.Option(names = {"--channel"}, paramLabel = "STRING",
+            description = "Channel of entry")
     private String channel = "";
 
-    @CommandLine.Option(names = {"--title"}, paramLabel = "STRING", description = "The name alias for link")
+    @CommandLine.Option(names = {"--title"}, paramLabel = "STRING",
+            description = "The text should be appear in title")
     private String title = "";
 
-    @CommandLine.Option(names = {"--content"}, paramLabel = "STRING", description = "The name alias for link")
+    @CommandLine.Option(names = {"--content"}, paramLabel = "STRING",
+            description = "The text should be appear in content")
     private String content = "";
 
-    @CommandLine.Option(names = {"--start"}, paramLabel = "DATE", description = "The name alias for link")
+    @CommandLine.Option(names = {"--start"}, paramLabel = "DATE",
+            description = "The entry publication date must be after start date")
     private String start;
 
-    @CommandLine.Option(names = {"--end"}, paramLabel = "DATE", description = "The name alias for link")
+    @CommandLine.Option(names = {"--end"}, paramLabel = "DATE",
+            description = "The entry publication date must be before end date")
     private String end;
+
+    @CommandLine.Option(names = {"--help"}, usageHelp = true,
+            description = "Display help")
+    boolean usageHelpRequested;
 
     @Override
     public Void call() {
@@ -45,7 +52,7 @@ public class SearchCLI implements Callable<Void> {
         } catch (IllegalArgumentException e) {
             System.out.println(e.getMessage());
         } catch (RssServiceException e) {
-            System.out.println("Unable to search data. We fix it as soon as possible.");
+            System.out.println("Unable to search data. We will fix it as soon as possible.");
         }
         return null;
     }

@@ -7,8 +7,6 @@ import picocli.CommandLine;
 import java.util.concurrent.Callable;
 
 @CommandLine.Command(name = "add",
-        mixinStandardHelpOptions = true,
-//        abbreviateSynopsis = true,
         version = RssCLI.version,
         description = "Add a new site to repository")
 public class AddCLI implements Callable<Void> {
@@ -20,6 +18,10 @@ public class AddCLI implements Callable<Void> {
 
     @CommandLine.Parameters(paramLabel = "link", index = "1", description = "Link of site")
     private String siteLink;
+
+    @CommandLine.Option(names = {"--help"}, usageHelp = true,
+            description = "Display help")
+    boolean usageHelpRequested;
 
     @Override
     public Void call() {
