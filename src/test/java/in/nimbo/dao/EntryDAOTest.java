@@ -5,6 +5,7 @@ import in.nimbo.application.Utility;
 import in.nimbo.dao.pool.ConnectionPool;
 import in.nimbo.dao.pool.ConnectionWrapper;
 import in.nimbo.entity.Entry;
+import in.nimbo.entity.SiteHourReport;
 import in.nimbo.entity.SiteReport;
 import in.nimbo.exception.RecordNotFoundException;
 import org.junit.AfterClass;
@@ -209,15 +210,42 @@ public class EntryDAOTest {
             int year = 2010;
             int month = 6;
             int day = i + 1;
-            SiteReport report = new SiteReport();
-            report.setDate(TestUtility.createDate(year, month, day));
-            report.setCount(count);
-            report.setChannel(channel);
+            SiteReport report = new SiteReport(channel, count, TestUtility.createDate(year, month, day));
             reports.add(report);
         }
 
         Collections.reverse(reports);
 
         assertEquals(reports, entryDAO.getSiteReports("", limit));
+    }
+
+    @Test
+    public void getHourReportTest() throws SQLException {
+        String sql = "insert into feed (channel, title, pub_date) values (?, ?, ?)";
+        Random random = new Random();
+        Set<SiteHourReport> reports = new HashSet<>();
+        String channel = "test";
+        String title = "test";
+        int limit = 10;
+        for (int i = 0; i < limit; i++) {
+            int count = random.nextInt(limit) + 1;
+            for (int j = 0; j < count; j++) {
+                Date date = TestUtility.createDate(2010, 6, i + 1);
+                date.setTime(date.getTime() + i * 3600 * 1000);
+                ConnectionWrapper connection = ConnectionPool.getConnection();
+                PreparedStatement statement = connection.prepareStatement(sql);
+                statement.setString(1, channel);
+                statement.setString(2, title);
+                statement.setTimestamp(3, new java.sql.Timestamp(date.getTime()));
+                statement.executeUpdate();
+            }
+            SiteHourReport report = new SiteHourReport(channel, count, i);
+            reports.add(report);
+        }
+
+        List<SiteHourReport> realAnswer = entryDAO.getHourReports(title);
+        Set<SiteHourReport> hourReports = new HashSet<>();
+        hourReports.addAll(realAnswer);
+        assertEquals(hourReports, reports);
     }
 }

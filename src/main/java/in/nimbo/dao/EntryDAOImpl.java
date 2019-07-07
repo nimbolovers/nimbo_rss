@@ -5,10 +5,7 @@ import com.rometools.rome.feed.synd.SyndEntryImpl;
 import in.nimbo.application.Utility;
 import in.nimbo.dao.pool.ConnectionPool;
 import in.nimbo.dao.pool.ConnectionWrapper;
-import in.nimbo.entity.Content;
-import in.nimbo.entity.Description;
-import in.nimbo.entity.Entry;
-import in.nimbo.entity.SiteReport;
+import in.nimbo.entity.*;
 import in.nimbo.exception.QueryException;
 import in.nimbo.exception.RecordNotFoundException;
 import in.nimbo.exception.ResultSetFetchException;
@@ -244,6 +241,34 @@ public class EntryDAOImpl implements EntryDAO {
         }
     }
 
+    @Override
+    public List<SiteHourReport> getHourReports(String title) {
+        try (ConnectionWrapper connection = ConnectionPool.getConnection()) {
+            PreparedStatement statement = connection.prepareStatement(
+                    " select channel, Hour(pub_date) as hour, count(*) as cnt" +
+                            " from feed" +
+                            " where Hour(pub_date) is not null" +
+                            ((title != null) ? " and title like ?" : "") +
+                            " group by channel, hour");
+            if (title != null){
+                statement.setString(1, "%" + title + "%");
+            }
+            ResultSet resultSet = statement.executeQuery();
+            List<SiteHourReport> reports = new ArrayList<>();
+            while (resultSet.next()){
+                String channel = resultSet.getString("channel");
+                int hour = resultSet.getInt("hour");
+                int cnt = resultSet.getInt("cnt");
+                SiteHourReport hourReport = new SiteHourReport(channel, cnt, hour);
+                reports.add(hourReport);
+            }
+            return reports;
+        } catch (SQLException e) {
+            logger.error("Unable to execute query: " + e.getMessage(), e);
+            throw new QueryException("Unable to execute query", e);
+        }
+    }
+
     /**
      * @param title filters entries that its title contains this title
      * @param limit max size of result
@@ -270,10 +295,7 @@ public class EntryDAOImpl implements EntryDAO {
                 int day = resultSet.getInt("day");
                 int count = resultSet.getInt("cnt");
                 String channel = resultSet.getString("channel");
-                SiteReport report = new SiteReport();
-                report.setChannel(channel);
-                report.setDate(Utility.createDate(year, month, day));
-                report.setCount(count);
+                SiteReport report = new SiteReport(channel, count, Utility.createDate(year, month, day));
                 reports.add(report);
             }
             return reports;
@@ -281,5 +303,7 @@ public class EntryDAOImpl implements EntryDAO {
             logger.error("Unable to execute query: " + e.getMessage(), e);
             throw new QueryException("Unable to execute query", e);
         }
+
+
     }
 }

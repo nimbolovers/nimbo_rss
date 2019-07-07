@@ -1,6 +1,7 @@
 package in.nimbo.dao;
 
 import in.nimbo.entity.Entry;
+import in.nimbo.entity.SiteHourReport;
 import in.nimbo.entity.SiteReport;
 
 import java.util.Date;
@@ -19,4 +20,6 @@ public interface EntryDAO {
     boolean contain(Entry entry);
 
     List<SiteReport> getSiteReports(String title, int limit);
+
+    List<SiteHourReport> getHourReports(String title);
 }

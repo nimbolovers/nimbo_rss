@@ -8,10 +8,7 @@ import com.rometools.rome.io.SyndFeedInput;
 import in.nimbo.application.Utility;
 import in.nimbo.dao.EntryDAO;
 import in.nimbo.dao.SiteDAO;
-import in.nimbo.entity.Description;
-import in.nimbo.entity.Entry;
-import in.nimbo.entity.Site;
-import in.nimbo.entity.SiteReport;
+import in.nimbo.entity.*;
 import in.nimbo.exception.ContentExtractingException;
 import in.nimbo.exception.QueryException;
 import in.nimbo.exception.ResultSetFetchException;
@@ -185,5 +182,9 @@ public class RSSService {
 
     public List<SiteReport> getReports(String title){
         return entryDAO.getSiteReports(title, DAY_COUNT * siteDAO.getCount());
+    }
+
+    public List<SiteHourReport> getHourReports(String title){
+        return entryDAO.getHourReports(title);
     }
 }

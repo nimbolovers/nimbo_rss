@@ -6,6 +6,7 @@ import in.nimbo.dao.EntryDAO;
 import in.nimbo.dao.SiteDAO;
 import in.nimbo.entity.Entry;
 import in.nimbo.entity.Site;
+import in.nimbo.entity.SiteHourReport;
 import in.nimbo.entity.SiteReport;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -92,12 +93,22 @@ public class RSSServiceTest {
         int limit = 6;
         Random random = new Random();
         for (int i = 0; i < limit; i++) {
-            SiteReport report = new SiteReport();
-            report.setCount(random.nextInt());
+            SiteReport report = new SiteReport("تست" ,random.nextInt(), new Date());
             reports.add(report);
         }
         when(entryDAO.getSiteReports("تست", limit)).thenReturn(reports);
         List<SiteReport> test = rssService.getReports("تست");
         assertEquals(test, reports);
+    }
+
+    @Test
+    public void getHourReportTest(){
+        List<SiteHourReport> reports = new ArrayList<>();
+        for (int i = 0; i < 5; i++) {
+            reports.add(new SiteHourReport("channel", i + 1, i));
+        }
+        when(entryDAO.getHourReports("تست")).thenReturn(reports);
+
+        assertEquals(reports, rssService.getHourReports("تست"));
     }
 }
