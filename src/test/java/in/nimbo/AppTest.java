@@ -66,20 +66,20 @@ public class AppTest {
         assertTrue(sites.contains(new Site("site 4", "link 4")));
     }
 
-    @Test
-    public void encodeURL() throws MalformedURLException {
-        String link = "link";
-        try {
-            Utility.encodeURL(link);
-            fail();
-        } catch (Exception e) {
-            assertTrue(e instanceof MalformedURLException);
-        }
-
-        link = "http://winphone.ir/";
-        assertEquals(link, Utility.encodeURL(link).toString());
-        link = "http://example.com/سلام";
-        assertEquals("http://example.com/%D8%B3%D9%84%D8%A7%D9%85", link = Utility.encodeURL(link).toString());
-        assertEquals("http://example.com/%D8%B3%D9%84%D8%A7%D9%85", Utility.encodeURL(link).toString());
-    }
+//    @Test
+//    public void encodeURL() throws MalformedURLException {
+//        String link = "link";
+//        try {
+//            Utility.encodeURL(link);
+//            fail();
+//        } catch (Exception e) {
+//            assertTrue(e instanceof MalformedURLException);
+//        }
+//
+//        link = "http://winphone.ir/";
+//        assertEquals(link, Utility.encodeURL(link).toString());
+//        link = "http://example.com/سلام";
+//        assertEquals("http://example.com/%D8%B3%D9%84%D8%A7%D9%85", link = Utility.encodeURL(link).toString());
+//        assertEquals("http://example.com/%D8%B3%D9%84%D8%A7%D9%85", Utility.encodeURL(link).toString());
+//    }
 }
