@@ -1,17 +1,20 @@
 package in.nimbo.application.cli;
 
+import in.nimbo.application.Utility;
+import in.nimbo.entity.Entry;
+import in.nimbo.exception.RssServiceException;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 
-import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 import java.util.concurrent.Callable;
 
 @Command(name = "search",
         mixinStandardHelpOptions = true,
 //        abbreviateSynopsis = true,
-        version = "RSS v1.0",
-        description = "Hello to world!")
+        version = RssCLI.version,
+        description = "Search in news")
 public class SearchCLI implements Callable<Void> {
     @CommandLine.ParentCommand
     private RssCLI rssCLI;
@@ -26,18 +29,36 @@ public class SearchCLI implements Callable<Void> {
     private String content = "";
 
     @CommandLine.Option(names = {"--start"}, paramLabel = "DATE", description = "The name alias for link")
-    private Date startDate;
+    private String start;
 
     @CommandLine.Option(names = {"--end"}, paramLabel = "DATE", description = "The name alias for link")
-    private Date finishDate;
+    private String end;
 
     @Override
     public Void call() {
-        System.out.println(channel);
-        System.out.println(title);
-        System.out.println(content);
-        System.out.println(startDate);
-        System.out.println(finishDate);
+        try {
+            Date startDate = Utility.getDate(start);
+            Date finishDate = Utility.getDate(end);
+            List<Entry> resultEntry = rssCLI.getApp().getRssService().
+                    filterEntry(channel, content, title, startDate, finishDate);
+            showEntries(resultEntry);
+        } catch (IllegalArgumentException e) {
+            System.out.println(e.getMessage());
+        } catch (RssServiceException e) {
+            System.out.println("Unable to search data. We fix it as soon as possible.");
+        }
         return null;
+    }
+
+    /**
+     * show a list of entries in tabular format
+     *
+     * @param entries entries to print
+     */
+    public static void showEntries(List<Entry> entries) {
+        for (Entry entry : entries) {
+            System.out.println("Channel: " + entry.getChannel());
+            System.out.println("Title: " + entry.getTitle());
+        }
     }
 }

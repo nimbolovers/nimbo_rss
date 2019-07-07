@@ -10,11 +10,12 @@ import java.util.concurrent.Callable;
 @Command(name = "rss",
         mixinStandardHelpOptions = true,
 //        abbreviateSynopsis = true,
-        version = "RSS v1.0",
+        version = RssCLI.version,
         description = "Hello to world!",
         subcommands = {SearchCLI.class, AddCLI.class})
 public class RssCLI implements Callable<Void> {
     private App app;
+    static final String version = "RSS v1.0";
 
     public RssCLI(App app) {
         this.app = app;
