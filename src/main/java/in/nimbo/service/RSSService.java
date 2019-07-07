@@ -4,7 +4,7 @@ import com.rometools.rome.feed.synd.SyndEntry;
 import com.rometools.rome.feed.synd.SyndFeed;
 import com.rometools.rome.io.FeedException;
 import com.rometools.rome.io.SyndFeedInput;
-import com.rometools.rome.io.XmlReader;
+import in.nimbo.application.Utility;
 import in.nimbo.dao.EntryDAO;
 import in.nimbo.entity.Description;
 import in.nimbo.entity.Entry;
@@ -100,7 +100,9 @@ public class RSSService {
     public List<Entry> getEntries(SyndFeed feed) {
         List<Entry> newEntries = new ArrayList<>();
         for (SyndEntry syndEntry : feed.getEntries()) {
-            Entry entry = new Entry(feed.getTitle(), syndEntry.getTitle());
+            Entry entry = new Entry();
+            entry.setTitle(syndEntry.getTitle());
+            entry.setChannel(feed.getTitle());
             if (syndEntry.getDescription() != null)
                 entry.setDescription(new Description(
                         syndEntry.getDescription().getType(),

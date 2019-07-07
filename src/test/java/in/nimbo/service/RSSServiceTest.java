@@ -1,9 +1,6 @@
 package in.nimbo.service;
 
-import com.rometools.rome.feed.synd.SyndEntry;
-import com.rometools.rome.feed.synd.SyndEntryImpl;
-import com.rometools.rome.feed.synd.SyndFeed;
-import com.rometools.rome.feed.synd.SyndFeedImpl;
+import com.rometools.rome.feed.synd.*;
 import in.nimbo.TestUtility;
 import in.nimbo.dao.EntryDAO;
 import in.nimbo.entity.Entry;
@@ -57,9 +54,9 @@ public class RSSServiceTest {
     @Test
     public void getEntries() {
         List<Entry> entries = new ArrayList<>();
-        entries.add(TestUtility.createEntry("channel", "title 1", "link 1", new Date(), null, null));
-        entries.add(TestUtility.createEntry("channel", "title 2", "link 2", new Date(), null, null));
-        entries.add(TestUtility.createEntry("channel", "title 3", "link 3", new Date(), null, null));
+        entries.add(TestUtility.createEntry("channel", "title 1", "link 1", new Date(), null, "desc 1"));
+        entries.add(TestUtility.createEntry("channel", "title 2", "link 2", new Date(), null, "desc 2"));
+        entries.add(TestUtility.createEntry("channel", "title 3", "link 3", new Date(), null, "desc 3"));
 
         SyndFeed syndFeed = new SyndFeedImpl();
         syndFeed.setTitle("channel");
@@ -70,6 +67,13 @@ public class RSSServiceTest {
             syndEntry.setTitle(entry.getTitle());
             syndEntry.setLink(entry.getLink());
             syndEntry.setPublishedDate(entry.getPublicationDate());
+
+            SyndContent syndContent = new SyndContentImpl();
+            syndContent.setType(entry.getDescription().getType());
+            syndContent.setMode(entry.getDescription().getMode());
+            syndContent.setValue(entry.getDescription().getValue());
+            syndEntry.setDescription(syndContent);
+
             syndEntries.add(syndEntry);
         }
 

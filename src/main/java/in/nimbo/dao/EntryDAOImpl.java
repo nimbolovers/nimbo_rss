@@ -39,6 +39,7 @@ public class EntryDAOImpl implements EntryDAO {
      *
      * @param resultSet resultSet of database
      * @return list of entries
+     * @throws ResultSetFetchException if unable to fetch data from ResultSet
      */
     private List<Entry> createEntryFromResultSet(ResultSet resultSet) {
         List<Entry> result = new ArrayList<>();
@@ -93,7 +94,7 @@ public class EntryDAOImpl implements EntryDAO {
      * @param finishDate finish date of fetched data
      *                   if it is not specified (null), then there is no limitation on finish time
      * @return list of entries which their title contain value
-     * @throws RuntimeException if it is unable to execute query
+     * @throws QueryException if it is unable to execute query
      */
     @Override
     public List<Entry> filterEntryByTitle(String channel, String value, Date startDate, Date finishDate) {
@@ -130,7 +131,7 @@ public class EntryDAOImpl implements EntryDAO {
      * @param finishDate finish date of fetched data
      *                   if it is not specified (null), then there is no limitation on finish time
      * @return list of entries which their content contain value
-     * @throws RuntimeException if it is unable to execute query
+     * @throws QueryException if it is unable to execute query
      */
     @Override
     public List<Entry> filterEntryByContent(String channel, String value, Date startDate, Date finishDate) {
@@ -161,6 +162,7 @@ public class EntryDAOImpl implements EntryDAO {
      * fetch all of entries in database
      *
      * @return a list of entries
+     * @throws QueryException if unable to execute query
      */
     @Override
     public List<Entry> getEntries() {
@@ -182,6 +184,7 @@ public class EntryDAOImpl implements EntryDAO {
      *
      * @param entry entry
      * @return entry which it's ID will be set after adding to database
+     * @throws QueryException if unable to execute query
      */
     @Override
     public Entry save(Entry entry) {
@@ -219,11 +222,10 @@ public class EntryDAOImpl implements EntryDAO {
     }
 
     /**
-     * check whether an entry exists in database
-     *
+     * check whether an entry exists in database based on entry.title and entry.channel
      * @param entry which is checked
      * @return true if entry exists in database
-     * based on entry.title and entry.channel
+     * @throws QueryException if unable to execute query
      */
     @Override
     public boolean contain(Entry entry) {

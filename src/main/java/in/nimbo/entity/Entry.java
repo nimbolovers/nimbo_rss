@@ -16,11 +16,6 @@ public class Entry {
     public Entry() {
     }
 
-    public Entry(String channel, String title) {
-        this.channel = channel;
-        this.title = title;
-    }
-
     public String getTitle() {
         return title;
     }
@@ -95,17 +90,5 @@ public class Entry {
                 Objects.equals(content, entry.content) &&
                 Objects.equals(title, entry.title) &&
                 Objects.equals(link, entry.link);
-    }
-
-    @Override
-    public String toString() {
-        return "Entry{" +
-                "id=" + id +
-                ", channel='" + channel + '\'' +
-                ", title='" + title + '\'' +
-                ", link='" + link + '\'' +
-                ", publicationDate=" + publicationDate +
-                ", content='" + content + '\'' +
-                '}';
     }
 }

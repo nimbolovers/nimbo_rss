@@ -17,7 +17,10 @@ public class Schedule {
         this.rssService = rssService;
         this.sites = sites;
         scheduleService = Executors.newScheduledThreadPool(100);
+    }
 
+    public List<Site> getSites() {
+        return sites;
     }
 
     public void scheduleSite(Site site) {

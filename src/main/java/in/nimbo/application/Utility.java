@@ -1,11 +1,17 @@
-package in.nimbo.service;
+package in.nimbo.application;
 
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.util.Date;
 
 public class Utility {
+    private static DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
 
     private Utility() {}
 
@@ -36,6 +42,20 @@ public class Utility {
             throw new RuntimeException(e);
         } catch (URISyntaxException e) {
             throw new RuntimeException("Illegal URI syntax", e);
+        }
+    }
+
+    /**
+     * convert a string of date to java.util.Date
+     * @param date string format of day
+     * @return java.util.date represent given date
+     */
+    public static Date getDate(String date) {
+        try {
+            LocalDateTime startLocalDate = LocalDateTime.parse(date, formatter);
+            return Date.from(startLocalDate.atZone(ZoneId.systemDefault()).toInstant());
+        } catch (DateTimeParseException e) {
+            throw new IllegalArgumentException("Unable to convert " + date + " to Date");
         }
     }
 }
