@@ -8,6 +8,8 @@ import in.nimbo.application.Utility;
 import in.nimbo.dao.EntryDAO;
 import in.nimbo.dao.SiteDAO;
 import in.nimbo.entity.*;
+import in.nimbo.entity.report.HourReport;
+import in.nimbo.entity.report.DateReport;
 import in.nimbo.exception.ContentExtractingException;
 import in.nimbo.exception.QueryException;
 import in.nimbo.exception.ResultSetFetchException;
@@ -32,11 +34,8 @@ public class RSSService {
     private Logger logger = LoggerFactory.getLogger(RSSService.class);
     private int DAY_COUNT = 3;
 
-    public RSSService(EntryDAO entryDAO) {
+    public RSSService(EntryDAO entryDAO, SiteDAO siteDAO) {
         this.entryDAO = entryDAO;
-    }
-
-    public void setSiteDAO(SiteDAO siteDAO) {
         this.siteDAO = siteDAO;
     }
 
@@ -167,11 +166,22 @@ public class RSSService {
         }
     }
 
-    public List<SiteReport> getReports(String title){
-        return entryDAO.getSiteReports(title, DAY_COUNT * siteDAO.getCount());
+    /**
+     * count of news for each day for each site
+     * @param title string which must appeared in the title (optional)
+     * @return sorted list of HourReport by year and month and day
+     *          (average report for each site is DAY_COUNT)
+     */
+    public List<DateReport> getReports(String title){
+        return entryDAO.getDateReports(title, DAY_COUNT * siteDAO.getCount());
     }
 
-    public List<SiteHourReport> getHourReports(String title){
+    /**
+     * count of news for each hour for each site
+     * @param title string which must appeared in the title (optional)
+     * @return list of HourReport
+     */
+    public List<HourReport> getHourReports(String title){
         return entryDAO.getHourReports(title);
     }
 }

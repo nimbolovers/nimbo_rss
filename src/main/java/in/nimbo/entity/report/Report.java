@@ -1,6 +1,6 @@
-package in.nimbo.entity;
+package in.nimbo.entity.report;
 
-public class Report {
+public abstract class Report {
     private String channel;
     private int count;
 

@@ -151,6 +151,6 @@ public class SiteDAOTest {
             statement.executeUpdate();
         }
 
-        assertEquals(siteDAO.getCount(), count);
+        assertEquals(count, siteDAO.getCount());
     }
 }

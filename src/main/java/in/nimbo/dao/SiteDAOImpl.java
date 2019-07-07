@@ -143,15 +143,16 @@ public class SiteDAOImpl implements SiteDAO {
         return site;
     }
 
+    /**
+     * @return the sites' count
+     */
     @Override
     public int getCount() {
         try (ConnectionWrapper connection = ConnectionPool.getConnection()) {
             PreparedStatement statement = connection.prepareStatement("select count(*) as cnt from site");
             ResultSet resultSet = statement.executeQuery();
-            if (resultSet.next()){
-                return resultSet.getInt("cnt");
-            }
-            return 0;
+            resultSet.next();
+            return resultSet.getInt("cnt");
         } catch (SQLException e) {
             logger.error("Unable to execute query: " + e.getMessage(), e);
             throw new QueryException("Unable to execute query", e);

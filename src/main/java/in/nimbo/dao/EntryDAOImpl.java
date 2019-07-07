@@ -4,6 +4,8 @@ import in.nimbo.application.Utility;
 import in.nimbo.dao.pool.ConnectionPool;
 import in.nimbo.dao.pool.ConnectionWrapper;
 import in.nimbo.entity.*;
+import in.nimbo.entity.report.HourReport;
+import in.nimbo.entity.report.DateReport;
 import in.nimbo.exception.QueryException;
 import in.nimbo.exception.RecordNotFoundException;
 import in.nimbo.exception.ResultSetFetchException;
@@ -208,25 +210,28 @@ public class EntryDAOImpl implements EntryDAO {
         }
     }
 
+    /**
+     * count of news for each hour for each site
+     * @param title string which must appeared in the title (optional)
+     * @return list of HourReport
+     */
     @Override
-    public List<SiteHourReport> getHourReports(String title) {
+    public List<HourReport> getHourReports(String title) {
         try (ConnectionWrapper connection = ConnectionPool.getConnection()) {
             PreparedStatement statement = connection.prepareStatement(
-                    " select channel, Hour(pub_date) as hour, count(*) as cnt" +
-                            " from feed" +
-                            " where Hour(pub_date) is not null" +
-                            ((title != null) ? " and title like ?" : "") +
-                            " group by channel, hour");
-            if (title != null){
-                statement.setString(1, "%" + title + "%");
-            }
+                    " SELECT channel, Hour(pub_date) as hour, COUNT(*) as cnt" +
+                            " FROM feed" +
+                            " WHERE pub_date IS NOT NULL" +
+                            " and title LIKE ?" +
+                            " GROUP BY channel, hour");
+            statement.setString(1, "%" + (title != null ? title : "") + "%");
             ResultSet resultSet = statement.executeQuery();
-            List<SiteHourReport> reports = new ArrayList<>();
+            List<HourReport> reports = new ArrayList<>();
             while (resultSet.next()){
                 String channel = resultSet.getString("channel");
                 int hour = resultSet.getInt("hour");
                 int cnt = resultSet.getInt("cnt");
-                SiteHourReport hourReport = new SiteHourReport(channel, cnt, hour);
+                HourReport hourReport = new HourReport(channel, cnt, hour);
                 reports.add(hourReport);
             }
             return reports;
@@ -237,32 +242,31 @@ public class EntryDAOImpl implements EntryDAO {
     }
 
     /**
-     * @param title filters entries that its title contains this title
-     * @param limit max size of result
-     * @return report which contain a site news count in each day
+     * count of news for each day for each site
+     * @param title string which must appeared in the title (optional)
+     * @param limit max number of results
+     * @return sorted list of HourReport by year and month and day
      */
     @Override
-    public List<SiteReport> getSiteReports(String title, int limit) {
+    public List<DateReport> getDateReports(String title, int limit) {
         try (ConnectionWrapper connection = ConnectionPool.getConnection()) {
-            PreparedStatement preparedStatement = connection.prepareStatement("select" +
-                    " Year(pub_date) as year, Month(pub_date) as month, Day(pub_date) as day, channel, count(*) as cnt" +
-                    " from feed" +
-                    ((title != null) ? " where title like ? " : "")+
-                    " group by year, month, day, channel" +
-                    " order by year desc,month desc,day desc limit ?");
-            if (title != null){
-                preparedStatement.setString(1,"%" + title + "%");
-            }
-            preparedStatement.setInt(title != null ? 2 : 1, limit);
+            PreparedStatement preparedStatement = connection.prepareStatement("SELECT" +
+                    " Year(pub_date) AS year, Month(pub_date) AS month, Day(pub_date) AS day, channel, COUNT(*) as cnt" +
+                    " FROM feed" +
+                    " WHERE title LIKE ? " +
+                    " GROUP BY year, month, day, channel" +
+                    " ORDER BY year DESC,month DESC,day DESC LIMIT ?");
+            preparedStatement.setString(1, "%" +  (title != null ? title : "") + "%");
+            preparedStatement.setInt(2, limit);
             ResultSet resultSet = preparedStatement.executeQuery();
-            List<SiteReport> reports = new ArrayList<>();
+            List<DateReport> reports = new ArrayList<>();
             while (resultSet.next()){
                 int year = resultSet.getInt("year");
                 int month = resultSet.getInt("month");
                 int day = resultSet.getInt("day");
                 int count = resultSet.getInt("cnt");
                 String channel = resultSet.getString("channel");
-                SiteReport report = new SiteReport(channel, count, Utility.createDate(year, month, day));
+                DateReport report = new DateReport(channel, count, Utility.createDate(year, month, day));
                 reports.add(report);
             }
             return reports;

@@ -4,8 +4,8 @@ import in.nimbo.TestUtility;
 import in.nimbo.dao.pool.ConnectionPool;
 import in.nimbo.dao.pool.ConnectionWrapper;
 import in.nimbo.entity.Entry;
-import in.nimbo.entity.SiteHourReport;
-import in.nimbo.entity.SiteReport;
+import in.nimbo.entity.report.HourReport;
+import in.nimbo.entity.report.DateReport;
 import in.nimbo.exception.RecordNotFoundException;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -22,6 +22,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 
 import static org.junit.Assert.*;
@@ -169,15 +170,14 @@ public class EntryDAOTest {
     }
 
     @Test
-    public void getReportsTest() throws SQLException {
+    public void getDateReportsTest() throws SQLException {
         String sql = "insert into feed (channel, title, pub_date) values (?, ?, ?)";
-        Random random = new Random();
-        List<SiteReport> reports = new ArrayList<>();
+        List<DateReport> reports = new ArrayList<>();
         String channel = "test";
         String title = "test";
         int limit = 10;
         for (int i = 0; i < limit; i++) {
-            int count = random.nextInt(10) + 1;
+            int count = ThreadLocalRandom.current().nextInt(10) + 1;
             for (int j = 0; j < count; j++) {
                 PreparedStatement statement = connection.prepareStatement(sql);
                 statement.setString(1, channel);
@@ -188,25 +188,24 @@ public class EntryDAOTest {
             int year = 2010;
             int month = 6;
             int day = i + 1;
-            SiteReport report = new SiteReport(channel, count, TestUtility.createDate(year, month, day));
+            DateReport report = new DateReport(channel, count, TestUtility.createDate(year, month, day));
             reports.add(report);
         }
 
         Collections.reverse(reports);
 
-        assertEquals(reports, entryDAO.getSiteReports("", limit));
+        assertEquals(reports, entryDAO.getDateReports("", limit));
     }
 
     @Test
     public void getHourReportTest() throws SQLException {
         String sql = "insert into feed (channel, title, pub_date) values (?, ?, ?)";
-        Random random = new Random();
-        Set<SiteHourReport> reports = new HashSet<>();
+        Set<HourReport> reports = new HashSet<>();
         String channel = "test";
         String title = "test";
         int limit = 10;
         for (int i = 0; i < limit; i++) {
-            int count = random.nextInt(limit) + 1;
+            int count = ThreadLocalRandom.current().nextInt(limit) + 1;
             for (int j = 0; j < count; j++) {
                 Date date = TestUtility.createDate(2010, 6, i + 1);
                 date.setTime(date.getTime() + i * 3600 * 1000);
@@ -217,12 +216,12 @@ public class EntryDAOTest {
                 statement.setTimestamp(3, new java.sql.Timestamp(date.getTime()));
                 statement.executeUpdate();
             }
-            SiteHourReport report = new SiteHourReport(channel, count, i);
+            HourReport report = new HourReport(channel, count, i);
             reports.add(report);
         }
 
-        List<SiteHourReport> realAnswer = entryDAO.getHourReports(title);
-        Set<SiteHourReport> hourReports = new HashSet<>();
+        List<HourReport> realAnswer = entryDAO.getHourReports(title);
+        Set<HourReport> hourReports = new HashSet<>();
         hourReports.addAll(realAnswer);
         assertEquals(hourReports, reports);
     }
