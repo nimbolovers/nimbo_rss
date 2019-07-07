@@ -4,14 +4,15 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.Date;
 
 public class Utility {
-    private static DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
+    public static SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
 
     private Utility() {}
 
@@ -27,7 +28,7 @@ public class Utility {
      * @param urlLink link
      * @return encoded URL
      */
-    public static URL encodeURL(String urlLink) {
+    public static URL encodeURL(String urlLink) throws MalformedURLException {
         try {
             if (urlLink.contains("%")) // it is encoded, so just return
                 return new URL(urlLink);
@@ -39,7 +40,7 @@ public class Utility {
                 return new URL(uri.toASCIIString());
             }
         } catch (MalformedURLException | URISyntaxException e) {
-            throw new RuntimeException(e);
+            throw new MalformedURLException("Illegal URL: " + urlLink);
         }
     }
 
@@ -50,9 +51,8 @@ public class Utility {
      */
     public static Date getDate(String date) {
         try {
-            LocalDateTime startLocalDate = LocalDateTime.parse(date, formatter);
-            return Date.from(startLocalDate.atZone(ZoneId.systemDefault()).toInstant());
-        } catch (DateTimeParseException e) {
+            return formatter.parse(date);
+        } catch (ParseException e) {
             throw new IllegalArgumentException("Unable to convert " + date + " to Date");
         }
     }
