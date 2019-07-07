@@ -36,25 +36,21 @@ public class EntryDAOTest {
     private static EntryDAO entryDAO;
 
     @BeforeClass
-    public static void init() throws SQLException, ClassNotFoundException, IOException {
+    public static void init() throws SQLException, ClassNotFoundException {
         TestUtility.disableJOOQLogo();
 
         DescriptionDAO descriptionDAO = new DescriptionDAOImpl();
         ContentDAO contentDAO = new ContentDAOImpl();
         entryDAO = new EntryDAOImpl(descriptionDAO, contentDAO);
 
-        ClassLoader loader = Thread.currentThread().getContextClassLoader();
-        Properties properties = new Properties();
-        InputStream is = loader.getResourceAsStream("database.properties");
-        properties.load(is);
-
         String initialH2Query = TestUtility.getFileContent(Paths.get("db/db_tables_sql.sql"));
-        Class.forName("org.h2.Driver");
+        Class.forName(TestUtility.getDatabaseProperties().getProperty("database.driver"));
         connection = new ConnectionWrapper(DriverManager.getConnection(
-                properties.getProperty("database.url"),
-                properties.getProperty("database.username"),
-                properties.getProperty("database.password"))
+                TestUtility.getDatabaseProperties().getProperty("database.url"),
+                TestUtility.getDatabaseProperties().getProperty("database.username"),
+                TestUtility.getDatabaseProperties().getProperty("database.password"))
         );
+
         connection.prepareStatement(initialH2Query).executeUpdate();
         connection = PowerMockito.spy(connection);
     }
@@ -143,16 +139,16 @@ public class EntryDAOTest {
 
         // test before
         Date beforeDate = TestUtility.createDate(2000, 1, 1);
-        assertEquals(entries.stream().filter(entry -> entry.getSyndEntry().getPublishedDate()
+        assertEquals(entries.stream().filter(entry -> entry.getPublicationDate()
                         .compareTo(beforeDate) >= 0).collect(Collectors.toList()),
                 entryDAO.filterEntryByTitle("channel", "title", beforeDate, null));
         // test after
         Date afterDate = TestUtility.createDate(2030, 1, 1);
-        assertEquals(entries.stream().filter(entry -> entry.getSyndEntry().getPublishedDate()
+        assertEquals(entries.stream().filter(entry -> entry.getPublicationDate()
                         .compareTo(beforeDate) >= 0).collect(Collectors.toList()),
                 entryDAO.filterEntryByTitle("channel", "title", null, afterDate));
         // test between
-        assertEquals(entries.stream().filter(entry -> entry.getSyndEntry().getPublishedDate()
+        assertEquals(entries.stream().filter(entry -> entry.getPublicationDate()
                         .compareTo(beforeDate) >= 0).collect(Collectors.toList()),
                 entryDAO.filterEntryByTitle("channel", "title", beforeDate, afterDate));
     }
@@ -166,16 +162,16 @@ public class EntryDAOTest {
 
         // test before
         Date beforeDate = TestUtility.createDate(2000, 1, 1);
-        assertEquals(entries.stream().filter(entry -> entry.getSyndEntry().getPublishedDate()
+        assertEquals(entries.stream().filter(entry -> entry.getPublicationDate()
                         .compareTo(beforeDate) >= 0).collect(Collectors.toList()),
                 entryDAO.filterEntryByContent("channel", "content", beforeDate, null));
         // test after
         Date afterDate = TestUtility.createDate(2030, 1, 1);
-        assertEquals(entries.stream().filter(entry -> entry.getSyndEntry().getPublishedDate()
+        assertEquals(entries.stream().filter(entry -> entry.getPublicationDate()
                         .compareTo(beforeDate) >= 0).collect(Collectors.toList()),
                 entryDAO.filterEntryByContent("channel", "content", null, afterDate));
         // test between
-        assertEquals(entries.stream().filter(entry -> entry.getSyndEntry().getPublishedDate()
+        assertEquals(entries.stream().filter(entry -> entry.getPublicationDate()
                         .compareTo(beforeDate) >= 0).collect(Collectors.toList()),
                 entryDAO.filterEntryByContent("channel", "content", beforeDate, afterDate));
     }

@@ -37,8 +37,12 @@ public class SiteDAOTest {
         siteDAO = new SiteDAOImpl();
 
         String initialH2Query = TestUtility.getFileContent(Paths.get("db/db_tables_sql.sql"));
-        Class.forName("org.h2.Driver");
-        connection = new ConnectionWrapper(DriverManager.getConnection("jdbc:h2:mem:test/h2_rss", "user", ""));
+        Class.forName(TestUtility.getDatabaseProperties().getProperty("database.driver"));
+        connection = new ConnectionWrapper(DriverManager.getConnection(
+                TestUtility.getDatabaseProperties().getProperty("database.url"),
+                TestUtility.getDatabaseProperties().getProperty("database.username"),
+                TestUtility.getDatabaseProperties().getProperty("database.password"))
+        );
         connection.prepareStatement(initialH2Query).executeUpdate();
         connection = PowerMockito.spy(connection);
     }
@@ -126,7 +130,7 @@ public class SiteDAOTest {
 
         PreparedStatement statement = connection.prepareStatement("SELECT * FROM site");
         ResultSet resultSet = statement.executeQuery();
-        boolean hasNext = resultSet.next();
+        resultSet.next();
         assertEquals("updated-name", resultSet.getString("name"));
         assertEquals("updated-link", resultSet.getString("link"));
         assertEquals(TestUtility.createDate(2000, 1, 1), resultSet.getTimestamp("last_update"));

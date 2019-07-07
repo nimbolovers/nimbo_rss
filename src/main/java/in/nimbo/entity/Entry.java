@@ -1,24 +1,51 @@
 package in.nimbo.entity;
 
-import com.rometools.rome.feed.synd.SyndEntry;
-
+import java.util.Date;
 import java.util.Objects;
 
-/**
- * Wrapper for class SyndEntry which contain more information related to entry
- */
+
 public class Entry {
     private int id;
     private String channel;
+    private String title;
+    private String link;
+    private Date publicationDate;
+    private Description description;
     private String content;
-    private SyndEntry syndEntry;
 
     public Entry() {
     }
 
-    public Entry(String channel, SyndEntry syndEntry) {
-        this.channel = channel;
-        this.syndEntry = syndEntry;
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public String getLink() {
+        return link;
+    }
+
+    public void setLink(String link) {
+        this.link = link;
+    }
+
+    public Date getPublicationDate() {
+        return publicationDate;
+    }
+
+    public void setPublicationDate(Date publicationDate) {
+        this.publicationDate = publicationDate;
+    }
+
+    public Description getDescription() {
+        return description;
+    }
+
+    public void setDescription(Description description) {
+        this.description = description;
     }
 
     public void setId(int id) {
@@ -29,10 +56,6 @@ public class Entry {
         this.channel = channel;
     }
 
-    public void setSyndEntry(SyndEntry syndEntry) {
-        this.syndEntry = syndEntry;
-    }
-
     public int getId() {
         return id;
     }
@@ -40,11 +63,6 @@ public class Entry {
     public String getChannel() {
         return channel;
     }
-
-    public SyndEntry getSyndEntry() {
-        return syndEntry;
-    }
-
 
     public String getContent() {
         return content;
@@ -54,6 +72,12 @@ public class Entry {
         this.content = content;
     }
 
+    /**
+     * check equality of two entries
+     * description doesn't check for equality
+     * @param o other entry
+     * @return true if this.equals(o)
+     */
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -64,18 +88,7 @@ public class Entry {
         return Objects.equals(channel, entry.channel) &&
                 Objects.equals(id, entry.id) &&
                 Objects.equals(content, entry.content) &&
-                Objects.equals(syndEntry.getTitle(), entry.syndEntry.getTitle()) &&
-                Objects.equals(syndEntry.getLink(), entry.syndEntry.getLink());
-    }
-
-    @Override
-    public String toString() {
-        return "Entry{" +
-                "id=" + id +
-                ", channel='" + channel + '\'' +
-                ", content='" + content + '\'' +
-                ", title=" + syndEntry.getTitle() + "\'" +
-                ", link=" + syndEntry.getLink() +
-                '}';
+                Objects.equals(title, entry.title) &&
+                Objects.equals(link, entry.link);
     }
 }

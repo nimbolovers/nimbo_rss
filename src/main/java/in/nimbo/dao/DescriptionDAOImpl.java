@@ -26,26 +26,25 @@ public class DescriptionDAOImpl implements DescriptionDAO {
      *
      * @param resultSet resultSet of database
      * @return list of description
+     * @throws ResultSetFetchException if unable to fetch data from ResultSet
      */
     private List<Description> createDescriptionFromResultSet(ResultSet resultSet) {
         List<Description> descriptions = new ArrayList<>();
         try {
             while (resultSet.next()) {
                 Description description = new Description();
-                SyndContent syndContent = new SyndContentImpl();
-                description.setSyndContent(syndContent);
 
                 // fetch id
                 description.setId(resultSet.getInt("id"));
 
                 // fetch type
-                syndContent.setType(resultSet.getString("type"));
+                description.setType(resultSet.getString("type"));
 
                 // fetch mode
-                syndContent.setMode(resultSet.getString("mode"));
+                description.setMode(resultSet.getString("mode"));
 
                 // fetch value
-                syndContent.setValue(resultSet.getString("value"));
+                description.setValue(resultSet.getString("value"));
 
                 // fetch feed_id
                 description.setFeed_id(resultSet.getInt("feed_id"));
@@ -53,7 +52,7 @@ public class DescriptionDAOImpl implements DescriptionDAO {
                 descriptions.add(description);
             }
         } catch (SQLException e) {
-            logger.error("Unable to fetch data from ResultSet: " + e.getMessage());
+            logger.error("Unable to fetch data from ResultSet: " + e.getMessage(), e);
             throw new ResultSetFetchException("Unable to fetch data from ResultSet", e);
         }
         return descriptions;
@@ -65,6 +64,7 @@ public class DescriptionDAOImpl implements DescriptionDAO {
      * @param feedId feed_id to search id
      * @return list of descriptions
      * @throws RecordNotFoundException if unable to find a record with given feedId
+     * @throws QueryException if unable to execute query
      */
     @Override
     public Description getByFeedId(int feedId) {
@@ -77,7 +77,7 @@ public class DescriptionDAOImpl implements DescriptionDAO {
         } catch (IndexOutOfBoundsException e) {
             throw new RecordNotFoundException("content which has feed_id=" + feedId + " not found", e);
         } catch (SQLException e) {
-            logger.error("Unable to execute query: " + e.getMessage());
+            logger.error("Unable to execute query: " + e.getMessage(), e);
             throw new QueryException("Unable to execute query", e);
         }
     }
@@ -87,20 +87,21 @@ public class DescriptionDAOImpl implements DescriptionDAO {
      *
      * @param description description which is saved
      * @return description which it's ID will be set after adding to database
+     * @throws QueryException if unable to execute query
      */
     @Override
     public Description save(Description description) {
         try (ConnectionWrapper connection = ConnectionPool.getConnection()) {
             PreparedStatement preparedStatement = connection.prepareStatement(
                     "INSERT INTO description(type, mode, value, feed_id) VALUES(?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
-            preparedStatement.setString(1, description.getSyndContent().getType());
-            preparedStatement.setString(2, description.getSyndContent().getMode());
-            preparedStatement.setString(3, description.getSyndContent().getValue());
+            preparedStatement.setString(1, description.getType());
+            preparedStatement.setString(2, description.getMode());
+            preparedStatement.setString(3, description.getValue());
             preparedStatement.setInt(4, description.getFeed_id());
             int newId = preparedStatement.executeUpdate();
             description.setId(newId);
         } catch (SQLException e) {
-            logger.error("Unable to execute query: " + e.getMessage());
+            logger.error("Unable to execute query: " + e.getMessage(), e);
             throw new QueryException("Unable to execute query", e);
         }
         return description;

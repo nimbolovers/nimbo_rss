@@ -21,7 +21,7 @@ public class ContentDAOImpl implements ContentDAO {
      *
      * @param resultSet resultSet of database
      * @return list of contents
-     * @throws RuntimeException if unable to fetch data from ResultSet
+     * @throws ResultSetFetchException if unable to fetch data from ResultSet
      */
     private List<Content> createContentFromResultSet(ResultSet resultSet) {
         List<Content> contents = new ArrayList<>();
@@ -41,7 +41,7 @@ public class ContentDAOImpl implements ContentDAO {
                 contents.add(content);
             }
         } catch (SQLException e) {
-            logger.error("Unable to fetch data from ResultSet: " + e.getMessage());
+            logger.error("Unable to fetch data from ResultSet: " + e.getMessage(), e);
             throw new ResultSetFetchException("Unable to fetch data from ResultSet", e);
         }
         return contents;
@@ -53,6 +53,7 @@ public class ContentDAOImpl implements ContentDAO {
      * @param feedId feed_id to search id
      * @return list of contents
      * @throws RecordNotFoundException if unable to find a record with given feedId
+     * @throws QueryException if unable to execute query
      */
     @Override
     public Content getByFeedId(int feedId) {
@@ -65,7 +66,7 @@ public class ContentDAOImpl implements ContentDAO {
         } catch (IndexOutOfBoundsException e) {
             throw new RecordNotFoundException("content which has feed_id=" + feedId + " not found", e);
         } catch (SQLException e) {
-            logger.error("Unable to execute query: " + e.getMessage());
+            logger.error("Unable to execute query: " + e.getMessage(), e);
             throw new QueryException("Unable to execute query", e);
         }
     }
@@ -75,6 +76,7 @@ public class ContentDAOImpl implements ContentDAO {
      *
      * @param content content which is saved
      * @return content which it's ID will be set after adding to database
+     * @throws QueryException if unable to execute query
      */
     @Override
     public Content save(Content content) {
@@ -89,7 +91,7 @@ public class ContentDAOImpl implements ContentDAO {
             int newId = generatedKeys.getInt(1);
             content.setId(newId);
         } catch (SQLException e) {
-            logger.error("Unable to execute query: " + e.getMessage());
+            logger.error("Unable to execute query: " + e.getMessage(), e);
             throw new QueryException("Unable to execute query", e);
         }
         return content;

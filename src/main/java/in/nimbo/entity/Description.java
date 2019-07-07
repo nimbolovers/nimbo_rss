@@ -1,22 +1,46 @@
 package in.nimbo.entity;
 
-import com.rometools.rome.feed.synd.SyndContent;
+import java.util.Objects;
 
-/**
- * Wrapper for description (SyndContent) which contain more information related to description
- */
 public class Description {
     private int id;
-    private SyndContent syndContent;
+    private String type;
+    private String mode;
+    private String value;
     private int feed_id;
 
     public Description() {
     }
 
-    public Description(SyndContent syndContent) {
-        this.syndContent = syndContent;
+    public Description(String type, String mode, String value) {
+        this.type = type;
+        this.mode = mode;
+        this.value = value;
     }
 
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public String getMode() {
+        return mode;
+    }
+
+    public void setMode(String mode) {
+        this.mode = mode;
+    }
+
+    public String getValue() {
+        return value;
+    }
+
+    public void setValue(String value) {
+        this.value = value;
+    }
 
     public int getFeed_id() {
         return feed_id;
@@ -34,11 +58,4 @@ public class Description {
         this.id = id;
     }
 
-    public SyndContent getSyndContent() {
-        return syndContent;
-    }
-
-    public void setSyndContent(SyndContent syndContent) {
-        this.syndContent = syndContent;
-    }
 }

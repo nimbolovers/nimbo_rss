@@ -2,15 +2,13 @@ package in.nimbo.service.schedule;
 
 import in.nimbo.entity.Site;
 import in.nimbo.service.RSSService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.List;
-import java.util.concurrent.*;
-import java.util.function.Supplier;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public class Schedule {
-    private Logger logger = LoggerFactory.getLogger(Schedule.class);
     private static ScheduledExecutorService scheduleService;
     private RSSService rssService;
     private List<Site> sites;
@@ -19,22 +17,10 @@ public class Schedule {
         this.rssService = rssService;
         this.sites = sites;
         scheduleService = Executors.newScheduledThreadPool(100);
-
     }
 
-    private <T> void scheduleWithTimeout(Supplier<T> supplier, long timeout, TimeUnit unit, String timeoutMessage) {
-        CompletableFuture<T> taskCF = new CompletableFuture<>();
-
-        Future<?> future = scheduleService.submit(() -> {
-            try {
-                taskCF.complete(supplier.get());
-            } catch (Throwable ex) {
-                taskCF.completeExceptionally(ex);
-            }
-        });
-
-        // schedule watcher for timeout
-        scheduleService.schedule(new ScheduleWatcher<>(timeoutMessage, taskCF, future), timeout, unit);
+    public List<Site> getSites() {
+        return sites;
     }
 
     public void scheduleSite(Site site) {
