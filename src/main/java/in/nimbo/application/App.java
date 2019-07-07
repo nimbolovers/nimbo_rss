@@ -1,13 +1,16 @@
 package in.nimbo.application;
 
+import in.nimbo.application.cli.AddCLI;
+import in.nimbo.application.cli.RssCLI;
+import in.nimbo.application.cli.SearchCLI;
 import in.nimbo.dao.*;
 import in.nimbo.entity.Entry;
 import in.nimbo.entity.Site;
-import in.nimbo.exception.RssServiceException;
 import in.nimbo.service.RSSService;
 import in.nimbo.service.schedule.Schedule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import picocli.CommandLine;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -49,8 +52,22 @@ public class App {
         this.rssService = rssService;
     }
 
+    public SiteDAO getSiteDAO() {
+        return siteDAO;
+    }
+
+    public Schedule getSchedule() {
+        return schedule;
+    }
+
+    public RSSService getRssService() {
+        return rssService;
+    }
+
     private void run() {
-        logger.info("Application started successfully");
+        System.out.println("Welcome to the RSS service.");
+        System.out.println();
+        System.out.println("Type 'help' for help.");
 
         // UI interface
         runUI();
@@ -71,59 +88,59 @@ public class App {
      */
     private void runUI() {
         Scanner input = new Scanner(System.in);
+        System.out.print("rss> ");
+//        CommandLine commandLine = new CommandLine(new RssCLI(this))
+//                .addSubcommand("search",   new SearchCLI(this))
+//                .addSubcommand("add",   new AddCLI(this));
         Outer:
         while (input.hasNextLine()) {
-            String command = input.next();
-            switch (command) {
-                case "add":
-                    String name = input.next();
-                    String link = input.next();
-                    try {
-                        addSite(name, link);
-                    } catch (IllegalArgumentException e) {
-                        System.out.println(e.getMessage());
-                    }
-                    break;
-                case "search":
-                    boolean isTitleSearch;
-                    String searchString;
-                    String channel = null;
-                    Date startDate = null, finishDate = null;
-                    try {
-                        Map<String, String> params;
-                        params = getParameters(input.nextLine().trim());
-                        if (params.containsKey("channel"))
-                            channel = params.get("channel");
-                        if (params.containsKey("startDate"))
-                            startDate = Utility.getDate(params.get("startDate"));
-                        if (params.containsKey("finishDate"))
-                            finishDate = Utility.getDate(params.get("finishDate"));
-                        if (params.containsKey("content")) {
-                            searchString = params.get("content");
-                            isTitleSearch = false;
-                        } else {
-                            searchString = params.get("title");
-                            isTitleSearch = true;
-                        }
-                    } catch (IllegalArgumentException e) {
-                        System.out.println(e.getMessage());
-                        continue;
-                    }
-
-                    try {
-                        List<Entry> resultEntry;
-                        if (isTitleSearch)
-                            resultEntry = rssService.filterEntryByTitle(channel, searchString, startDate, finishDate);
-                        else
-                            resultEntry = rssService.filterEntryByContent(channel, searchString, startDate, finishDate);
-                        showEntries(resultEntry);
-                    } catch (RssServiceException e) {
-                        System.out.println("Unable to search for data");
-                    }
-                    break;
-                case "exit":
-                    break Outer;
-            }
+            String[] args = input.nextLine().trim().split(" ");
+            CommandLine.call(new RssCLI(this), args);
+//            commandLine.(args);
+//            PositionalDemo params = CommandLine.populateCommand(new PositionalDemo(), args);
+//
+//            switch (command) {
+//                case "search":
+//                    boolean isTitleSearch;
+//                    String searchString;
+//                    String channel = null;
+//                    Date startDate = null, finishDate = null;
+//                    try {
+//                        Map<String, String> params;
+//                        params = getParameters(input.nextLine().trim());
+//                        if (params.containsKey("channel"))
+//                            channel = params.get("channel");
+//                        if (params.containsKey("startDate"))
+//                            startDate = Utility.getDate(params.get("startDate"));
+//                        if (params.containsKey("finishDate"))
+//                            finishDate = Utility.getDate(params.get("finishDate"));
+//                        if (params.containsKey("content")) {
+//                            searchString = params.get("content");
+//                            isTitleSearch = false;
+//                        } else {
+//                            searchString = params.get("title");
+//                            isTitleSearch = true;
+//                        }
+//                    } catch (IllegalArgumentException e) {
+//                        System.out.println(e.getMessage());
+//                        continue;
+//                    }
+//
+//                    try {
+//                        List<Entry> resultEntry;
+//                        if (isTitleSearch)
+//                            resultEntry = rssService.filterEntryByTitle(channel, searchString, startDate, finishDate);
+//                        else
+//                            resultEntry = rssService.filterEntry(channel, searchString, startDate, finishDate);
+//                        showEntries(resultEntry);
+//                    } catch (RssServiceException e) {
+//                        System.out.println("Unable to search for data");
+//                    }
+//                    break;
+//                case "exit":
+//                    break Outer;
+//            }
+            System.out.print("rss> ");
         }
     }
 
