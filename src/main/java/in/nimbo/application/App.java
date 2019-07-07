@@ -72,13 +72,7 @@ public class App {
                 case "add":
                     String name = input.next();
                     String link = input.next();
-                    if (Site.containLink(sites, link)) {
-                        logger.warn("Duplicate URL: " + link);
-                        continue;
-                    }
-                    Site newSite = new Site(name, link);
-                    sites.add(newSite);
-                    schedule.scheduleSite(newSite);
+                    addSite(name, link);
                     break;
                 case "search":
                     String paramLine = input.nextLine().trim();
@@ -136,6 +130,16 @@ public class App {
                     break Outer;
             }
         }
+    }
+
+    private static void addSite(String name, String link) {
+        if (Site.containLink(sites, link)) {
+            logger.warn("Duplicate URL: " + link);
+            return;
+        }
+        Site newSite = new Site(name, link);
+        sites.add(newSite);
+        schedule.scheduleSite(newSite);
     }
 
     /**

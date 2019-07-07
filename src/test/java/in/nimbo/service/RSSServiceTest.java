@@ -1,5 +1,9 @@
 package in.nimbo.service;
 
+import com.rometools.rome.feed.synd.SyndEntry;
+import com.rometools.rome.feed.synd.SyndEntryImpl;
+import com.rometools.rome.feed.synd.SyndFeed;
+import com.rometools.rome.feed.synd.SyndFeedImpl;
 import in.nimbo.TestUtility;
 import in.nimbo.dao.EntryDAO;
 import in.nimbo.entity.Entry;
@@ -8,7 +12,6 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Matchers;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
@@ -49,5 +52,27 @@ public class RSSServiceTest {
 
         List<Entry> savedEntries = rssService.addSiteEntries(site, entries);
         assertEquals(savedEntries.size(), entries.size());
+    }
+
+    @Test
+    public void getEntries() {
+        List<Entry> entries = new ArrayList<>();
+        entries.add(TestUtility.createEntry("channel", "title 1", "link 1", new Date(), null, null));
+        entries.add(TestUtility.createEntry("channel", "title 2", "link 2", new Date(), null, null));
+        entries.add(TestUtility.createEntry("channel", "title 3", "link 3", new Date(), null, null));
+
+        SyndFeed syndFeed = new SyndFeedImpl();
+        syndFeed.setTitle("channel");
+        List<SyndEntry> syndEntries = new ArrayList<>();
+        syndFeed.setEntries(syndEntries);
+        for (Entry entry : entries) {
+            SyndEntry syndEntry = new SyndEntryImpl();
+            syndEntry.setTitle(entry.getTitle());
+            syndEntry.setLink(entry.getLink());
+            syndEntry.setPublishedDate(entry.getPublicationDate());
+            syndEntries.add(syndEntry);
+        }
+
+        assertEquals(entries, rssService.getEntries(syndFeed));
     }
 }
