@@ -1,5 +1,6 @@
 package in.nimbo.service;
 
+import com.google.protobuf.ServiceException;
 import com.rometools.rome.feed.synd.SyndEntry;
 import com.rometools.rome.feed.synd.SyndFeed;
 import com.rometools.rome.io.FeedException;
@@ -10,6 +11,9 @@ import in.nimbo.entity.Description;
 import in.nimbo.entity.Entry;
 import in.nimbo.entity.Site;
 import in.nimbo.exception.ContentExtractingException;
+import in.nimbo.exception.QueryException;
+import in.nimbo.exception.ResultSetFetchException;
+import in.nimbo.exception.RssServiceException;
 import net.dankito.readability4j.Article;
 import net.dankito.readability4j.Readability4J;
 import org.jsoup.Jsoup;
@@ -38,9 +42,14 @@ public class RSSService {
      * @param startTime is the lower bound for publication date of entries! If null don't affect on result
      * @param finishTime is the upper bound for publication date of entries! If null don't affect on result
      * @return entries that accepted all filters
+     * @throws RssServiceException if any exception happen during fetching data from DAO
      */
     public List<Entry> filterEntryByTitle(String channel, String title, Date startTime, Date finishTime) {
-        return entryDAO.filterEntryByTitle(channel, title, startTime, finishTime);
+        try {
+            return entryDAO.filterEntryByTitle(channel, title, startTime, finishTime);
+        } catch (QueryException | ResultSetFetchException | IllegalArgumentException e) {
+            throw new RssServiceException(e.getMessage(), e);
+        }
     }
 
     /**
@@ -49,9 +58,14 @@ public class RSSService {
      * @param startTime is the lower bound for publication date of entries! If null don't affect on result
      * @param finishTime is the upper bound for publication date of entries! If null don't affect on result
      * @return entries that accepted all filters
+     * @throws RssServiceException if any exception happen during fetching data from DAO
      */
     public List<Entry> filterEntryByContent(String channel, String content, Date startTime, Date finishTime) {
-        return entryDAO.filterEntryByContent(channel, content, startTime, finishTime);
+        try {
+            return entryDAO.filterEntryByContent(channel, content, startTime, finishTime);
+        } catch (QueryException | ResultSetFetchException | IllegalArgumentException e) {
+            throw new RssServiceException(e.getMessage(), e);
+        }
     }
 
     /**

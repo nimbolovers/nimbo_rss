@@ -23,7 +23,7 @@ public class SiteDAOImpl implements SiteDAO {
      *
      * @param resultSet resultSet of database
      * @return list of sites
-     * @throws RuntimeException if unable to fetch data from ResultSet
+     * @throws ResultSetFetchException if unable to fetch data from ResultSet
      */
     private List<Site> createSiteFromResultSet(ResultSet resultSet) {
         List<Site> sites = new ArrayList<>();
@@ -62,6 +62,7 @@ public class SiteDAOImpl implements SiteDAO {
      * fetch all of sites in database
      *
      * @return a list of sites
+     * @throws QueryException if unable to execute query
      */
     @Override
     public List<Site> getSites() {
@@ -80,6 +81,7 @@ public class SiteDAOImpl implements SiteDAO {
      *
      * @param site site which is saved
      * @return site which it's ID will be set after adding to database
+     * @throws QueryException if unable to execute query
      */
     @Override
     public Site save(Site site) {
@@ -114,6 +116,7 @@ public class SiteDAOImpl implements SiteDAO {
      * @param site site which is update
      * @return given site
      * @throws IllegalAccessError if site id is not set
+     * @throws QueryException if unable to execute query
      */
     @Override
     public Site update(Site site) {

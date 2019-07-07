@@ -21,7 +21,7 @@ public class ContentDAOImpl implements ContentDAO {
      *
      * @param resultSet resultSet of database
      * @return list of contents
-     * @throws RuntimeException if unable to fetch data from ResultSet
+     * @throws ResultSetFetchException if unable to fetch data from ResultSet
      */
     private List<Content> createContentFromResultSet(ResultSet resultSet) {
         List<Content> contents = new ArrayList<>();
@@ -53,6 +53,7 @@ public class ContentDAOImpl implements ContentDAO {
      * @param feedId feed_id to search id
      * @return list of contents
      * @throws RecordNotFoundException if unable to find a record with given feedId
+     * @throws QueryException if unable to execute query
      */
     @Override
     public Content getByFeedId(int feedId) {
@@ -75,6 +76,7 @@ public class ContentDAOImpl implements ContentDAO {
      *
      * @param content content which is saved
      * @return content which it's ID will be set after adding to database
+     * @throws QueryException if unable to execute query
      */
     @Override
     public Content save(Content content) {

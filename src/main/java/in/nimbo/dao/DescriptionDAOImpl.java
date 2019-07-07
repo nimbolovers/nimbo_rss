@@ -26,6 +26,7 @@ public class DescriptionDAOImpl implements DescriptionDAO {
      *
      * @param resultSet resultSet of database
      * @return list of description
+     * @throws ResultSetFetchException if unable to fetch data from ResultSet
      */
     private List<Description> createDescriptionFromResultSet(ResultSet resultSet) {
         List<Description> descriptions = new ArrayList<>();
@@ -63,6 +64,7 @@ public class DescriptionDAOImpl implements DescriptionDAO {
      * @param feedId feed_id to search id
      * @return list of descriptions
      * @throws RecordNotFoundException if unable to find a record with given feedId
+     * @throws QueryException if unable to execute query
      */
     @Override
     public Description getByFeedId(int feedId) {
@@ -85,6 +87,7 @@ public class DescriptionDAOImpl implements DescriptionDAO {
      *
      * @param description description which is saved
      * @return description which it's ID will be set after adding to database
+     * @throws QueryException if unable to execute query
      */
     @Override
     public Description save(Description description) {
