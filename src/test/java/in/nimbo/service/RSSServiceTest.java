@@ -3,8 +3,10 @@ package in.nimbo.service;
 import com.rometools.rome.feed.synd.*;
 import in.nimbo.TestUtility;
 import in.nimbo.dao.EntryDAO;
+import in.nimbo.dao.SiteDAO;
 import in.nimbo.entity.Entry;
 import in.nimbo.entity.Site;
+import in.nimbo.entity.SiteReport;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -16,6 +18,7 @@ import org.powermock.modules.junit4.PowerMockRunner;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Random;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.*;
@@ -78,5 +81,23 @@ public class RSSServiceTest {
         }
 
         assertEquals(entries, rssService.getEntries(syndFeed));
+    }
+
+    @Test
+    public void getReportsTest(){
+        SiteDAO siteDAO = mock(SiteDAO.class);
+        when(siteDAO.getCount()).thenReturn(2);
+        rssService.setSiteDAO(siteDAO);
+        List<SiteReport> reports = new ArrayList<>();
+        int limit = 6;
+        Random random = new Random();
+        for (int i = 0; i < limit; i++) {
+            SiteReport report = new SiteReport();
+            report.setCount(random.nextInt());
+            reports.add(report);
+        }
+        when(entryDAO.getSiteReports("تست", limit)).thenReturn(reports);
+        List<SiteReport> test = rssService.getReports("تست");
+        assertEquals(test, reports);
     }
 }

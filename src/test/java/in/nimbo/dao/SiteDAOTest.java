@@ -139,4 +139,18 @@ public class SiteDAOTest {
 
         assertFalse(resultSet.next());
     }
+
+    @Test
+    public void countSitesTest() throws SQLException {
+        int count = 5;
+        for (int i = 0; i < count; i++) {
+            PreparedStatement statement = connection.prepareStatement("insert into site (link, news_count, avg_update_time) values (?, ?, ?)");
+            statement.setString(1, "link" + i);
+            statement.setInt(2, i);
+            statement.setInt(3, i);
+            statement.executeUpdate();
+        }
+
+        assertEquals(siteDAO.getCount(), count);
+    }
 }

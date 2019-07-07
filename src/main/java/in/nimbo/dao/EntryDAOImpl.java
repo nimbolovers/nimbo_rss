@@ -2,11 +2,13 @@ package in.nimbo.dao;
 
 import com.rometools.rome.feed.synd.SyndEntry;
 import com.rometools.rome.feed.synd.SyndEntryImpl;
+import in.nimbo.application.Utility;
 import in.nimbo.dao.pool.ConnectionPool;
 import in.nimbo.dao.pool.ConnectionWrapper;
 import in.nimbo.entity.Content;
 import in.nimbo.entity.Description;
 import in.nimbo.entity.Entry;
+import in.nimbo.entity.SiteReport;
 import in.nimbo.exception.QueryException;
 import in.nimbo.exception.RecordNotFoundException;
 import in.nimbo.exception.ResultSetFetchException;
@@ -236,6 +238,45 @@ public class EntryDAOImpl implements EntryDAO {
             ResultSet resultSet = preparedStatement.executeQuery();
             resultSet.next();
             return resultSet.getInt(1) > 0;
+        } catch (SQLException e) {
+            logger.error("Unable to execute query: " + e.getMessage(), e);
+            throw new QueryException("Unable to execute query", e);
+        }
+    }
+
+    /**
+     * @param title filters entries that its title contains this title
+     * @param limit max size of result
+     * @return report which contain a site news count in each day
+     */
+    @Override
+    public List<SiteReport> getSiteReports(String title, int limit) {
+        try (ConnectionWrapper connection = ConnectionPool.getConnection()) {
+            PreparedStatement preparedStatement = connection.prepareStatement("select" +
+                    " Year(pub_date) as year, Month(pub_date) as month, Day(pub_date) as day, channel, count(*) as cnt" +
+                    " from feed" +
+                    ((title != null) ? " where title like ? " : "")+
+                    " group by year, month, day, channel" +
+                    " order by year desc,month desc,day desc limit ?");
+            if (title != null){
+                preparedStatement.setString(1,"%" + title + "%");
+            }
+            preparedStatement.setInt(title != null ? 2 : 1, limit);
+            ResultSet resultSet = preparedStatement.executeQuery();
+            List<SiteReport> reports = new ArrayList<>();
+            while (resultSet.next()){
+                int year = resultSet.getInt("year");
+                int month = resultSet.getInt("month");
+                int day = resultSet.getInt("day");
+                int count = resultSet.getInt("cnt");
+                String channel = resultSet.getString("channel");
+                SiteReport report = new SiteReport();
+                report.setChannel(channel);
+                report.setDate(Utility.createDate(year, month, day));
+                report.setCount(count);
+                reports.add(report);
+            }
+            return reports;
         } catch (SQLException e) {
             logger.error("Unable to execute query: " + e.getMessage(), e);
             throw new QueryException("Unable to execute query", e);

@@ -1,9 +1,11 @@
 package in.nimbo.dao;
 
 import in.nimbo.TestUtility;
+import in.nimbo.application.Utility;
 import in.nimbo.dao.pool.ConnectionPool;
 import in.nimbo.dao.pool.ConnectionWrapper;
 import in.nimbo.entity.Entry;
+import in.nimbo.entity.SiteReport;
 import in.nimbo.exception.RecordNotFoundException;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -21,10 +23,7 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.junit.Assert.*;
@@ -188,5 +187,37 @@ public class EntryDAOTest {
         assertTrue(entryDAO.contain(TestUtility.createEntry("channel-test", "title-test", "link 1", new Date(), "content-test", "desc-test")));
         assertTrue(entryDAO.contain(TestUtility.createEntry("channel-test", "title-test", "link 2", new Date(), "content-test", "desc-test")));
         assertFalse(entryDAO.contain(TestUtility.createEntry("channel-test", "title-test", "link 3", new Date(), "content-test", "desc-test")));
+    }
+
+    @Test
+    public void getReportsTest() throws SQLException {
+        String sql = "insert into feed (channel, title, pub_date) values (?, ?, ?)";
+        Random random = new Random();
+        List<SiteReport> reports = new ArrayList<>();
+        String channel = "test";
+        String title = "test";
+        int limit = 10;
+        for (int i = 0; i < limit; i++) {
+            int count = random.nextInt(10) + 1;
+            for (int j = 0; j < count; j++) {
+                PreparedStatement statement = connection.prepareStatement(sql);
+                statement.setString(1, channel);
+                statement.setString(2, title);
+                statement.setTimestamp(3, new java.sql.Timestamp(TestUtility.createDate(2010, 6, i + 1).getTime()));
+                statement.executeUpdate();
+            }
+            int year = 2010;
+            int month = 6;
+            int day = i + 1;
+            SiteReport report = new SiteReport();
+            report.setDate(TestUtility.createDate(year, month, day));
+            report.setCount(count);
+            report.setChannel(channel);
+            reports.add(report);
+        }
+
+        Collections.reverse(reports);
+
+        assertEquals(reports, entryDAO.getSiteReports("", limit));
     }
 }

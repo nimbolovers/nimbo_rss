@@ -7,9 +7,11 @@ import com.rometools.rome.io.FeedException;
 import com.rometools.rome.io.SyndFeedInput;
 import in.nimbo.application.Utility;
 import in.nimbo.dao.EntryDAO;
+import in.nimbo.dao.SiteDAO;
 import in.nimbo.entity.Description;
 import in.nimbo.entity.Entry;
 import in.nimbo.entity.Site;
+import in.nimbo.entity.SiteReport;
 import in.nimbo.exception.ContentExtractingException;
 import in.nimbo.exception.QueryException;
 import in.nimbo.exception.ResultSetFetchException;
@@ -30,10 +32,16 @@ import java.util.List;
 
 public class RSSService {
     private EntryDAO entryDAO;
+    private SiteDAO siteDAO;
     private Logger logger = LoggerFactory.getLogger(RSSService.class);
+    private int DAY_COUNT = 3;
 
     public RSSService(EntryDAO entryDAO) {
         this.entryDAO = entryDAO;
+    }
+
+    public void setSiteDAO(SiteDAO siteDAO) {
+        this.siteDAO = siteDAO;
     }
 
     /**
@@ -173,5 +181,9 @@ public class RSSService {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public List<SiteReport> getReports(String title){
+        return entryDAO.getSiteReports(title, DAY_COUNT * siteDAO.getCount());
     }
 }

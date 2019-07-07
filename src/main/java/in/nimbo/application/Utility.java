@@ -6,7 +6,9 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeParseException;
 import java.util.Date;
@@ -55,5 +57,17 @@ public class Utility {
         } catch (ParseException e) {
             throw new IllegalArgumentException("Unable to convert " + date + " to Date");
         }
+    }
+
+    /**
+     * create java.util.date with given input
+     * @param year year
+     * @param month month
+     * @param day day
+     * @return date with given inputs
+     */
+    public static Date createDate(int year, int month, int day) {
+        LocalDateTime dateTime = LocalDateTime.of(LocalDate.of(year, month, day), LocalTime.of(0, 0));
+        return Date.from(dateTime.atZone(ZoneId.systemDefault()).toInstant());
     }
 }
