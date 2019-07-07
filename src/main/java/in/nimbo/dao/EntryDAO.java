@@ -9,9 +9,7 @@ import java.util.List;
 
 public interface EntryDAO {
 
-    List<Entry> filterEntryByTitle(String channel, String value, Date startDate, Date finishDate);
-
-    List<Entry> filterEntryByContent(String channel, String value, Date startDate, Date finishDate);
+    List<Entry> filterEntry(String channel, String contentValue, String titleValue, Date startDate, Date finishDate);
 
     List<Entry> getEntries();
 

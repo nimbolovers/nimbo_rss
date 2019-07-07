@@ -1,7 +1,6 @@
 package in.nimbo.dao;
 
 import in.nimbo.TestUtility;
-import in.nimbo.application.Utility;
 import in.nimbo.dao.pool.ConnectionPool;
 import in.nimbo.dao.pool.ConnectionWrapper;
 import in.nimbo.entity.Entry;
@@ -17,8 +16,6 @@ import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.Paths;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -131,7 +128,7 @@ public class EntryDAOTest {
     }
 
     @Test
-    public void filterEntryByTitle() {
+    public void filterEntry() {
         List<Entry> entries = createExampleEntries2();
         for (Entry entry : entries) {
             entryDAO.save(entry);
@@ -139,44 +136,25 @@ public class EntryDAOTest {
 
         // test before
         Date beforeDate = TestUtility.createDate(2000, 1, 1);
-        assertEquals(entries.stream().filter(entry -> entry.getPublicationDate()
-                        .compareTo(beforeDate) >= 0).collect(Collectors.toList()),
-                entryDAO.filterEntryByTitle("channel", "title", beforeDate, null));
-        // test after
         Date afterDate = TestUtility.createDate(2030, 1, 1);
-        assertEquals(entries.stream().filter(entry -> entry.getPublicationDate()
-                        .compareTo(beforeDate) >= 0).collect(Collectors.toList()),
-                entryDAO.filterEntryByTitle("channel", "title", null, afterDate));
+
+        assertEquals(entries.stream()
+                        .filter(entry -> entry.getPublicationDate().compareTo(beforeDate) >= 0)
+                        .collect(Collectors.toList()),
+                entryDAO.filterEntry("channel", "content", "title", beforeDate, null));
+        // test after
+        assertEquals(entries.stream()
+                        .filter(entry -> entry.getPublicationDate().compareTo(beforeDate) >= 0)
+                        .filter(entry -> entry.getPublicationDate().compareTo(afterDate) <= 0)
+                        .collect(Collectors.toList()),
+                entryDAO.filterEntry("channel", "content", "title", beforeDate, afterDate));
         // test between
-        assertEquals(entries.stream().filter(entry -> entry.getPublicationDate()
-                        .compareTo(beforeDate) >= 0).collect(Collectors.toList()),
-                entryDAO.filterEntryByTitle("channel", "title", beforeDate, afterDate));
+        assertEquals(entries.stream()
+                        .filter(entry -> entry.getPublicationDate().compareTo(afterDate) <= 0)
+                        .collect(Collectors.toList()),
+                entryDAO.filterEntry("channel", "content", "title", null, afterDate));
     }
 
-    @Test
-    public void filterEntryByContent() {
-        List<Entry> entries = createExampleEntries2();
-        for (Entry entry : entries) {
-            entryDAO.save(entry);
-        }
-
-        // test before
-        Date beforeDate = TestUtility.createDate(2000, 1, 1);
-        assertEquals(entries.stream().filter(entry -> entry.getPublicationDate()
-                        .compareTo(beforeDate) >= 0).collect(Collectors.toList()),
-                entryDAO.filterEntryByContent("channel", "content", beforeDate, null));
-        // test after
-        Date afterDate = TestUtility.createDate(2030, 1, 1);
-        assertEquals(entries.stream().filter(entry -> entry.getPublicationDate()
-                        .compareTo(beforeDate) >= 0).collect(Collectors.toList()),
-                entryDAO.filterEntryByContent("channel", "content", null, afterDate));
-        // test between
-        assertEquals(entries.stream().filter(entry -> entry.getPublicationDate()
-                        .compareTo(beforeDate) >= 0).collect(Collectors.toList()),
-                entryDAO.filterEntryByContent("channel", "content", beforeDate, afterDate));
-    }
-
-    @Test
     public void contain() {
         List<Entry> entries = new ArrayList<>();
         entries.add(TestUtility.createEntry("channel 1", "title 1", "link 1", new Date(), "content 1", "desc 1"));

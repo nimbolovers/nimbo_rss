@@ -1,7 +1,5 @@
 package in.nimbo.dao;
 
-import com.rometools.rome.feed.synd.SyndEntry;
-import com.rometools.rome.feed.synd.SyndEntryImpl;
 import in.nimbo.application.Utility;
 import in.nimbo.dao.pool.ConnectionPool;
 import in.nimbo.dao.pool.ConnectionWrapper;
@@ -12,12 +10,14 @@ import in.nimbo.exception.ResultSetFetchException;
 import org.jooq.Record;
 import org.jooq.SQLDialect;
 import org.jooq.SelectConditionStep;
-import org.jooq.conf.ParamType;
 import org.jooq.impl.DSL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.sql.*;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -83,71 +83,38 @@ public class EntryDAOImpl implements EntryDAO {
     }
 
     /**
-     * find entries which their title contain something in range of date
-     *
-     * @param channel channel which search for entry in it
-     *                if it is not specified (null), then search in all channels
-     * @param value value want to be in title of entry
-     * @param startDate start date of fetched data
-     *                  if it is not specified (null), then there is no limitation on start time
-     * @param finishDate finish date of fetched data
-     *                   if it is not specified (null), then there is no limitation on finish time
-     * @return list of entries which their title contain value
-     * @throws QueryException if it is unable to execute query
-     */
-    @Override
-    public List<Entry> filterEntryByTitle(String channel, String value, Date startDate, Date finishDate) {
-        try (ConnectionWrapper connection = ConnectionPool.getConnection()) {
-            SelectConditionStep<Record> query = DSL.using(SQLDialect.MYSQL)
-                    .select()
-                    .from("feed")
-                    .where(DSL.field("title").like("%" + value + "%"));
-            if (channel != null)
-                query = query.and(DSL.field("channel").eq(channel));
-            if (startDate != null)
-                query = query.and(DSL.field("pub_date").ge(new java.sql.Timestamp(startDate.getTime())));
-            if (finishDate != null)
-                query = query.and(DSL.field("pub_date").le(new java.sql.Timestamp(finishDate.getTime())));
-
-            String sqlQuery = query.getSQL(ParamType.INLINED);
-            Statement statement = connection.createStatement();
-            ResultSet resultSet = statement.executeQuery(sqlQuery);
-            return createEntryFromResultSet(resultSet);
-        } catch (SQLException e) {
-            logger.error("Unable to execute query: " + e.getMessage(), e);
-            throw new QueryException("Unable to execute query", e);
-        }
-    }
-
-    /**
      * find entries which their content contain something in range of date
      *
      * @param channel channel which search for entry in it
      *                if it is not specified (null), then search in all channels
-     * @param value value want to be in content of entry
+     * @param contentValue content value want to be in content of entry
+     * @param titleValue title value want to be in title of entry
      * @param startDate start date of fetched data
      *                  if it is not specified (null), then there is no limitation on start time
      * @param finishDate finish date of fetched data
      *                   if it is not specified (null), then there is no limitation on finish time
-     * @return list of entries which their content contain value
+     * @return list of entries which their content contain value and their title contain a value
      * @throws QueryException if it is unable to execute query
      */
-    @Override
-    public List<Entry> filterEntryByContent(String channel, String value, Date startDate, Date finishDate) {
+    public List<Entry> filterEntry(String channel, String contentValue, String titleValue
+            , Date startDate, Date finishDate) {
         try (ConnectionWrapper connection = ConnectionPool.getConnection()) {
             SelectConditionStep<Record> query = DSL.using(SQLDialect.MYSQL)
                     .select()
                     .from("feed")
                     .innerJoin("content").on(DSL.field("feed.id").eq(DSL.field("content.feed_id")))
-                    .where(DSL.field("content.value").like("%" + value + "%"));
-            if (channel != null)
+                    .where(
+                            DSL.field("content.value").like("%" + contentValue + "%")
+                                    .and(DSL.field("title").like("%" + titleValue + "%"))
+                    );
+            if (channel != null && !channel.isEmpty())
                 query = query.and(DSL.field("feed.channel").eq(channel));
             if (startDate != null)
                 query = query.and(DSL.field("feed.pub_date").ge(new java.sql.Timestamp(startDate.getTime())));
             if (finishDate != null)
                 query = query.and(DSL.field("feed.pub_date").le(new java.sql.Timestamp(finishDate.getTime())));
 
-            String sqlQuery = query.getSQL(ParamType.INLINED);
+            String sqlQuery = query.getQuery().toString();
             Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery(sqlQuery);
             return createEntryFromResultSet(resultSet);

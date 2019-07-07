@@ -10,7 +10,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneId;
-import java.time.format.DateTimeParseException;
 import java.util.Date;
 
 public class Utility {
@@ -50,6 +49,7 @@ public class Utility {
      * convert a string of date to java.util.Date
      * @param date string format of day
      * @return java.util.date represent given date
+     * @throws IllegalArgumentException if unable to convert string to date
      */
     public static Date getDate(String date) {
         try {

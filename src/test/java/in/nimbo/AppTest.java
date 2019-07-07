@@ -1,7 +1,7 @@
 package in.nimbo;
 
-import in.nimbo.application.App;
 import in.nimbo.application.Utility;
+import in.nimbo.application.cli.AddCLI;
 import in.nimbo.dao.SiteDAO;
 import in.nimbo.entity.Site;
 import in.nimbo.service.RSSService;
@@ -27,7 +27,6 @@ public class AppTest {
     private SiteDAO siteDAO;
     private RSSService rssService;
     private Schedule schedule;
-    private App app;
 
     @BeforeClass
     public static void init() {
@@ -39,7 +38,6 @@ public class AppTest {
         siteDAO = PowerMockito.mock(SiteDAO.class);
         rssService = PowerMockito.mock(RSSService.class);
         schedule = PowerMockito.mock(Schedule.class);
-        app = new App(siteDAO, schedule, rssService);
     }
 
     private List<Site> createExampleSites() {
@@ -53,15 +51,19 @@ public class AppTest {
     @Test(expected = IllegalArgumentException.class)
     public void addDuplicateSite() {
         List<Site> sites = createExampleSites();
+
         PowerMockito.when(schedule.getSites()).thenReturn(sites);
-        app.addSite("site 1", "link 1");
+        AddCLI addCLI = PowerMockito.spy(new AddCLI());
+        addCLI.addSite(schedule, "site 1", "link 1");
     }
 
     @Test
     public void addNonDuplicateSite() {
         List<Site> sites = createExampleSites();
+
         PowerMockito.when(schedule.getSites()).thenReturn(sites);
-        app.addSite("site 4", "link 4");
+        AddCLI addCLI = PowerMockito.spy(new AddCLI());
+        addCLI.addSite(schedule, "site 4", "link 4");
         assertEquals(4, sites.size());
         assertTrue(sites.contains(new Site("site 4", "link 4")));
     }
