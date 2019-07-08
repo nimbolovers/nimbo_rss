@@ -100,9 +100,9 @@ public class RSSService {
             }
         }
         if (newEntries.size() == entries.size()) {
-            logger.info("Add %d entries from: %s", newEntries.size(), site.getLink());
+            logger.info("Add " + newEntries.size() + " entries from: " + site.getLink());
         } else if (!newEntries.isEmpty()) {
-            logger.info("Add %d/%d entries from: %s", newEntries.size(), entries.size(), site.getLink());
+            logger.info("Add " + newEntries.size() + "/" + entries.size() + " entries from: " + site.getLink());
         }
 
         site.increaseNewsCount(newEntries.size());
@@ -172,7 +172,7 @@ public class RSSService {
             String htmlContent = Jsoup.connect(encodedURL.toString()).get().html();
             SyndFeedInput input = new SyndFeedInput();
             SyndFeed feed = input.build(new StringReader(htmlContent));
-            logger.info("RSS data fetched successfully from: %s", url);
+            logger.info("RSS data fetched successfully from: " + url);
             return feed;
         } catch (MalformedURLException e) {
             throw new SyndFeedException("Illegal URL format: " + url, e);

@@ -11,6 +11,7 @@ import in.nimbo.service.RSSService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
@@ -87,7 +88,6 @@ public class ScheduleUpdater implements Callable<Void> {
 
             updateInterval = newAverageUpdateTime;
         } catch (CalculateAverageUpdateException e) {
-            logger.warn(e.getMessage());
             updateInterval *= 2;
         }
 
@@ -115,7 +115,8 @@ public class ScheduleUpdater implements Callable<Void> {
             List<Entry> entries = rssService.getEntries(syndFeed);
             return rssService.addSiteEntries(site, entries);
         } catch (SyndFeedException | QueryException e) {
-            throw new CalculateAverageUpdateException(e.getMessage());
+            logger.warn(e.getMessage());
+            return new ArrayList<>();
         }
     }
 }
