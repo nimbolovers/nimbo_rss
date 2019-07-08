@@ -5,6 +5,7 @@ import in.nimbo.application.Utility;
 import in.nimbo.entity.report.DateReport;
 import picocli.CommandLine;
 
+import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.concurrent.Callable;
 
@@ -28,10 +29,21 @@ public class DateReportCLI implements Callable<Void> {
 
 
     @Override
-    public Void call() throws Exception {
+    public Void call() {
         App app = parent.getApp();
         List<DateReport> reports = app.getRssService().getReports(title);
-        Utility.showDateReports(reports);
+        showDateReports(reports);
         return null;
+    }
+
+    public static void showDateReports(List<DateReport> reports){
+        System.out.println();
+        for (DateReport report:reports) {
+            System.out.println(report.getChannel() + ": " + report.getCount());
+            SimpleDateFormat format = new SimpleDateFormat("yyyy/MM/dd");
+            String s = format.format(report.getDate());
+            System.out.println(s);
+            System.out.println();
+        }
     }
 }

@@ -83,24 +83,4 @@ public class Utility {
             return value.substring(1, value.length() - 1);
         return value;
     }
-
-    public static void showDateReports(List<DateReport> reports){
-        System.out.println();
-        for (DateReport report:reports) {
-            System.out.println(report.getChannel() + ": " + report.getCount());
-            SimpleDateFormat format = new SimpleDateFormat("yyyy/MM/dd");
-            String s = format.format(report.getDate());
-            System.out.println(s);
-            System.out.println();
-        }
-    }
-
-    public static void showHourReports(List<HourReport> reports) {
-        System.out.println();
-        for (HourReport report:reports) {
-            System.out.println(report.getChannel() + ": " + report.getCount());
-            System.out.println(report.getHour());
-            System.out.println();
-        }
-    }
 }

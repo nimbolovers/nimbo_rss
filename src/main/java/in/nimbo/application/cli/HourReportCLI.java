@@ -2,7 +2,6 @@ package in.nimbo.application.cli;
 
 import in.nimbo.application.App;
 import in.nimbo.application.Utility;
-import in.nimbo.entity.report.DateReport;
 import in.nimbo.entity.report.HourReport;
 import picocli.CommandLine;
 
@@ -26,11 +25,19 @@ public class HourReportCLI implements Callable<Void> {
     boolean usageHelpRequested;
 
     @Override
-    public Void call() throws Exception {
+    public Void call() {
         App app = parent.getApp();
         List<HourReport> reports = app.getRssService().getHourReports(title);
-        Utility.showHourReports(reports);
+        showHourReports(reports);
         return null;
     }
 
+    public static void showHourReports(List<HourReport> reports) {
+        System.out.println();
+        for (HourReport report:reports) {
+            System.out.println(report.getChannel() + ": " + report.getCount());
+            System.out.println(report.getHour());
+            System.out.println();
+        }
+    }
 }
