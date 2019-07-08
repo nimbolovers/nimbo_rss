@@ -91,8 +91,8 @@ public class Utility {
             SimpleDateFormat format = new SimpleDateFormat("yyyy/MM/dd");
             String s = format.format(report.getDate());
             System.out.println(s);
+            System.out.println();
         }
-        System.out.println();
     }
 
     public static void showHourReports(List<HourReport> reports) {
@@ -100,7 +100,7 @@ public class Utility {
         for (HourReport report:reports) {
             System.out.println(report.getChannel() + ": " + report.getCount());
             System.out.println(report.getHour());
+            System.out.println();
         }
-        System.out.println();
     }
 }
