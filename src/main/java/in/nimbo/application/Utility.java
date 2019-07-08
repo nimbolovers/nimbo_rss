@@ -13,7 +13,7 @@ import java.time.ZoneId;
 import java.util.Date;
 
 public class Utility {
-    public static SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+    public static final SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
 
     private Utility() {}
 

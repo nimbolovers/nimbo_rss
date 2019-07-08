@@ -28,7 +28,7 @@ public class ScheduleSiteUpdater implements Runnable {
             try {
                 rssService.updateSite(site);
             } catch (RssServiceException e) {
-                logger.error("Unable to save information of site on database: " + site.getName());
+                logger.error("Unable to save information of site on database: %s", site.getName());
             }
         }
     }

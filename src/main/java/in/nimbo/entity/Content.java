@@ -6,22 +6,22 @@ package in.nimbo.entity;
 public class Content {
     private int id;
     private String value;
-    private int feed_id;
+    private int feedId;
 
     public Content() {
     }
 
-    public Content(String value, int feed_id) {
+    public Content(String value, int feedId) {
         this.value = value;
-        this.feed_id = feed_id;
+        this.feedId = feedId;
     }
 
-    public int getFeed_id() {
-        return feed_id;
+    public int getFeedId() {
+        return feedId;
     }
 
-    public void setFeed_id(int feed_id) {
-        this.feed_id = feed_id;
+    public void setFeedId(int feedId) {
+        this.feedId = feedId;
     }
 
     public int getId() {

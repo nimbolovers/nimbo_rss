@@ -61,7 +61,11 @@ public class AppTest {
         PowerMockito.when(siteDAO.containLink("link 4")).thenReturn(false);
         PowerMockito.when(siteDAO.getSites()).thenReturn(createExampleSites());
         AddCLI addCLI = PowerMockito.spy(new AddCLI());
-        addCLI.addSite(schedule, siteDAO, "site 4", "link 4");
+        try {
+            addCLI.addSite(schedule, siteDAO, "site 4", "link 4");
+        } catch (Exception e) {
+            fail();
+        }
     }
 
     @Test

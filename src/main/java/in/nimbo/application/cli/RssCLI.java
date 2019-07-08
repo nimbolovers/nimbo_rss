@@ -17,7 +17,7 @@ import java.util.concurrent.Callable;
         subcommands = {SearchCLI.class, AddCLI.class, ExitCLI.class, DateReportCLI.class, HourReportCLI.class})
 public class RssCLI implements Callable<Void> {
     private App app;
-    static final String version = "RSS v1.0";
+    static final String version = "RSS V1.0";
 
     public RssCLI(App app) {
         this.app = app;

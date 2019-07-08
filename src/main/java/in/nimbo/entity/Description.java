@@ -1,13 +1,11 @@
 package in.nimbo.entity;
 
-import java.util.Objects;
-
 public class Description {
     private int id;
     private String type;
     private String mode;
     private String value;
-    private int feed_id;
+    private int feedId;
 
     public Description() {
     }
@@ -42,12 +40,12 @@ public class Description {
         this.value = value;
     }
 
-    public int getFeed_id() {
-        return feed_id;
+    public int getFeedId() {
+        return feedId;
     }
 
-    public void setFeed_id(int feed_id) {
-        this.feed_id = feed_id;
+    public void setFeedId(int feedId) {
+        this.feedId = feedId;
     }
 
     public int getId() {

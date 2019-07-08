@@ -1,7 +1,6 @@
 package in.nimbo.application.cli;
 
 import in.nimbo.application.App;
-import in.nimbo.application.Utility;
 import in.nimbo.entity.report.DateReport;
 import picocli.CommandLine;
 
@@ -16,9 +15,6 @@ import java.util.concurrent.Callable;
 public class DateReportCLI implements Callable<Void> {
     @CommandLine.ParentCommand
     private RssCLI parent;
-
-    /*@CommandLine.Parameters()
-    private boolean isDate;*/
 
     @CommandLine.Option(names = {"--title"}, paramLabel = "STRING", description = "Title of entry")
     private String title;
@@ -39,11 +35,12 @@ public class DateReportCLI implements Callable<Void> {
     public static void showDateReports(List<DateReport> reports){
         System.out.println();
         for (DateReport report:reports) {
-            System.out.println(report.getChannel() + ": " + report.getCount());
             SimpleDateFormat format = new SimpleDateFormat("yyyy/MM/dd");
-            String s = format.format(report.getDate());
-            System.out.println(s);
-            System.out.println();
+            String dateFormatted = format.format(report.getDate());
+            System.out.println("Channel: " + report.getChannel());
+            System.out.println("News: " + report.getCount());
+            System.out.println("Date: " + dateFormatted);
+            System.out.println("----------");
         }
     }
 }

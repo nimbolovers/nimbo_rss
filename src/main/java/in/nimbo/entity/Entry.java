@@ -14,6 +14,7 @@ public class Entry {
     private String content;
 
     public Entry() {
+        // field set by setter/getter
     }
 
     public String getTitle() {

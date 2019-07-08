@@ -4,7 +4,9 @@ import com.rometools.rome.feed.synd.SyndFeed;
 import in.nimbo.entity.Entry;
 import in.nimbo.entity.Site;
 import in.nimbo.exception.CalculateAverageUpdateException;
+import in.nimbo.exception.QueryException;
 import in.nimbo.exception.RssServiceException;
+import in.nimbo.exception.SyndFeedException;
 import in.nimbo.service.RSSService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,14 +49,7 @@ public class ScheduleUpdater implements Callable<Void> {
     @Override
     public Void call() {
         try {
-            List<Entry> newEntries;
-            try {
-                SyndFeed syndFeed = rssService.fetchFromURL(site.getLink());
-                List<Entry> entries = rssService.getEntries(syndFeed);
-                newEntries = rssService.addSiteEntries(site, entries);
-            } catch (RuntimeException e) {
-                throw new CalculateAverageUpdateException("Unable to fetch data from url: " + site.getLink());
-            }
+            List<Entry> newEntries = getNewEntries();
 
             if (newEntries.isEmpty())
                 throw new CalculateAverageUpdateException("There is no entry with publication date to calculate average time");
@@ -79,7 +74,7 @@ public class ScheduleUpdater implements Callable<Void> {
             if (site.getAvgUpdateTime() > 0) {
                 // number of news before adding new news
                 long lastNewsCount = site.getNewsCount() - newEntries.size();
-                newAverageUpdateTime = (site.getAvgUpdateTime() * lastNewsCount  + sumOfIntervals) / (lastNewsCount + newEntries.size());
+                newAverageUpdateTime = (site.getAvgUpdateTime() * lastNewsCount + sumOfIntervals) / (lastNewsCount + newEntries.size());
             } else
                 newAverageUpdateTime = sumOfIntervals / newEntries.size();
 
@@ -92,11 +87,12 @@ public class ScheduleUpdater implements Callable<Void> {
 
             updateInterval = newAverageUpdateTime;
         } catch (CalculateAverageUpdateException e) {
+            logger.warn(e.getMessage());
             updateInterval *= 2;
         }
 
-        if (updateInterval > 60 * 60) // more than one hour
-            updateInterval = 3 * 60 * 60; // set to 3 hours
+        if (updateInterval > 60L * 60L) // more than one hour
+            updateInterval = 3L * 60L * 60L; // set to 3 hours
 
         try {
             rssService.updateSite(site);
@@ -106,5 +102,20 @@ public class ScheduleUpdater implements Callable<Void> {
 
         scheduledService.schedule(this, updateInterval, TimeUnit.SECONDS);
         return null;
+    }
+
+    /**
+     * fetch entries of this.site and only new entries to database
+     *
+     * @return only new entries
+     */
+    private List<Entry> getNewEntries() {
+        try {
+            SyndFeed syndFeed = rssService.fetchFromURL(site.getLink());
+            List<Entry> entries = rssService.getEntries(syndFeed);
+            return rssService.addSiteEntries(site, entries);
+        } catch (SyndFeedException | QueryException e) {
+            throw new CalculateAverageUpdateException(e.getMessage());
+        }
     }
 }

@@ -30,29 +30,15 @@ public class SiteDAOImpl implements SiteDAO {
         try {
             while (resultSet.next()) {
                 Site site = new Site();
-
-                // fetch id
                 site.setId(resultSet.getInt("id"));
-
-                // fetch name
                 site.setName(resultSet.getString("name"));
-
-                // fetch link
                 site.setLink(resultSet.getString("link"));
-
-                // fetch newsCount
                 site.setNewsCount(resultSet.getLong("news_count"));
-
-                // fetch average update time
                 site.setAvgUpdateTime(resultSet.getLong("avg_update_time"));
-
-                // fetch last update
                 site.setLastUpdate(resultSet.getTimestamp("last_update"));
-
                 sites.add(site);
             }
         } catch (SQLException e) {
-            logger.error("Unable to fetch data from ResultSet: " + e.getMessage(), e);
             throw new ResultSetFetchException("Unable to fetch data from ResultSet", e);
         }
         return sites;
@@ -71,7 +57,6 @@ public class SiteDAOImpl implements SiteDAO {
             ResultSet resultSet = preparedStatement.executeQuery();
             return createSiteFromResultSet(resultSet);
         } catch (SQLException e) {
-            logger.error("Unable to execute query: " + e.getMessage(), e);
             throw new QueryException("Unable to execute query", e);
         }
     }
@@ -89,7 +74,6 @@ public class SiteDAOImpl implements SiteDAO {
             ResultSet resultSet = preparedStatement.executeQuery();
             return resultSet.next();
         } catch (SQLException e) {
-            logger.error("Unable to execute query: " + e.getMessage(), e);
             throw new QueryException("Unable to execute query", e);
         }
     }
@@ -122,7 +106,6 @@ public class SiteDAOImpl implements SiteDAO {
             int newId = generatedKeys.getInt(1);
             site.setId(newId);
         } catch (SQLException e) {
-            logger.error("Unable to execute query: " + e.getMessage(), e);
             throw new QueryException("Unable to execute query", e);
         }
         return site;
@@ -155,7 +138,6 @@ public class SiteDAOImpl implements SiteDAO {
 
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
-            logger.error("Unable to execute query: " + e.getMessage(), e);
             throw new QueryException("Unable to execute query", e);
         }
         return site;
@@ -172,7 +154,6 @@ public class SiteDAOImpl implements SiteDAO {
             resultSet.next();
             return resultSet.getInt("cnt");
         } catch (SQLException e) {
-            logger.error("Unable to execute query: " + e.getMessage(), e);
             throw new QueryException("Unable to execute query", e);
         }
     }

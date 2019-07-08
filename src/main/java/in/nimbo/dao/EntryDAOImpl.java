@@ -3,9 +3,11 @@ package in.nimbo.dao;
 import in.nimbo.application.Utility;
 import in.nimbo.dao.pool.ConnectionPool;
 import in.nimbo.dao.pool.ConnectionWrapper;
-import in.nimbo.entity.*;
-import in.nimbo.entity.report.HourReport;
+import in.nimbo.entity.Content;
+import in.nimbo.entity.Description;
+import in.nimbo.entity.Entry;
 import in.nimbo.entity.report.DateReport;
+import in.nimbo.entity.report.HourReport;
 import in.nimbo.exception.QueryException;
 import in.nimbo.exception.RecordNotFoundException;
 import in.nimbo.exception.ResultSetFetchException;
@@ -13,8 +15,6 @@ import org.jooq.Record;
 import org.jooq.SQLDialect;
 import org.jooq.SelectConditionStep;
 import org.jooq.impl.DSL;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -25,8 +25,6 @@ import java.util.Date;
 import java.util.List;
 
 public class EntryDAOImpl implements EntryDAO {
-    private Logger logger = LoggerFactory.getLogger(EntryDAOImpl.class);
-
     private DescriptionDAO descriptionDAO;
     private ContentDAO contentDAO;
 
@@ -47,40 +45,32 @@ public class EntryDAOImpl implements EntryDAO {
         try {
             while (resultSet.next()) {
                 Entry entry = new Entry();
-
-                // fetch id
                 entry.setId(resultSet.getInt("id"));
-
-                // fetch channel
                 entry.setChannel(resultSet.getString("channel"));
-
-                // fetch title
                 entry.setTitle(resultSet.getString("title"));
-
-                // fetch description
-                try {
-                    Description description = descriptionDAO.getByFeedId(entry.getId());
-                    entry.setDescription(description);
-                } catch (RecordNotFoundException e) {
-                   // doesn't set description and ignore error
-                }
-
-                // fetch content
+                setDescription(entry);
                 Content content = contentDAO.getByFeedId(entry.getId());
                 entry.setContent(content.getValue());
-
-                // fetch link
                 entry.setLink(resultSet.getString("link"));
-
-                // fetch publication data
                 entry.setPublicationDate(resultSet.getTimestamp("pub_date"));
-
                 result.add(entry);
             }
             return result;
         } catch (SQLException e) {
-            logger.error("Unable to fetch data from ResultSet: " + e.getMessage(), e);
             throw new ResultSetFetchException("Unable to fetch data from ResultSet", e);
+        }
+    }
+
+    /**
+     * set description of entry
+     * @param entry entry
+     */
+    private void setDescription(Entry entry) {
+        try {
+            Description description = descriptionDAO.getByFeedId(entry.getId());
+            entry.setDescription(description);
+        } catch (RecordNotFoundException e) {
+           // doesn't set description and ignore error
         }
     }
 
@@ -121,7 +111,6 @@ public class EntryDAOImpl implements EntryDAO {
             ResultSet resultSet = statement.executeQuery(sqlQuery);
             return createEntryFromResultSet(resultSet);
         } catch (SQLException e) {
-            logger.error("Unable to execute query: " + e.getMessage(), e);
             throw new QueryException("Unable to execute query", e);
         }
     }
@@ -139,7 +128,6 @@ public class EntryDAOImpl implements EntryDAO {
             ResultSet resultSet = preparedStatement.executeQuery();
             return createEntryFromResultSet(resultSet);
         } catch (SQLException e) {
-            logger.error("Unable to execute query: " + e.getMessage(), e);
             throw new QueryException("Unable to execute query", e);
         }
     }
@@ -174,7 +162,7 @@ public class EntryDAOImpl implements EntryDAO {
 
             // add entry description
             if (entry.getDescription() != null) {
-                entry.getDescription().setFeed_id(newId);
+                entry.getDescription().setFeedId(newId);
                 descriptionDAO.save(entry.getDescription());
             }
 
@@ -183,8 +171,7 @@ public class EntryDAOImpl implements EntryDAO {
             contentDAO.save(content);
 
         } catch (SQLException e) {
-            logger.error("Unable to save entry with id=" + entry.getId() + ": " + e.getMessage(), e);
-            throw new QueryException("Unable to save entry with id=" + entry.getId(), e);
+            throw new QueryException("Unable to execute query", e);
         }
         return entry;
     }
@@ -205,7 +192,6 @@ public class EntryDAOImpl implements EntryDAO {
             resultSet.next();
             return resultSet.getInt(1) > 0;
         } catch (SQLException e) {
-            logger.error("Unable to execute query: " + e.getMessage(), e);
             throw new QueryException("Unable to execute query", e);
         }
     }
@@ -228,15 +214,14 @@ public class EntryDAOImpl implements EntryDAO {
             ResultSet resultSet = statement.executeQuery();
             List<HourReport> reports = new ArrayList<>();
             while (resultSet.next()){
-                String channel = resultSet.getString("channel");
-                int hour = resultSet.getInt("hour");
-                int cnt = resultSet.getInt("cnt");
-                HourReport hourReport = new HourReport(channel, cnt, hour);
+                HourReport hourReport = new HourReport(
+                        resultSet.getString("channel"),
+                        resultSet.getInt("cnt"),
+                        resultSet.getInt("hour"));
                 reports.add(hourReport);
             }
             return reports;
         } catch (SQLException e) {
-            logger.error("Unable to execute query: " + e.getMessage(), e);
             throw new QueryException("Unable to execute query", e);
         }
     }
@@ -261,17 +246,15 @@ public class EntryDAOImpl implements EntryDAO {
             ResultSet resultSet = preparedStatement.executeQuery();
             List<DateReport> reports = new ArrayList<>();
             while (resultSet.next()){
-                int year = resultSet.getInt("year");
-                int month = resultSet.getInt("month");
-                int day = resultSet.getInt("day");
-                int count = resultSet.getInt("cnt");
-                String channel = resultSet.getString("channel");
-                DateReport report = new DateReport(channel, count, Utility.createDate(year, month, day));
+                DateReport report = new DateReport(resultSet.getString("channel"), resultSet.getInt("cnt"),
+                        Utility.createDate(
+                                resultSet.getInt("year"),
+                                resultSet.getInt("month"),
+                                resultSet.getInt("day")));
                 reports.add(report);
             }
             return reports;
         } catch (SQLException e) {
-            logger.error("Unable to execute query: " + e.getMessage(), e);
             throw new QueryException("Unable to execute query", e);
         }
 

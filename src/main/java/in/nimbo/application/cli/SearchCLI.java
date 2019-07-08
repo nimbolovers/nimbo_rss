@@ -44,7 +44,8 @@ public class SearchCLI implements Callable<Void> {
     @Override
     public Void call() {
         try {
-            Date startDate = null, finishDate = null;
+            Date startDate = null;
+            Date finishDate = null;
             if (start != null)
                 startDate = Utility.getDate(Utility.removeQuotation(start));
             if (end != null)
