@@ -70,4 +70,12 @@ public class Utility {
         LocalDateTime dateTime = LocalDateTime.of(LocalDate.of(year, month, day), LocalTime.of(0, 0));
         return Date.from(dateTime.atZone(ZoneId.systemDefault()).toInstant());
     }
+
+    public static String removeQuotation(String value) {
+        if (value != null && value.length() >= 2 &&
+                value.charAt(0) == '\"' &&
+                value.charAt(value.length() - 1) == '\"')
+            return value.substring(1, value.length() - 1);
+        return value;
+    }
 }

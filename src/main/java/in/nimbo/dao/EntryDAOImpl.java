@@ -253,7 +253,7 @@ public class EntryDAOImpl implements EntryDAO {
             PreparedStatement preparedStatement = connection.prepareStatement("SELECT" +
                     " Year(pub_date) AS year, Month(pub_date) AS month, Day(pub_date) AS day, channel, COUNT(*) as cnt" +
                     " FROM feed" +
-                    " WHERE title LIKE ? " +
+                    " WHERE title LIKE ? AND pub_date IS NOT NULL" +
                     " GROUP BY year, month, day, channel" +
                     " ORDER BY year DESC,month DESC,day DESC LIMIT ?");
             preparedStatement.setString(1, "%" +  (title != null ? title : "") + "%");
