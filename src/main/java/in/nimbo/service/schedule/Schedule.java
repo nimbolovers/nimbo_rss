@@ -3,6 +3,7 @@ package in.nimbo.service.schedule;
 import in.nimbo.entity.Site;
 import in.nimbo.service.RSSService;
 
+import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -16,8 +17,20 @@ public class Schedule {
         scheduleService = Executors.newScheduledThreadPool(100);
     }
 
+    /**
+     * schedule a site to get news frequently when site publish new news
+     * @param site site to update news
+     */
     public void scheduleSite(Site site) {
         scheduleService.schedule(new ScheduleUpdater(site, scheduleService, rssService, site.getAvgUpdateTime()), 5L, TimeUnit.SECONDS);
+    }
+
+    /**
+     * schedule for save and update a site frequently
+     * @param sites sites to update frequently
+     */
+    public void scheduleSiteDAO(List<Site> sites) {
+        scheduleService.scheduleAtFixedRate(new ScheduleSiteUpdater(sites, rssService), 5L, 15 * 60, TimeUnit.SECONDS);
     }
 
     /**

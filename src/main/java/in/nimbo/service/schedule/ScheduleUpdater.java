@@ -18,6 +18,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+/**
+ * get news frequently from rss link
+ */
 public class ScheduleUpdater implements Callable<Void> {
     private Logger logger = LoggerFactory.getLogger(ScheduleUpdater.class);
     private static final long DEFAULT_UPDATE_INTERVAL = 5;

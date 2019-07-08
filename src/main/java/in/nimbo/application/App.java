@@ -37,6 +37,7 @@ public class App {
         for (Site site : sites) {
             schedule.scheduleSite(site);
         }
+        schedule.scheduleSiteDAO(sites);
 
         App app = new App(siteDAO, schedule, rssService);
         app.run();

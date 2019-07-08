@@ -22,7 +22,6 @@ public class ExitCLI implements Callable<Void> {
         App app = rssCLI.getApp();
         app.getSchedule().stopService();
 
-        // Save sites before exit
         for (Site site : app.getSiteDAO().getSites()) {
             app.getSiteDAO().update(site);
         }
