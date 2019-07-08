@@ -1,7 +1,9 @@
 package in.nimbo.application;
 
 import in.nimbo.entity.report.DateReport;
+import in.nimbo.entity.report.HourReport;
 
+import javax.swing.text.DateFormatter;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -86,7 +88,18 @@ public class Utility {
         System.out.println();
         for (DateReport report:reports) {
             System.out.println(report.getChannel() + ": " + report.getCount());
-            System.out.println(report.getDate());
+            SimpleDateFormat format = new SimpleDateFormat("yyyy/MM/dd");
+            String s = format.format(report.getDate());
+            System.out.println(s);
+        }
+        System.out.println();
+    }
+
+    public static void showHourReports(List<HourReport> reports) {
+        System.out.println();
+        for (HourReport report:reports) {
+            System.out.println(report.getChannel() + ": " + report.getCount());
+            System.out.println(report.getHour());
         }
         System.out.println();
     }
