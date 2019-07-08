@@ -1,9 +1,5 @@
 package in.nimbo.application;
 
-import in.nimbo.entity.report.DateReport;
-import in.nimbo.entity.report.HourReport;
-
-import javax.swing.text.DateFormatter;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -15,7 +11,6 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.util.Date;
-import java.util.List;
 
 public class Utility {
     public static SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
