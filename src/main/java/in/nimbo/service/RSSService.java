@@ -144,9 +144,9 @@ public class RSSService {
         try {
             URL rssURL = Utility.encodeURL(link);
             String html = Jsoup.connect(rssURL.toString()).get().html();
-            Readability4J readability4J = new Readability4J("", html); // url is just needed to resolve relative urls
+            Readability4J readability4J = new Readability4J(link, html);
             Article article = readability4J.parse();
-            return article.getContent();
+            return article.getTextContent();
         } catch (IOException e) {
             throw new ContentExtractingException("Unable to extract html content from rss link", e);
         }
