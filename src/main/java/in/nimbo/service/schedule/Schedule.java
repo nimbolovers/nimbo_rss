@@ -3,7 +3,6 @@ package in.nimbo.service.schedule;
 import in.nimbo.entity.Site;
 import in.nimbo.service.RSSService;
 
-import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -11,16 +10,10 @@ import java.util.concurrent.TimeUnit;
 public class Schedule {
     private static ScheduledExecutorService scheduleService;
     private RSSService rssService;
-    private List<Site> sites;
 
-    public Schedule(RSSService rssService, List<Site> sites) {
+    public Schedule(RSSService rssService) {
         this.rssService = rssService;
-        this.sites = sites;
         scheduleService = Executors.newScheduledThreadPool(100);
-    }
-
-    public List<Site> getSites() {
-        return sites;
     }
 
     public void scheduleSite(Site site) {

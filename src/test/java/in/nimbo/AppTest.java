@@ -50,22 +50,18 @@ public class AppTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void addDuplicateSite() {
-        List<Site> sites = createExampleSites();
-
-        PowerMockito.when(schedule.getSites()).thenReturn(sites);
+        PowerMockito.when(siteDAO.containLink("link 1")).thenReturn(true);
+        PowerMockito.when(siteDAO.getSites()).thenReturn(createExampleSites());
         AddCLI addCLI = PowerMockito.spy(new AddCLI());
-        addCLI.addSite(schedule, "site 1", "link 1");
+        addCLI.addSite(schedule, siteDAO, "site 1", "link 1");
     }
 
     @Test
     public void addNonDuplicateSite() {
-        List<Site> sites = createExampleSites();
-
-        PowerMockito.when(schedule.getSites()).thenReturn(sites);
+        PowerMockito.when(siteDAO.containLink("link 4")).thenReturn(false);
+        PowerMockito.when(siteDAO.getSites()).thenReturn(createExampleSites());
         AddCLI addCLI = PowerMockito.spy(new AddCLI());
-        addCLI.addSite(schedule, "site 4", "link 4");
-        assertEquals(4, sites.size());
-        assertTrue(sites.contains(new Site("site 4", "link 4")));
+        addCLI.addSite(schedule, siteDAO, "site 4", "link 4");
     }
 
     @Test

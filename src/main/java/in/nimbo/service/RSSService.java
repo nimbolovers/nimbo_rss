@@ -32,11 +32,23 @@ public class RSSService {
     private EntryDAO entryDAO;
     private SiteDAO siteDAO;
     private Logger logger = LoggerFactory.getLogger(RSSService.class);
-    private int DAY_COUNT = 3;
+    private static final int DAY_COUNT = 3;
 
     public RSSService(EntryDAO entryDAO, SiteDAO siteDAO) {
         this.entryDAO = entryDAO;
         this.siteDAO = siteDAO;
+    }
+
+    /**
+     * update a site on DAO
+     * @param site site which it's id must be set
+     */
+    public void updateSite(Site site) throws RssServiceException {
+        try {
+            siteDAO.update(site);
+        } catch (QueryException | IllegalArgumentException e) {
+            throw new RssServiceException("Unable to update site", e);
+        }
     }
 
     /**
