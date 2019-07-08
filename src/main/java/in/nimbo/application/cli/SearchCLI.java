@@ -46,13 +46,13 @@ public class SearchCLI implements Callable<Void> {
         try {
             Date startDate = null, finishDate = null;
             if (start != null)
-                startDate = Utility.getDate(removeQuotation(start));
+                startDate = Utility.getDate(Utility.removeQuotation(start));
             if (end != null)
-                finishDate = Utility.getDate(removeQuotation(end));
+                finishDate = Utility.getDate(Utility.removeQuotation(end));
             List<Entry> resultEntry = rssCLI.getApp().getRssService().
-                    filterEntry(removeQuotation(channel),
-                            removeQuotation(content),
-                            removeQuotation(title),
+                    filterEntry(Utility.removeQuotation(channel),
+                            Utility.removeQuotation(content),
+                            Utility.removeQuotation(title),
                             startDate, finishDate);
             showEntries(resultEntry);
         } catch (IllegalArgumentException e) {
@@ -61,14 +61,6 @@ public class SearchCLI implements Callable<Void> {
             System.out.println("Unable to search data. We will fix it as soon as possible.");
         }
         return null;
-    }
-
-    public String removeQuotation(String value) {
-        if (value != null && value.length() >= 2 &&
-                value.charAt(0) == '\"' &&
-                value.charAt(value.length() - 1) == '\"')
-            return value.substring(1, value.length() - 1);
-        return value;
     }
 
     /**

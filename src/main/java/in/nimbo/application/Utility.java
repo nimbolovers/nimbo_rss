@@ -1,5 +1,7 @@
 package in.nimbo.application;
 
+import in.nimbo.entity.report.DateReport;
+
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -11,6 +13,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.util.Date;
+import java.util.List;
 
 public class Utility {
     public static SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
@@ -69,5 +72,22 @@ public class Utility {
     public static Date createDate(int year, int month, int day) {
         LocalDateTime dateTime = LocalDateTime.of(LocalDate.of(year, month, day), LocalTime.of(0, 0));
         return Date.from(dateTime.atZone(ZoneId.systemDefault()).toInstant());
+    }
+
+    public static String removeQuotation(String value) {
+        if (value != null && value.length() >= 2 &&
+                value.charAt(0) == '\"' &&
+                value.charAt(value.length() - 1) == '\"')
+            return value.substring(1, value.length() - 1);
+        return value;
+    }
+
+    public static void showDateReports(List<DateReport> reports){
+        System.out.println();
+        for (DateReport report:reports) {
+            System.out.println(report.getChannel() + ": " + report.getCount());
+            System.out.println(report.getDate());
+        }
+        System.out.println();
     }
 }
