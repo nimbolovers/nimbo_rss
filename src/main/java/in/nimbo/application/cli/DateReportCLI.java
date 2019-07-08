@@ -31,7 +31,7 @@ public class DateReportCLI implements Callable<Void> {
     @Override
     public Void call() {
         App app = parent.getApp();
-        List<DateReport> reports = app.getRssService().getReports(title);
+        List<DateReport> reports = app.getRssService().getReports(Utility.removeQuotation(title));
         showDateReports(reports);
         return null;
     }

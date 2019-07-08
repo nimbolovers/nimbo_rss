@@ -27,7 +27,7 @@ public class HourReportCLI implements Callable<Void> {
     @Override
     public Void call() {
         App app = parent.getApp();
-        List<HourReport> reports = app.getRssService().getHourReports(title);
+        List<HourReport> reports = app.getRssService().getHourReports(Utility.removeQuotation(title));
         showHourReports(reports);
         return null;
     }
