@@ -11,20 +11,26 @@ import java.util.concurrent.TimeUnit;
 public class Schedule {
     private static ScheduledExecutorService scheduleService;
     private RSSService rssService;
-    private List<Site> sites;
 
-    public Schedule(RSSService rssService, List<Site> sites) {
+    public Schedule(RSSService rssService) {
         this.rssService = rssService;
-        this.sites = sites;
         scheduleService = Executors.newScheduledThreadPool(100);
     }
 
-    public List<Site> getSites() {
-        return sites;
-    }
-
+    /**
+     * schedule a site to get news frequently when site publish new news
+     * @param site site to update news
+     */
     public void scheduleSite(Site site) {
         scheduleService.schedule(new ScheduleUpdater(site, scheduleService, rssService, site.getAvgUpdateTime()), 5L, TimeUnit.SECONDS);
+    }
+
+    /**
+     * schedule for save and update a site frequently
+     * @param sites sites to update frequently
+     */
+    public void scheduleSiteDAO(List<Site> sites) {
+        scheduleService.scheduleAtFixedRate(new ScheduleSiteUpdater(sites, rssService), 5L, 15 * 60, TimeUnit.SECONDS);
     }
 
     /**

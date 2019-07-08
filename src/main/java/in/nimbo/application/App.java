@@ -30,14 +30,14 @@ public class App {
         RSSService rssService = new RSSService(entryDAO, siteDAO);
 
         // Initialize Schedule Service
-        List<Site> sites = new ArrayList<>();
-        Schedule schedule = new Schedule(rssService, sites);
+        Schedule schedule = new Schedule(rssService);
 
         // Load sites
-        sites = siteDAO.getSites();
+        List<Site> sites = siteDAO.getSites();
         for (Site site : sites) {
             schedule.scheduleSite(site);
         }
+        schedule.scheduleSiteDAO(sites);
 
         App app = new App(siteDAO, schedule, rssService);
         app.run();

@@ -1,10 +1,10 @@
 package in.nimbo.service.schedule;
 
-import com.rometools.rome.feed.synd.SyndEntry;
 import com.rometools.rome.feed.synd.SyndFeed;
 import in.nimbo.entity.Entry;
 import in.nimbo.entity.Site;
 import in.nimbo.exception.CalculateAverageUpdateException;
+import in.nimbo.exception.RssServiceException;
 import in.nimbo.service.RSSService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,6 +18,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+/**
+ * get news frequently from rss link
+ */
 public class ScheduleUpdater implements Callable<Void> {
     private Logger logger = LoggerFactory.getLogger(ScheduleUpdater.class);
     private static final long DEFAULT_UPDATE_INTERVAL = 5;
@@ -95,8 +98,11 @@ public class ScheduleUpdater implements Callable<Void> {
         if (updateInterval > 60 * 60) // more than one hour
             updateInterval = 3 * 60 * 60; // set to 3 hours
 
-//        System.out.println(site);
-//        System.out.println("Update time: " + updateInterval);
+        try {
+            rssService.updateSite(site);
+        } catch (RssServiceException e) {
+            logger.error(e.getMessage());
+        }
 
         scheduledService.schedule(this, updateInterval, TimeUnit.SECONDS);
         return null;

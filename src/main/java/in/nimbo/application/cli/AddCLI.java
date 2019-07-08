@@ -1,5 +1,6 @@
 package in.nimbo.application.cli;
 
+import in.nimbo.dao.SiteDAO;
 import in.nimbo.entity.Site;
 import in.nimbo.service.schedule.Schedule;
 import picocli.CommandLine;
@@ -26,7 +27,7 @@ public class AddCLI implements Callable<Void> {
     @Override
     public Void call() {
         try {
-            addSite(rssCLI.getApp().getSchedule(), siteName, siteLink);
+            addSite(rssCLI.getApp().getSchedule(), rssCLI.getApp().getSiteDAO(), siteName, siteLink);
             System.out.println("Site " + siteName + " (" + siteLink + ") added");
         } catch (IllegalArgumentException e) {
             System.out.println(e.getMessage());
@@ -42,12 +43,12 @@ public class AddCLI implements Callable<Void> {
      * @param link link of site
      * @throws IllegalArgumentException if site is duplicate
      */
-    public void addSite(Schedule schedule, String name, String link) {
-        if (Site.containLink(schedule.getSites(), link))
+    public void addSite(Schedule schedule, SiteDAO siteDAO, String name, String link) {
+        if (siteDAO.containLink(link))
             throw new IllegalArgumentException("Duplicate URL: " + link);
 
         Site newSite = new Site(name, link);
-        schedule.getSites().add(newSite);
+        siteDAO.save(newSite);
         schedule.scheduleSite(newSite);
     }
 }

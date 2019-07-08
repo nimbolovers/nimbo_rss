@@ -1,7 +1,6 @@
 package in.nimbo.entity;
 
 import java.util.Date;
-import java.util.List;
 import java.util.Objects;
 
 public class Site {
@@ -18,10 +17,6 @@ public class Site {
     public Site(String name, String link) {
         this.name = name;
         this.link = link;
-    }
-
-    public static boolean containLink(List<Site> sites, String link) {
-        return sites.stream().map(Site::getLink).anyMatch(l -> l.equals(link));
     }
 
     public long getAvgUpdateTime() {
