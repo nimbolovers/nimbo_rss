@@ -77,6 +77,24 @@ public class SiteDAOImpl implements SiteDAO {
     }
 
     /**
+     * check whether exists a site with given link
+     * @param link link of site
+     * @return true if exists a site with given link
+     */
+    @Override
+    public boolean containLink(String link) {
+        try (ConnectionWrapper connection = ConnectionPool.getConnection()) {
+            PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM site where link = ?");
+            preparedStatement.setString(1, link);
+            ResultSet resultSet = preparedStatement.executeQuery();
+            return resultSet.next();
+        } catch (SQLException e) {
+            logger.error("Unable to execute query: " + e.getMessage(), e);
+            throw new QueryException("Unable to execute query", e);
+        }
+    }
+
+    /**
      * save an site in database
      *
      * @param site site which is saved
