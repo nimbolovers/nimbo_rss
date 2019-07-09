@@ -22,8 +22,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.*;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest(ConnectionPool.class)
@@ -63,7 +62,7 @@ public class SiteDAOTest {
         connection.prepareStatement("DELETE FROM site").executeUpdate();
     }
 
-    private List<Site> createExampleSites1() {
+    private List<Site> createExampleSites() {
         List<Site> sites = new ArrayList<>();
         for (int i = 1; i <= 2; i++) {
             Site site = new Site("site " + i, "link " + i);
@@ -77,7 +76,7 @@ public class SiteDAOTest {
 
     @Test
     public void save() throws SQLException {
-        List<Site> savedSites = createExampleSites1();
+        List<Site> savedSites = createExampleSites();
         for (Site site : savedSites) {
             siteDAO.save(site);
         }
@@ -100,7 +99,7 @@ public class SiteDAOTest {
 
     @Test
     public void getSites() {
-        List<Site> savedSites = createExampleSites1();
+        List<Site> savedSites = createExampleSites();
         for (Site site : savedSites) {
             siteDAO.save(site);
         }
@@ -153,5 +152,17 @@ public class SiteDAOTest {
         }
 
         assertEquals(count, siteDAO.getCount());
+    }
+
+    @Test
+    public void contain() {
+        List<Site> sites = createExampleSites();
+        for (Site site : sites) {
+            siteDAO.save(site);
+        }
+
+        assertTrue(siteDAO.containLink("link 1"));
+        assertTrue(siteDAO.containLink("link 2"));
+        assertFalse(siteDAO.containLink("link 3"));
     }
 }

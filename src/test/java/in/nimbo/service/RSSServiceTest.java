@@ -8,10 +8,12 @@ import in.nimbo.entity.Entry;
 import in.nimbo.entity.Site;
 import in.nimbo.entity.report.DateReport;
 import in.nimbo.entity.report.HourReport;
+import in.nimbo.exception.ContentExtractingException;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Matchers;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
@@ -45,14 +47,45 @@ public class RSSServiceTest {
     }
 
     @Test
-    public void addSiteEntries() {
+    public void addSiteEntriesWithoutContain() {
+        Entry entry1 = TestUtility.createEntry("channel", "title", "link", LocalDateTime.now(), "content", "description");
+        Site site = new Site("site-name", "site-link");
+        List<Entry> entries = new ArrayList<>();
+        entries.add(entry1);
+        when(entryDAO.save(entry1)).thenReturn(entry1);
+        when(entryDAO.contain(Matchers.any(Entry.class))).thenReturn(false);
+        doReturn("content").when(rssService).getContentOfRSSLink(entry1.getLink());
+
+        List<Entry> savedEntries = rssService.addSiteEntries(site.getLink(), entries);
+        assertEquals(entries.size(), savedEntries.size());
+    }
+
+    @Test
+    public void addSiteEntriesWithContain() {
+        Entry entry1 = TestUtility.createEntry("channel 1", "title 1", "link 1", LocalDateTime.now(), "content 1", "description 1");
+        Entry entry2 = TestUtility.createEntry("channel 2", "title 2", "link 2", LocalDateTime.now(), "content 2", "description 2");
+        Site site = new Site("site-name", "site-link");
+        List<Entry> entries = new ArrayList<>();
+        entries.add(entry1);
+        entries.add(entry2);
+        when(entryDAO.save(entry1)).thenReturn(entry1);
+        when(entryDAO.contain(entry1)).thenReturn(false);
+        when(entryDAO.contain(entry2)).thenReturn(true);
+        doReturn("content").when(rssService).getContentOfRSSLink(entry1.getLink());
+
+        List<Entry> savedEntries = rssService.addSiteEntries(site.getLink(), entries);
+        assertEquals(1, savedEntries.size());
+    }
+
+    @Test
+    public void addSiteEntriesWithNoContent() {
         Entry entry = TestUtility.createEntry("channel", "title", "link", LocalDateTime.now(), "content", "description");
         Site site = new Site("site-name", "site-link");
         List<Entry> entries = new ArrayList<>();
         entries.add(entry);
 
         when(entryDAO.save(entry)).thenReturn(entry);
-        doReturn("content").when(rssService).getContentOfRSSLink(entry.getLink());
+        doThrow(new ContentExtractingException()).when(rssService).getContentOfRSSLink(entry.getLink());
 
         List<Entry> savedEntries = rssService.addSiteEntries(site.getLink(), entries);
         assertEquals(savedEntries.size(), entries.size());

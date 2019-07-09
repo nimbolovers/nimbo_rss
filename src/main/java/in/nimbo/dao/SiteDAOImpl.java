@@ -131,10 +131,10 @@ public class SiteDAOImpl implements SiteDAO {
             preparedStatement.setInt(6, site.getId());
 
             preparedStatement.executeUpdate();
+            return site;
         } catch (SQLException e) {
             throw new QueryException("Unable to execute query", e);
         }
-        return site;
     }
 
     /**

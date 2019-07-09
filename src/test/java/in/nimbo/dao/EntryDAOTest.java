@@ -157,6 +157,7 @@ public class EntryDAOTest {
                 entryDAO.filterEntry("channel", "content", "title", null, afterDate));
     }
 
+    @Test
     public void contain() {
         List<Entry> entries = new ArrayList<>();
         entries.add(TestUtility.createEntry("channel 1", "title 1", "link 1", LocalDateTime.now(), "content 1", "desc 1"));
