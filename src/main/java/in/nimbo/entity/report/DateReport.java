@@ -1,20 +1,20 @@
 package in.nimbo.entity.report;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.Objects;
 
 /**
  * represents count of news for each day for each site
  */
 public class DateReport extends Report {
-    private Date date;
+    private LocalDateTime date;
 
-    public DateReport(String channel, int count, Date date) {
+    public DateReport(String channel, int count, LocalDateTime date) {
         super(channel, count);
         this.date = date;
     }
 
-    public Date getDate() {
+    public LocalDateTime getDate() {
         return date;
     }
 

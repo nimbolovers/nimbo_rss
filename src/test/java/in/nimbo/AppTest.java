@@ -15,8 +15,8 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
 import java.net.MalformedURLException;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import static org.junit.Assert.*;
@@ -96,7 +96,7 @@ public class AppTest {
         }
 
         date = "01/02/1900 12:01:01";
-        Date d = Utility.getDate(date);
+        LocalDateTime d = Utility.getDate(date);
         assertEquals(date, Utility.formatter.format(d));
     }
 }

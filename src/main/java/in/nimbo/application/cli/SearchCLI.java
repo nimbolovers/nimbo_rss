@@ -6,6 +6,7 @@ import in.nimbo.exception.RssServiceException;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -44,8 +45,8 @@ public class SearchCLI implements Callable<Void> {
     @Override
     public Void call() {
         try {
-            Date startDate = null;
-            Date finishDate = null;
+            LocalDateTime startDate = null;
+            LocalDateTime finishDate = null;
             if (start != null)
                 startDate = Utility.getDate(Utility.removeQuotation(start));
             if (end != null)

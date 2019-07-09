@@ -12,6 +12,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -35,7 +36,7 @@ public class SiteDAOImpl implements SiteDAO {
                 site.setLink(resultSet.getString("link"));
                 site.setNewsCount(resultSet.getLong("news_count"));
                 site.setAvgUpdateTime(resultSet.getLong("avg_update_time"));
-                site.setLastUpdate(resultSet.getTimestamp("last_update"));
+                site.setLastUpdate(resultSet.getObject("last_update", LocalDateTime.class));
                 sites.add(site);
             }
         } catch (SQLException e) {
@@ -94,11 +95,7 @@ public class SiteDAOImpl implements SiteDAO {
             preparedStatement.setString(2, site.getLink());
             preparedStatement.setLong(3, site.getNewsCount());
             preparedStatement.setLong(4, site.getAvgUpdateTime());
-            if (site.getLastUpdate() != null)
-                preparedStatement.setTimestamp(5, new java.sql.Timestamp(site.getLastUpdate().getTime()));
-            else
-                preparedStatement.setTimestamp(5, null);
-
+            preparedStatement.setObject(5, site.getLastUpdate());
             preparedStatement.executeUpdate();
 
             ResultSet generatedKeys = preparedStatement.getGeneratedKeys();
@@ -130,10 +127,7 @@ public class SiteDAOImpl implements SiteDAO {
             preparedStatement.setString(2, site.getName());
             preparedStatement.setLong(3, site.getNewsCount());
             preparedStatement.setLong(4, site.getAvgUpdateTime());
-            if (site.getLastUpdate() != null)
-                preparedStatement.setTimestamp(5, new java.sql.Timestamp(site.getLastUpdate().getTime()));
-            else
-                preparedStatement.setTimestamp(5, null);
+            preparedStatement.setObject(5, site.getLastUpdate());
             preparedStatement.setInt(6, site.getId());
 
             preparedStatement.executeUpdate();

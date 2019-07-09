@@ -16,6 +16,8 @@ import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -44,7 +46,7 @@ public class RSSServiceTest {
 
     @Test
     public void addSiteEntries() {
-        Entry entry = TestUtility.createEntry("channel", "title", "link", new Date(), "content", "description");
+        Entry entry = TestUtility.createEntry("channel", "title", "link", LocalDateTime.now(), "content", "description");
         Site site = new Site("site-name", "site-link");
         List<Entry> entries = new ArrayList<>();
         entries.add(entry);
@@ -59,9 +61,9 @@ public class RSSServiceTest {
     @Test
     public void getEntries() {
         List<Entry> entries = new ArrayList<>();
-        entries.add(TestUtility.createEntry("channel", "title 1", "link 1", new Date(), null, "desc 1"));
-        entries.add(TestUtility.createEntry("channel", "title 2", "link 2", new Date(), null, "desc 2"));
-        entries.add(TestUtility.createEntry("channel", "title 3", "link 3", new Date(), null, "desc 3"));
+        entries.add(TestUtility.createEntry("channel", "title 1", "link 1", LocalDateTime.now(), null, "desc 1"));
+        entries.add(TestUtility.createEntry("channel", "title 2", "link 2", LocalDateTime.now(), null, "desc 2"));
+        entries.add(TestUtility.createEntry("channel", "title 3", "link 3", LocalDateTime.now(), null, "desc 3"));
 
         SyndFeed syndFeed = new SyndFeedImpl();
         syndFeed.setTitle("channel");
@@ -71,7 +73,7 @@ public class RSSServiceTest {
             SyndEntry syndEntry = new SyndEntryImpl();
             syndEntry.setTitle(entry.getTitle());
             syndEntry.setLink(entry.getLink());
-            syndEntry.setPublishedDate(entry.getPublicationDate());
+            syndEntry.setPublishedDate(Date.from(entry.getPublicationDate().atZone(ZoneId.systemDefault()).toInstant()));
 
             SyndContent syndContent = new SyndContentImpl();
             syndContent.setType(entry.getDescription().getType());
@@ -91,7 +93,7 @@ public class RSSServiceTest {
         List<DateReport> reports = new ArrayList<>();
         int limit = 6;
         for (int i = 0; i < limit; i++) {
-            DateReport report = new DateReport("test" , i + 1, new Date());
+            DateReport report = new DateReport("test" , i + 1, LocalDateTime.now());
             reports.add(report);
         }
         when(entryDAO.getDateReports("test", limit)).thenReturn(reports);

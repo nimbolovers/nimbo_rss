@@ -1,6 +1,5 @@
 package in.nimbo.dao;
 
-import in.nimbo.application.Utility;
 import in.nimbo.dao.pool.ConnectionPool;
 import in.nimbo.dao.pool.ConnectionWrapper;
 import in.nimbo.entity.Content;
@@ -20,8 +19,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 public class EntryDAOImpl implements EntryDAO {
@@ -52,7 +51,7 @@ public class EntryDAOImpl implements EntryDAO {
                 Content content = contentDAO.getByFeedId(entry.getId());
                 entry.setContent(content.getValue());
                 entry.setLink(resultSet.getString("link"));
-                entry.setPublicationDate(resultSet.getTimestamp("pub_date"));
+                entry.setPublicationDate(resultSet.getObject("pub_date", LocalDateTime.class));
                 result.add(entry);
             }
             return result;
@@ -63,6 +62,7 @@ public class EntryDAOImpl implements EntryDAO {
 
     /**
      * set description of entry
+     *
      * @param entry entry
      */
     private void setDescription(Entry entry) {
@@ -70,26 +70,26 @@ public class EntryDAOImpl implements EntryDAO {
             Description description = descriptionDAO.getByFeedId(entry.getId());
             entry.setDescription(description);
         } catch (RecordNotFoundException e) {
-           // doesn't set description and ignore error
+            // doesn't set description and ignore error
         }
     }
 
     /**
      * find entries which their content contain something in range of date
      *
-     * @param channel channel which search for entry in it
-     *                if it is not specified (null), then search in all channels
+     * @param channel      channel which search for entry in it
+     *                     if it is not specified (null), then search in all channels
      * @param contentValue content value want to be in content of entry
-     * @param titleValue title value want to be in title of entry
-     * @param startDate start date of fetched data
-     *                  if it is not specified (null), then there is no limitation on start time
-     * @param finishDate finish date of fetched data
-     *                   if it is not specified (null), then there is no limitation on finish time
+     * @param titleValue   title value want to be in title of entry
+     * @param startDate    start date of fetched data
+     *                     if it is not specified (null), then there is no limitation on start time
+     * @param finishDate   finish date of fetched data
+     *                     if it is not specified (null), then there is no limitation on finish time
      * @return list of entries which their content contain value and their title contain a value
      * @throws QueryException if it is unable to execute query
      */
     public List<Entry> filterEntry(String channel, String contentValue, String titleValue
-            , Date startDate, Date finishDate) {
+            , LocalDateTime startDate, LocalDateTime finishDate) {
         try (ConnectionWrapper connection = ConnectionPool.getConnection()) {
             SelectConditionStep<Record> query = DSL.using(SQLDialect.MYSQL)
                     .select()
@@ -102,9 +102,9 @@ public class EntryDAOImpl implements EntryDAO {
             if (channel != null && !channel.isEmpty())
                 query = query.and(DSL.field("feed.channel").eq(channel));
             if (startDate != null)
-                query = query.and(DSL.field("feed.pub_date").ge(new java.sql.Timestamp(startDate.getTime())));
+                query = query.and(DSL.field("feed.pub_date").ge(startDate));
             if (finishDate != null)
-                query = query.and(DSL.field("feed.pub_date").le(new java.sql.Timestamp(finishDate.getTime())));
+                query = query.and(DSL.field("feed.pub_date").le(finishDate));
 
             String sqlQuery = query.getQuery().toString();
             Statement statement = connection.createStatement();
@@ -149,10 +149,7 @@ public class EntryDAOImpl implements EntryDAO {
                     "INSERT INTO feed(channel, title, pub_date, link) VALUES(?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
             preparedStatement.setString(1, entry.getChannel());
             preparedStatement.setString(2, entry.getTitle());
-            if (entry.getPublicationDate() != null)
-                preparedStatement.setTimestamp(3, new java.sql.Timestamp(entry.getPublicationDate().getTime()));
-            else
-                preparedStatement.setTimestamp(3, null);
+            preparedStatement.setObject(3, entry.getPublicationDate());
             preparedStatement.setString(4, entry.getLink());
             preparedStatement.executeUpdate();
             ResultSet generatedKeys = preparedStatement.getGeneratedKeys();
@@ -178,6 +175,7 @@ public class EntryDAOImpl implements EntryDAO {
 
     /**
      * check whether an entry exists in database based on entry.title and entry.channel
+     *
      * @param entry which is checked
      * @return true if entry exists in database
      * @throws QueryException if unable to execute query
@@ -198,6 +196,7 @@ public class EntryDAOImpl implements EntryDAO {
 
     /**
      * count of news for each hour for each site
+     *
      * @param title string which must appeared in the title (optional)
      * @return list of HourReport
      */
@@ -213,7 +212,7 @@ public class EntryDAOImpl implements EntryDAO {
             statement.setString(1, "%" + (title != null ? title : "") + "%");
             ResultSet resultSet = statement.executeQuery();
             List<HourReport> reports = new ArrayList<>();
-            while (resultSet.next()){
+            while (resultSet.next()) {
                 HourReport hourReport = new HourReport(
                         resultSet.getString("channel"),
                         resultSet.getInt("cnt"),
@@ -228,6 +227,7 @@ public class EntryDAOImpl implements EntryDAO {
 
     /**
      * count of news for each day for each site
+     *
      * @param title string which must appeared in the title (optional)
      * @param limit max number of results
      * @return sorted list of HourReport by year and month and day
@@ -241,16 +241,16 @@ public class EntryDAOImpl implements EntryDAO {
                     " WHERE title LIKE ? AND pub_date IS NOT NULL" +
                     " GROUP BY year, month, day, channel" +
                     " ORDER BY year DESC,month DESC,day DESC LIMIT ?");
-            preparedStatement.setString(1, "%" +  (title != null ? title : "") + "%");
+            preparedStatement.setString(1, "%" + (title != null ? title : "") + "%");
             preparedStatement.setInt(2, limit);
             ResultSet resultSet = preparedStatement.executeQuery();
             List<DateReport> reports = new ArrayList<>();
-            while (resultSet.next()){
+            while (resultSet.next()) {
                 DateReport report = new DateReport(resultSet.getString("channel"), resultSet.getInt("cnt"),
-                        Utility.createDate(
+                        LocalDateTime.of(
                                 resultSet.getInt("year"),
                                 resultSet.getInt("month"),
-                                resultSet.getInt("day")));
+                                resultSet.getInt("day"), 0, 0));
                 reports.add(report);
             }
             return reports;

@@ -9,8 +9,9 @@ import in.nimbo.service.RSSService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.Callable;
@@ -63,7 +64,7 @@ public class ScheduleUpdater implements Callable<Void> {
      * if there is no new entry, update time is doubled (never exceed 3 hours)
      */
     private void calculateUpdateInterval() {
-        List<Date> pubDates = getNewPublicationDates();
+        List<LocalDateTime> pubDates = getNewPublicationDates();
         if (pubDates.isEmpty()) {
             updateInterval *= 2;
         } else {
@@ -81,7 +82,7 @@ public class ScheduleUpdater implements Callable<Void> {
      * @param pubDates list of new entries' publication date (not empty)
      * @return new average update time
      */
-    private long getNewAverageUpdateTime(List<Date> pubDates) {
+    private long getNewAverageUpdateTime(List<LocalDateTime> pubDates) {
         long sumOfIntervals = getSumOfIntervals(pubDates);
         long newAverageUpdateTime;
         if (site.getLastUpdate() == null) {
@@ -103,14 +104,14 @@ public class ScheduleUpdater implements Callable<Void> {
      * @param pubDates list of publication dates
      * @return sum of distance between dates
      */
-    private long getSumOfIntervals(List<Date> pubDates) {
-        pubDates.sort(Date::compareTo);
+    private long getSumOfIntervals(List<LocalDateTime> pubDates) {
+        pubDates.sort(LocalDateTime::compareTo);
 
         long sumOfIntervals = IntStream.range(0, pubDates.size() - 1)
-                .mapToLong(i -> pubDates.get(i + 1).getTime() - pubDates.get(i).getTime())
+                .mapToLong(i -> pubDates.get(i).until(pubDates.get(i + 1), ChronoUnit.MILLIS))
                 .sum();
         if (site.getLastUpdate() != null)
-            sumOfIntervals += pubDates.get(0).getTime() - site.getLastUpdate().getTime();
+            sumOfIntervals += pubDates.get(0).until(site.getLastUpdate(), ChronoUnit.MILLIS);
         return sumOfIntervals;
     }
 
@@ -119,7 +120,7 @@ public class ScheduleUpdater implements Callable<Void> {
      *
      * @return publication date of new entries (only if available)
      */
-    private List<Date> getNewPublicationDates() {
+    public List<LocalDateTime> getNewPublicationDates() {
         try {
             SyndFeed syndFeed = rssService.fetchFromURL(site.getLink());
             List<Entry> entries = rssService.getEntries(syndFeed);

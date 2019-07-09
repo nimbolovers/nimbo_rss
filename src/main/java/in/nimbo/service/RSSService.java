@@ -25,8 +25,9 @@ import java.io.StringReader;
 import java.net.MalformedURLException;
 import java.net.SocketTimeoutException;
 import java.net.URL;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 public class RSSService {
@@ -65,7 +66,7 @@ public class RSSService {
      * @return entries that accepted all filters
      * @throws RssServiceException if any exception happen during fetching data from DAO
      */
-    public List<Entry> filterEntry(String channel, String contentValue, String titleValue, Date startTime, Date finishTime) throws RssServiceException {
+    public List<Entry> filterEntry(String channel, String contentValue, String titleValue, LocalDateTime startTime, LocalDateTime finishTime) throws RssServiceException {
         try {
             return entryDAO.filterEntry(channel, contentValue, titleValue, startTime, finishTime);
         } catch (QueryException | ResultSetFetchException | IllegalArgumentException e) {
@@ -78,7 +79,7 @@ public class RSSService {
      * if unable to get content of one site, add it to database with empty content
      *
      * @param siteLink site of feed
-     * @param entries contain all entries of site
+     * @param entries  contain all entries of site
      * @return list of all new entries which saved in database
      */
     public List<Entry> addSiteEntries(String siteLink, List<Entry> entries) {
@@ -126,7 +127,7 @@ public class RSSService {
                         syndEntry.getDescription().getMode(),
                         syndEntry.getDescription().getValue()));
             entry.setLink(syndEntry.getLink());
-            entry.setPublicationDate(syndEntry.getPublishedDate());
+            entry.setPublicationDate(LocalDateTime.ofInstant(syndEntry.getPublishedDate().toInstant(), ZoneId.systemDefault()));
             newEntries.add(entry);
         }
         return newEntries;
@@ -153,7 +154,7 @@ public class RSSService {
             throw new ContentExtractingException("HTTP error fetching URL: Status=" + e.getStatusCode() + " URL=" + e.getUrl(), e);
         } catch (SocketTimeoutException e) {
             throw new ContentExtractingException("HTTP error timeout: URL=" + link, e);
-        }catch (IOException e) {
+        } catch (IOException e) {
             throw new ContentExtractingException("Unable to extract content: URL=" + link, e);
         }
     }

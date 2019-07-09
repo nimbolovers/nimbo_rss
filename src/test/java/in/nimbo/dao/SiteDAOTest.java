@@ -18,11 +18,12 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest(ConnectionPool.class)
@@ -66,7 +67,7 @@ public class SiteDAOTest {
         List<Site> sites = new ArrayList<>();
         for (int i = 1; i <= 2; i++) {
             Site site = new Site("site " + i, "link " + i);
-            site.setLastUpdate(i % 2 == 0 ? new Date() : null);
+            site.setLastUpdate(i % 2 == 0 ? LocalDateTime.now() : null);
             site.setAvgUpdateTime(5 * i);
             site.setNewsCount(100 * i);
             sites.add(site);
@@ -87,7 +88,7 @@ public class SiteDAOTest {
         List<Site> fetchedSites = new ArrayList<>();
         while (resultSet.next()) {
             Site site = new Site(resultSet.getString("name"), resultSet.getString("link"));
-            site.setLastUpdate(resultSet.getTimestamp("last_update"));
+            site.setLastUpdate(resultSet.getObject("last_update", LocalDateTime.class));
             site.setNewsCount(resultSet.getLong("news_count"));
             site.setAvgUpdateTime(resultSet.getLong("avg_update_time"));
             site.setId(resultSet.getInt("id"));
@@ -116,14 +117,14 @@ public class SiteDAOTest {
     @Test
     public void updateExists() throws SQLException {
         Site site = new Site("name", "link");
-        site.setLastUpdate(new Date());
+        site.setLastUpdate(LocalDateTime.now());
         site.setAvgUpdateTime(5);
         site.setNewsCount(100);
         siteDAO.save(site);
 
         site.setName("updated-name");
         site.setLink("updated-link");
-        site.setLastUpdate(TestUtility.createDate(2000, 1, 1));
+        site.setLastUpdate(LocalDateTime.of(2000, 1, 1, 0, 0));
         site.setAvgUpdateTime(10);
         site.setNewsCount(200);
         siteDAO.update(site);
@@ -133,7 +134,7 @@ public class SiteDAOTest {
         resultSet.next();
         assertEquals("updated-name", resultSet.getString("name"));
         assertEquals("updated-link", resultSet.getString("link"));
-        assertEquals(TestUtility.createDate(2000, 1, 1), resultSet.getTimestamp("last_update"));
+        assertEquals(LocalDateTime.of(2000, 1, 1, 0, 0), resultSet.getObject("last_update", LocalDateTime.class));
         assertEquals(10L, resultSet.getLong("avg_update_time"));
         assertEquals(200L, resultSet.getLong("news_count"));
 

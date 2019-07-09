@@ -1,9 +1,5 @@
 package in.nimbo;
 
-import com.rometools.rome.feed.synd.SyndContent;
-import com.rometools.rome.feed.synd.SyndContentImpl;
-import com.rometools.rome.feed.synd.SyndEntry;
-import com.rometools.rome.feed.synd.SyndEntryImpl;
 import in.nimbo.entity.Description;
 import in.nimbo.entity.Entry;
 import org.slf4j.Logger;
@@ -14,11 +10,7 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.ZoneId;
-import java.util.Date;
 import java.util.Properties;
 
 /**
@@ -68,7 +60,7 @@ public class TestUtility {
      * @return entry which is created
      */
     public static Entry createEntry(String channel, String title,
-                                    String link, Date pubDate,
+                                    String link, LocalDateTime pubDate,
                                     String content,
                                     String description) {
         Entry entry = new Entry();
@@ -103,17 +95,5 @@ public class TestUtility {
             logger.error("Couldn't read file: " + path, e);
             throw new RuntimeException("Couldn't read file: " + path, e);
         }
-    }
-
-    /**
-     * create java.util.date with given input
-     * @param year year
-     * @param month month
-     * @param day day
-     * @return date with given inputs
-     */
-    public static Date createDate(int year, int month, int day) {
-        LocalDateTime dateTime = LocalDateTime.of(LocalDate.of(year, month, day), LocalTime.of(0, 0));
-        return Date.from(dateTime.atZone(ZoneId.systemDefault()).toInstant());
     }
 }

@@ -1,6 +1,6 @@
 package in.nimbo.entity;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.Objects;
 
 
@@ -9,7 +9,7 @@ public class Entry {
     private String channel;
     private String title;
     private String link;
-    private Date publicationDate;
+    private LocalDateTime publicationDate;
     private Description description;
     private String content;
 
@@ -33,11 +33,11 @@ public class Entry {
         this.link = link;
     }
 
-    public Date getPublicationDate() {
+    public LocalDateTime getPublicationDate() {
         return publicationDate;
     }
 
-    public void setPublicationDate(Date publicationDate) {
+    public void setPublicationDate(LocalDateTime publicationDate) {
         this.publicationDate = publicationDate;
     }
 

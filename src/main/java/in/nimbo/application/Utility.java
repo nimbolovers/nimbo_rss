@@ -4,16 +4,16 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.Date;
 
 public class Utility {
-    public static final SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+    public static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
 
     private Utility() {}
 
@@ -51,10 +51,10 @@ public class Utility {
      * @return java.util.date represent given date
      * @throws IllegalArgumentException if unable to convert string to date
      */
-    public static Date getDate(String date) {
+    public static LocalDateTime getDate(String date) {
         try {
-            return formatter.parse(date);
-        } catch (ParseException e) {
+            return LocalDateTime.parse(date, formatter);
+        } catch (DateTimeParseException e) {
             throw new IllegalArgumentException("Unable to convert " + date + " to Date");
         }
     }
