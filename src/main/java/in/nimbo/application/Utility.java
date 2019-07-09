@@ -4,13 +4,9 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import java.util.Date;
 
 public class Utility {
     public static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
@@ -57,18 +53,6 @@ public class Utility {
         } catch (DateTimeParseException e) {
             throw new IllegalArgumentException("Unable to convert " + date + " to Date");
         }
-    }
-
-    /**
-     * create java.util.date with given input
-     * @param year year
-     * @param month month
-     * @param day day
-     * @return date with given inputs
-     */
-    public static Date createDate(int year, int month, int day) {
-        LocalDateTime dateTime = LocalDateTime.of(LocalDate.of(year, month, day), LocalTime.of(0, 0));
-        return Date.from(dateTime.atZone(ZoneId.systemDefault()).toInstant());
     }
 
     public static String removeQuotation(String value) {
