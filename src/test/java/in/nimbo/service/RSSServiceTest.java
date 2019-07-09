@@ -6,8 +6,8 @@ import in.nimbo.dao.EntryDAO;
 import in.nimbo.dao.SiteDAO;
 import in.nimbo.entity.Entry;
 import in.nimbo.entity.Site;
-import in.nimbo.entity.report.HourReport;
 import in.nimbo.entity.report.DateReport;
+import in.nimbo.entity.report.HourReport;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -19,8 +19,6 @@ import org.powermock.modules.junit4.PowerMockRunner;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Random;
-import java.util.concurrent.ThreadLocalRandom;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.*;
@@ -54,7 +52,7 @@ public class RSSServiceTest {
         when(entryDAO.save(entry)).thenReturn(entry);
         doReturn("content").when(rssService).getContentOfRSSLink(entry.getLink());
 
-        List<Entry> savedEntries = rssService.addSiteEntries(site, entries);
+        List<Entry> savedEntries = rssService.addSiteEntries(site.getLink(), entries);
         assertEquals(savedEntries.size(), entries.size());
     }
 
