@@ -25,7 +25,7 @@ import java.util.stream.IntStream;
  */
 public class ScheduleUpdater implements Callable<Void> {
     private Logger logger = LoggerFactory.getLogger(ScheduleUpdater.class);
-    private static final long DEFAULT_UPDATE_INTERVAL = 5;
+    public static final long DEFAULT_UPDATE_INTERVAL = 5;
 
     private Site site;
     private ScheduledExecutorService scheduledService;
@@ -43,10 +43,11 @@ public class ScheduleUpdater implements Callable<Void> {
     private long lastNewsCount;
 
     public ScheduleUpdater(ScheduledExecutorService scheduledService, RSSService rssService,
-                           Site site, long updateInterval) {
+                           Site site, long updateInterval, long lastNewsCount) {
         this.site = site;
         this.scheduledService = scheduledService;
         this.rssService = rssService;
+        this.lastNewsCount = lastNewsCount;
         this.updateInterval = updateInterval;
         if (updateInterval == 0)
             this.updateInterval = DEFAULT_UPDATE_INTERVAL;
@@ -59,11 +60,15 @@ public class ScheduleUpdater implements Callable<Void> {
         return null;
     }
 
+    public long getUpdateInterval() {
+        return updateInterval;
+    }
+
     /**
      * calculate new update interval based on new news published to site
      * if there is no new entry, update time is doubled (never exceed 3 hours)
      */
-    private void calculateUpdateInterval() {
+    public void calculateUpdateInterval() {
         List<LocalDateTime> pubDates = getNewPublicationDates();
         if (pubDates.isEmpty()) {
             updateInterval *= 2;
@@ -82,7 +87,7 @@ public class ScheduleUpdater implements Callable<Void> {
      * @param pubDates list of new entries' publication date (not empty)
      * @return new average update time
      */
-    private long getNewAverageUpdateTime(List<LocalDateTime> pubDates) {
+    public long getNewAverageUpdateTime(List<LocalDateTime> pubDates) {
         long sumOfIntervals = getSumOfIntervals(pubDates);
         long newAverageUpdateTime;
         if (site.getLastUpdate() == null) {
@@ -90,7 +95,6 @@ public class ScheduleUpdater implements Callable<Void> {
         } else {
             newAverageUpdateTime = (site.getAvgUpdateTime() * lastNewsCount + sumOfIntervals) / (site.getNewsCount());
         }
-        // convert milliseconds to seconds
         newAverageUpdateTime /= 1000;
         if (newAverageUpdateTime <= 0)
             newAverageUpdateTime = DEFAULT_UPDATE_INTERVAL;

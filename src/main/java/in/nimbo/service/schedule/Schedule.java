@@ -21,7 +21,7 @@ public class Schedule {
      * @param site site to update news
      */
     public void scheduleSite(Site site) {
-        scheduleService.schedule(new ScheduleUpdater(scheduleService, rssService, site, site.getAvgUpdateTime()), 5L, TimeUnit.SECONDS);
+        scheduleService.schedule(new ScheduleUpdater(scheduleService, rssService, site, site.getAvgUpdateTime(), site.getNewsCount()), 5L, TimeUnit.SECONDS);
     }
 
     /**
