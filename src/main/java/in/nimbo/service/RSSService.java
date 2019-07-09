@@ -49,7 +49,7 @@ public class RSSService {
         try {
             siteDAO.update(site);
         } catch (QueryException | IllegalArgumentException e) {
-            throw new RssServiceException("Unable to update site", e);
+            throw new RssServiceException("Unable to update site: " + site.getName(), e);
         }
     }
 
@@ -77,11 +77,11 @@ public class RSSService {
      * add all of new entries of site to database
      * if unable to get content of one site, add it to database with empty content
      *
-     * @param site    site of feed
+     * @param siteLink site of feed
      * @param entries contain all entries of site
      * @return list of all new entries which saved in database
      */
-    public List<Entry> addSiteEntries(Site site, List<Entry> entries) {
+    public List<Entry> addSiteEntries(String siteLink, List<Entry> entries) {
         List<Entry> newEntries = new ArrayList<>();
         for (Entry entry : entries) {
             if (!entryDAO.contain(entry)) {
@@ -100,12 +100,11 @@ public class RSSService {
             }
         }
         if (newEntries.size() == entries.size()) {
-            logger.info("Add " + newEntries.size() + " entries from: " + site.getLink());
+            logger.info("Add " + newEntries.size() + " entries from: " + siteLink);
         } else if (!newEntries.isEmpty()) {
-            logger.info("Add " + newEntries.size() + "/" + entries.size() + " entries from: " + site.getLink());
+            logger.info("Add " + newEntries.size() + "/" + entries.size() + " entries from: " + siteLink);
         }
 
-        site.increaseNewsCount(newEntries.size());
         return newEntries;
     }
 
