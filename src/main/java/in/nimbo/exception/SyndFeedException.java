@@ -5,15 +5,8 @@ public class SyndFeedException extends RuntimeException {
         super();
     }
 
-    public SyndFeedException(String message) {
-        super(message);
-    }
-
     public SyndFeedException(String message, Throwable cause) {
         super(message, cause);
     }
 
-    public SyndFeedException(Throwable cause) {
-        super(cause);
-    }
 }

@@ -5,11 +5,14 @@ import com.rometools.rome.feed.synd.SyndFeedImpl;
 import in.nimbo.TestUtility;
 import in.nimbo.entity.Entry;
 import in.nimbo.entity.Site;
+import in.nimbo.exception.RssServiceException;
 import in.nimbo.exception.SyndFeedException;
+import in.nimbo.service.schedule.ScheduleSiteUpdater;
 import in.nimbo.service.schedule.ScheduleUpdater;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Matchers;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.modules.junit4.PowerMockRunner;
 
@@ -158,5 +161,20 @@ public class ScheduleTest {
         Site site = getExampleSite();
         ScheduleUpdater scheduleUpdater = new ScheduleUpdater(scheduledService, rssService, site, 0, 0);
         assertEquals(ScheduleUpdater.DEFAULT_UPDATE_INTERVAL, scheduleUpdater.getUpdateInterval());
+    }
+
+    @Test
+    public void scheduleSiteUpdater() throws RssServiceException {
+        List<Site> sites = new ArrayList<>();
+        for (int i = 0; i < 10; i++) {
+            sites.add(new Site("name " + i, "link " + i));
+        }
+
+        ScheduleSiteUpdater scheduleSiteUpdater = PowerMockito.spy(new ScheduleSiteUpdater(sites, rssService));
+        PowerMockito.doNothing().when(rssService).updateSite(Matchers.any(Site.class));
+        scheduleSiteUpdater.run();
+
+        PowerMockito.doThrow(new RssServiceException()).when(rssService).updateSite(Matchers.any(Site.class));
+        scheduleSiteUpdater.run();
     }
 }
