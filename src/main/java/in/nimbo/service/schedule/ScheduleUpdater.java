@@ -104,21 +104,22 @@ public class ScheduleUpdater implements Callable<Void> {
      * @param pubDates list of publication dates
      * @return sum of distance between dates
      */
-    private long getSumOfIntervals(List<LocalDateTime> pubDates) {
+    public long getSumOfIntervals(List<LocalDateTime> pubDates) {
         pubDates.sort(LocalDateTime::compareTo);
 
         long sumOfIntervals = IntStream.range(0, pubDates.size() - 1)
                 .mapToLong(i -> pubDates.get(i).until(pubDates.get(i + 1), ChronoUnit.MILLIS))
                 .sum();
         if (site.getLastUpdate() != null)
-            sumOfIntervals += pubDates.get(0).until(site.getLastUpdate(), ChronoUnit.MILLIS);
+            sumOfIntervals += site.getLastUpdate().until(pubDates.get(0), ChronoUnit.MILLIS);
         return sumOfIntervals;
     }
 
     /**
      * fetch entries of site and add only new entries to database
      *
-     * @return publication date of new entries (only if available)
+     * @return publication date of new entries
+     *         empty list if there is no new entries
      */
     public List<LocalDateTime> getNewPublicationDates() {
         try {

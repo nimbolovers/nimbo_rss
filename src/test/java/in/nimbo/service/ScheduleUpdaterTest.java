@@ -14,6 +14,7 @@ import org.powermock.api.mockito.PowerMockito;
 import org.powermock.modules.junit4.PowerMockRunner;
 
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ScheduledExecutorService;
@@ -34,10 +35,6 @@ public class ScheduleUpdaterTest {
     @Test
     public void getNewPublicationDates() {
         Site site = new Site("site name", "site link");
-//        Site siteWithLastUpdate = new Site("site name", "site link");
-//        siteWithLastUpdate.setLastUpdate(LocalDateTime.now());
-//        siteWithLastUpdate.setNewsCount(2);
-//        siteWithLastUpdate.setAvgUpdateTime(1);
 
         SyndFeed syndFeed = new SyndFeedImpl();
         List<Entry> entries = new ArrayList<>();
@@ -59,5 +56,33 @@ public class ScheduleUpdaterTest {
         PowerMockito.when(rssService.fetchFromURL(site.getLink())).thenThrow(new SyndFeedException());
         newPublicationDates = scheduleUpdater.getNewPublicationDates();
         assertEquals(0, newPublicationDates.size());
+    }
+
+    @Test
+    public void getSumOfIntervals() {
+        Site site = new Site("site name", "site link");
+        Site siteWithLastUpdate = new Site("site name", "site link");
+        siteWithLastUpdate.setLastUpdate(LocalDateTime.of(1999, 1, 1, 0, 0));
+        siteWithLastUpdate.setNewsCount(2);
+        siteWithLastUpdate.setAvgUpdateTime(1);
+
+        List<LocalDateTime> dateTimes = new ArrayList<>();
+        for (int i = 1; i <= 10; i++) {
+            LocalDateTime dateTime = LocalDateTime.of(2000, 1, i, 0, 0);
+            dateTimes.add(dateTime);
+        }
+
+        ScheduleUpdater scheduleUpdater = new ScheduleUpdater(scheduledService, rssService, site, 5);
+        long sumOfIntervals = scheduleUpdater.getSumOfIntervals(dateTimes);
+        long realSumOfIntervals = 0;
+        for (int i = 0; i < dateTimes.size() - 1; i++) {
+            realSumOfIntervals += dateTimes.get(i).until(dateTimes.get(i + 1), ChronoUnit.MILLIS);
+        }
+        assertEquals(realSumOfIntervals, sumOfIntervals);
+
+        scheduleUpdater = new ScheduleUpdater(scheduledService, rssService, siteWithLastUpdate, 5);
+        sumOfIntervals = scheduleUpdater.getSumOfIntervals(dateTimes);
+        realSumOfIntervals += siteWithLastUpdate.getLastUpdate().until(dateTimes.get(0), ChronoUnit.MILLIS);
+        assertEquals(realSumOfIntervals, sumOfIntervals);
     }
 }
