@@ -200,7 +200,7 @@ public class RSSService {
      * @return sorted list of HourReport by year and month and day
      * (average report for each site is DAY_COUNT)
      */
-    public List<DateReport> getReports(String title) {
+    public List<DateReport> getDateReports(String title) {
         return entryDAO.getDateReports(title, DAY_COUNT * siteDAO.getCount());
     }
 
@@ -210,8 +210,8 @@ public class RSSService {
      * @param title string which must appeared in the title (optional)
      * @return list of HourReport
      */
-    public List<HourReport> getHourReports(String title) {
-        return entryDAO.getHourReports(title);
+    public List<HourReport> getHourReports(String title, String channel) {
+        return entryDAO.getHourReports(title, channel);
     }
 
     public List<Report> getAllReports(String title, LocalDateTime date){

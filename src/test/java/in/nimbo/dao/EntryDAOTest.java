@@ -250,7 +250,7 @@ public class EntryDAOTest {
             reports.add(report);
         }
 
-        List<HourReport> realAnswer = entryDAO.getHourReports(title);
+        List<HourReport> realAnswer = entryDAO.getHourReports(title, "");
         Set<HourReport> hourReports = new HashSet<>(realAnswer);
         assertEquals(hourReports, reports);
     }

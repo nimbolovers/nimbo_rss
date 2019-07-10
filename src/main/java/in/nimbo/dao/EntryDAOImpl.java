@@ -202,15 +202,17 @@ public class EntryDAOImpl implements EntryDAO {
      * @return list of HourReport
      */
     @Override
-    public List<HourReport> getHourReports(String title) {
+    public List<HourReport> getHourReports(String title, String channel) {
         try (ConnectionWrapper connection = ConnectionPool.getConnection()) {
             PreparedStatement statement = connection.prepareStatement(
                     " SELECT channel, Hour(pub_date) as hour, COUNT(*) as cnt" +
                             " FROM feed" +
                             " WHERE pub_date IS NOT NULL" +
                             " and title LIKE ?" +
+                            " and channel LIKE ?" +
                             " GROUP BY channel, hour");
             statement.setString(1, "%" + (title != null ? title : "") + "%");
+            statement.setString(2, "%" + (channel != null ? channel : "") + "%");
             ResultSet resultSet = statement.executeQuery();
             List<HourReport> reports = new ArrayList<>();
             while (resultSet.next()) {

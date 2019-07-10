@@ -20,6 +20,9 @@ public class HourReportCLI implements Callable<Void> {
     @CommandLine.Option(names = "--title", paramLabel = "STRING", description = "Value must be appeared in title of entry")
     private String title;
 
+    @CommandLine.Option(names = "--channel", paramLabel = "STRING", description = "Value must be appeared in channel of entry")
+    private String channel;
+
     @CommandLine.Option(names = {"--help"}, usageHelp = true,
             description = "Display help")
     boolean usageHelpRequested;
@@ -27,7 +30,7 @@ public class HourReportCLI implements Callable<Void> {
     @Override
     public Void call() {
         App app = parent.getApp();
-        List<HourReport> reports = app.getRssService().getHourReports(Utility.removeQuotation(title));
+        List<HourReport> reports = app.getRssService().getHourReports(Utility.removeQuotation(title), Utility.removeQuotation(channel));
         showHourReports(reports);
         return null;
     }

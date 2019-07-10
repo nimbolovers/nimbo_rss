@@ -20,7 +20,7 @@ public interface EntryDAO {
 
     List<DateReport> getDateReports(String title, int limit);
 
-    List<HourReport> getHourReports(String title);
+    List<HourReport> getHourReports(String title, String channel);
 
     List<Report> getAllReports(String title, LocalDateTime date);
 }
