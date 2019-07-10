@@ -6,16 +6,15 @@ import in.nimbo.entity.Content;
 import in.nimbo.exception.QueryException;
 import in.nimbo.exception.RecordNotFoundException;
 import in.nimbo.exception.ResultSetFetchException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.sql.*;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
 public class ContentDAOImpl implements ContentDAO {
-    private Logger logger = LoggerFactory.getLogger(ContentDAOImpl.class);
-
     /**
      * create a list of contents from a ResultSet of JDBC
      *
@@ -28,20 +27,12 @@ public class ContentDAOImpl implements ContentDAO {
         try {
             while (resultSet.next()) {
                 Content content = new Content();
-
-                // fetch id
                 content.setId(resultSet.getInt("id"));
-
-                // fetch value
                 content.setValue(resultSet.getString("value"));
-
-                // fetch feed_id
-                content.setFeed_id(resultSet.getInt("feed_id"));
-
+                content.setFeedId(resultSet.getInt("feed_id"));
                 contents.add(content);
             }
         } catch (SQLException e) {
-            logger.error("Unable to fetch data from ResultSet: " + e.getMessage(), e);
             throw new ResultSetFetchException("Unable to fetch data from ResultSet", e);
         }
         return contents;
@@ -66,7 +57,6 @@ public class ContentDAOImpl implements ContentDAO {
         } catch (IndexOutOfBoundsException e) {
             throw new RecordNotFoundException("content which has feed_id=" + feedId + " not found", e);
         } catch (SQLException e) {
-            logger.error("Unable to execute query: " + e.getMessage(), e);
             throw new QueryException("Unable to execute query", e);
         }
     }
@@ -84,14 +74,13 @@ public class ContentDAOImpl implements ContentDAO {
             PreparedStatement preparedStatement = connection.prepareStatement(
                     "INSERT INTO content(value, feed_id) VALUES(?, ?)", Statement.RETURN_GENERATED_KEYS);
             preparedStatement.setString(1, content.getValue());
-            preparedStatement.setInt(2, content.getFeed_id());
+            preparedStatement.setInt(2, content.getFeedId());
             preparedStatement.executeUpdate();
             ResultSet generatedKeys = preparedStatement.getGeneratedKeys();
             generatedKeys.next();
             int newId = generatedKeys.getInt(1);
             content.setId(newId);
         } catch (SQLException e) {
-            logger.error("Unable to execute query: " + e.getMessage(), e);
             throw new QueryException("Unable to execute query", e);
         }
         return content;

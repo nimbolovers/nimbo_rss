@@ -155,7 +155,24 @@
       <version>${picocli.version}</version>
     </dependency>
 
+    <!--SonarQube library-->
+    <dependency>
+      <groupId>org.sonarsource.scanner.maven</groupId>
+      <artifactId>sonar-maven-plugin</artifactId>
+      <version>3.6.0.1398</version>
+    </dependency>
+
   </dependencies>
+
+  <!--SonarQube profile-->
+  <profiles>
+    <profile>
+      <id>sonar</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
+    </profile>
+  </profiles>
 
   <build>
     <pluginManagement><!-- lock down plugins versions to avoid using Maven defaults (may be moved to parent pom) -->

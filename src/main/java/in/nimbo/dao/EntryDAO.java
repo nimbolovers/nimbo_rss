@@ -1,15 +1,15 @@
 package in.nimbo.dao;
 
 import in.nimbo.entity.Entry;
-import in.nimbo.entity.report.HourReport;
 import in.nimbo.entity.report.DateReport;
+import in.nimbo.entity.report.HourReport;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface EntryDAO {
 
-    List<Entry> filterEntry(String channel, String contentValue, String titleValue, Date startDate, Date finishDate);
+    List<Entry> filterEntry(String channel, String contentValue, String titleValue, LocalDateTime startDate, LocalDateTime finishDate);
 
     List<Entry> getEntries();
 

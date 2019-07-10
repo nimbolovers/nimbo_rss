@@ -1,7 +1,6 @@
 package in.nimbo.application.cli;
 
 import in.nimbo.application.App;
-import in.nimbo.application.Utility;
 import in.nimbo.entity.report.HourReport;
 import picocli.CommandLine;
 
@@ -17,7 +16,7 @@ public class HourReportCLI implements Callable<Void> {
     @CommandLine.ParentCommand
     private RssCLI parent;
 
-    @CommandLine.Option(names = "--title", paramLabel = "STRING", description = "title of entry")
+    @CommandLine.Option(names = "--title", paramLabel = "STRING", description = "Value must be appeared in title of entry")
     private String title;
 
     @CommandLine.Option(names = {"--help"}, usageHelp = true,
@@ -35,9 +34,10 @@ public class HourReportCLI implements Callable<Void> {
     public static void showHourReports(List<HourReport> reports) {
         System.out.println();
         for (HourReport report:reports) {
-            System.out.println(report.getChannel() + ": " + report.getCount());
-            System.out.println(report.getHour());
-            System.out.println();
+            System.out.println("Channel: " + report.getChannel());
+            System.out.println("News: " + report.getCount());
+            System.out.println("Hour: " + report.getHour());
+            System.out.println("----------");
         }
     }
 }

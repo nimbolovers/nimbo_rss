@@ -1,6 +1,6 @@
 package in.nimbo.entity;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.Objects;
 
 public class Site {
@@ -9,7 +9,7 @@ public class Site {
     private String link;
     private long newsCount;
     private long avgUpdateTime;
-    private Date lastUpdate;
+    private LocalDateTime lastUpdate;
 
     public Site() {
     }
@@ -31,11 +31,11 @@ public class Site {
         return newsCount;
     }
 
-    public Date getLastUpdate() {
+    public LocalDateTime getLastUpdate() {
         return lastUpdate;
     }
 
-    public void setLastUpdate(Date lastUpdate) {
+    public void setLastUpdate(LocalDateTime lastUpdate) {
         this.lastUpdate = lastUpdate;
     }
 

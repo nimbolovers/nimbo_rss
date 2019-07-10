@@ -21,6 +21,7 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
@@ -74,7 +75,7 @@ public class EntryDAOTest {
         List<Entry> entries = new ArrayList<>();
         for (int i = 0; i < 4; i++) {
             Entry entry = TestUtility.createEntry("channel-" + i, "title-" + i, "link-" + i,
-                    (i & 1) != 0 ? new Date() : null,
+                    (i & 1) != 0 ? LocalDateTime.now() : null,
                     "content-" + i,
                     (i & 2) != 0 ? "desc-" + i : null);
             entries.add(entry);
@@ -96,7 +97,7 @@ public class EntryDAOTest {
         List<Entry> fetchedEntries = new ArrayList<>();
         while (resultSet.next()) {
             Entry e = TestUtility.createEntry(resultSet.getString("channel"), resultSet.getString("title"),
-                    resultSet.getString("link"), resultSet.getDate("pub_date"),
+                    resultSet.getString("link"), resultSet.getObject("pub_date", LocalDateTime.class),
                     resultSet.getString("cnt"), "");
             e.setId(resultSet.getInt("id"));
             fetchedEntries.add(e);
@@ -123,8 +124,8 @@ public class EntryDAOTest {
 
     private List<Entry> createExampleEntries2() {
         List<Entry> entries = new ArrayList<>();
-        entries.add(TestUtility.createEntry("channel", "title 1", "2010", TestUtility.createDate(2010, 1, 1), "content 1", "desc 1"));
-        entries.add(TestUtility.createEntry("channel", "title 2", "2020", TestUtility.createDate(2020, 1, 1), "content 2", "desc 2"));
+        entries.add(TestUtility.createEntry("channel", "title 1", "2010", LocalDateTime.of(2010, 1, 1, 0, 0), "content 1", "desc 1"));
+        entries.add(TestUtility.createEntry("channel", "title 2", "2020",  LocalDateTime.of(2020, 1, 1, 0, 0), "content 2", "desc 2"));
         return entries;
     }
 
@@ -136,8 +137,8 @@ public class EntryDAOTest {
         }
 
         // test before
-        Date beforeDate = TestUtility.createDate(2000, 1, 1);
-        Date afterDate = TestUtility.createDate(2030, 1, 1);
+        LocalDateTime beforeDate = LocalDateTime.of(2000, 1, 1, 0, 0);
+        LocalDateTime afterDate = LocalDateTime.of(2030, 1, 1, 0, 0);
 
         assertEquals(entries.stream()
                         .filter(entry -> entry.getPublicationDate().compareTo(beforeDate) >= 0)
@@ -156,17 +157,18 @@ public class EntryDAOTest {
                 entryDAO.filterEntry("channel", "content", "title", null, afterDate));
     }
 
+    @Test
     public void contain() {
         List<Entry> entries = new ArrayList<>();
-        entries.add(TestUtility.createEntry("channel 1", "title 1", "link 1", new Date(), "content 1", "desc 1"));
-        entries.add(TestUtility.createEntry("channel 2", "title 2", "link 2", new Date(), "content 2", "desc 2"));
+        entries.add(TestUtility.createEntry("channel 1", "title 1", "link 1", LocalDateTime.now(), "content 1", "desc 1"));
+        entries.add(TestUtility.createEntry("channel 2", "title 2", "link 2", LocalDateTime.now(), "content 2", "desc 2"));
         for (Entry entry : entries) {
             entryDAO.save(entry);
         }
 
-        assertTrue(entryDAO.contain(TestUtility.createEntry("channel-test", "title-test", "link 1", new Date(), "content-test", "desc-test")));
-        assertTrue(entryDAO.contain(TestUtility.createEntry("channel-test", "title-test", "link 2", new Date(), "content-test", "desc-test")));
-        assertFalse(entryDAO.contain(TestUtility.createEntry("channel-test", "title-test", "link 3", new Date(), "content-test", "desc-test")));
+        assertTrue(entryDAO.contain(TestUtility.createEntry("channel-test", "title-test", "link 1", LocalDateTime.now(), "content-test", "desc-test")));
+        assertTrue(entryDAO.contain(TestUtility.createEntry("channel-test", "title-test", "link 2", LocalDateTime.now(), "content-test", "desc-test")));
+        assertFalse(entryDAO.contain(TestUtility.createEntry("channel-test", "title-test", "link 3", LocalDateTime.now(), "content-test", "desc-test")));
     }
 
     @Test
@@ -182,13 +184,13 @@ public class EntryDAOTest {
                 PreparedStatement statement = connection.prepareStatement(sql);
                 statement.setString(1, channel);
                 statement.setString(2, title);
-                statement.setTimestamp(3, new java.sql.Timestamp(TestUtility.createDate(2010, 6, i + 1).getTime()));
+                statement.setObject(3, LocalDateTime.of(2010, 6, i + 1, 0, 0));
                 statement.executeUpdate();
             }
             int year = 2010;
             int month = 6;
             int day = i + 1;
-            DateReport report = new DateReport(channel, count, TestUtility.createDate(year, month, day));
+            DateReport report = new DateReport(channel, count,  LocalDateTime.of(year, month, day, 0, 0));
             reports.add(report);
         }
 
@@ -207,13 +209,12 @@ public class EntryDAOTest {
         for (int i = 0; i < limit; i++) {
             int count = ThreadLocalRandom.current().nextInt(limit) + 1;
             for (int j = 0; j < count; j++) {
-                Date date = TestUtility.createDate(2010, 6, i + 1);
-                date.setTime(date.getTime() + i * 3600 * 1000);
+                LocalDateTime date = LocalDateTime.of(2010, 6, i + 1, i, 0);
                 ConnectionWrapper connection = ConnectionPool.getConnection();
                 PreparedStatement statement = connection.prepareStatement(sql);
                 statement.setString(1, channel);
                 statement.setString(2, title);
-                statement.setTimestamp(3, new java.sql.Timestamp(date.getTime()));
+                statement.setObject(3, date);
                 statement.executeUpdate();
             }
             HourReport report = new HourReport(channel, count, i);
@@ -221,8 +222,7 @@ public class EntryDAOTest {
         }
 
         List<HourReport> realAnswer = entryDAO.getHourReports(title);
-        Set<HourReport> hourReports = new HashSet<>();
-        hourReports.addAll(realAnswer);
+        Set<HourReport> hourReports = new HashSet<>(realAnswer);
         assertEquals(hourReports, reports);
     }
 }

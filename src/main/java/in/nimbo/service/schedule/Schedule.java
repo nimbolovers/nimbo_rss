@@ -9,12 +9,11 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 public class Schedule {
-    private static ScheduledExecutorService scheduleService;
+    private static ScheduledExecutorService scheduleService = Executors.newScheduledThreadPool(30);
     private RSSService rssService;
 
     public Schedule(RSSService rssService) {
         this.rssService = rssService;
-        scheduleService = Executors.newScheduledThreadPool(100);
     }
 
     /**
@@ -22,7 +21,7 @@ public class Schedule {
      * @param site site to update news
      */
     public void scheduleSite(Site site) {
-        scheduleService.schedule(new ScheduleUpdater(site, scheduleService, rssService, site.getAvgUpdateTime()), 5L, TimeUnit.SECONDS);
+        scheduleService.schedule(new ScheduleUpdater(scheduleService, rssService, site, site.getAvgUpdateTime(), site.getNewsCount()), 5L, TimeUnit.SECONDS);
     }
 
     /**
@@ -30,7 +29,7 @@ public class Schedule {
      * @param sites sites to update frequently
      */
     public void scheduleSiteDAO(List<Site> sites) {
-        scheduleService.scheduleAtFixedRate(new ScheduleSiteUpdater(sites, rssService), 5L, 15 * 60, TimeUnit.SECONDS);
+        scheduleService.scheduleAtFixedRate(new ScheduleSiteUpdater(sites, rssService), 5L, 15L * 60L, TimeUnit.SECONDS);
     }
 
     /**

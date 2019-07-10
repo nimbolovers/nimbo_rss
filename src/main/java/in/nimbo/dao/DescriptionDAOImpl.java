@@ -6,8 +6,6 @@ import in.nimbo.entity.Description;
 import in.nimbo.exception.QueryException;
 import in.nimbo.exception.RecordNotFoundException;
 import in.nimbo.exception.ResultSetFetchException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -17,8 +15,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class DescriptionDAOImpl implements DescriptionDAO {
-    private Logger logger = LoggerFactory.getLogger(DescriptionDAOImpl.class);
-
     /**
      * create a list of description from a ResultSet of JDBC
      *
@@ -31,26 +27,14 @@ public class DescriptionDAOImpl implements DescriptionDAO {
         try {
             while (resultSet.next()) {
                 Description description = new Description();
-
-                // fetch id
                 description.setId(resultSet.getInt("id"));
-
-                // fetch type
                 description.setType(resultSet.getString("type"));
-
-                // fetch mode
                 description.setMode(resultSet.getString("mode"));
-
-                // fetch value
                 description.setValue(resultSet.getString("value"));
-
-                // fetch feed_id
-                description.setFeed_id(resultSet.getInt("feed_id"));
-
+                description.setFeedId(resultSet.getInt("feed_id"));
                 descriptions.add(description);
             }
         } catch (SQLException e) {
-            logger.error("Unable to fetch data from ResultSet: " + e.getMessage(), e);
             throw new ResultSetFetchException("Unable to fetch data from ResultSet", e);
         }
         return descriptions;
@@ -75,7 +59,6 @@ public class DescriptionDAOImpl implements DescriptionDAO {
         } catch (IndexOutOfBoundsException e) {
             throw new RecordNotFoundException("content which has feed_id=" + feedId + " not found", e);
         } catch (SQLException e) {
-            logger.error("Unable to execute query: " + e.getMessage(), e);
             throw new QueryException("Unable to execute query", e);
         }
     }
@@ -95,11 +78,10 @@ public class DescriptionDAOImpl implements DescriptionDAO {
             preparedStatement.setString(1, description.getType());
             preparedStatement.setString(2, description.getMode());
             preparedStatement.setString(3, description.getValue());
-            preparedStatement.setInt(4, description.getFeed_id());
+            preparedStatement.setInt(4, description.getFeedId());
             int newId = preparedStatement.executeUpdate();
             description.setId(newId);
         } catch (SQLException e) {
-            logger.error("Unable to execute query: " + e.getMessage(), e);
             throw new QueryException("Unable to execute query", e);
         }
         return description;

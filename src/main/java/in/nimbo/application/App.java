@@ -71,12 +71,17 @@ public class App {
         System.out.print("rss> ");
         while (in.hasNextLine()) {
             String input = in.nextLine().trim();
-            List<String> args = new ArrayList<>();
-            Matcher m = Pattern.compile("(([^\\s\"]+|\".*?\")+)").matcher(input);
-            while (m.find())
-                args.add(m.group(1));
+            List<String> args = splitArguments(input);
             CommandLine.call(new RssCLI(this), args.toArray(new String[0]));
             System.out.print("rss> ");
         }
+    }
+
+    public List<String> splitArguments(String input) {
+        List<String> args = new ArrayList<>();
+        Matcher m = Pattern.compile("(([^\\s\"]+|\".*?\")+)").matcher(input);
+        while (m.find())
+            args.add(m.group(1));
+        return args;
     }
 }
