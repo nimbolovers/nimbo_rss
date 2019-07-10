@@ -127,7 +127,7 @@ public class ScheduleUpdater implements Callable<Void> {
      */
     public List<LocalDateTime> getNewPublicationDates() {
         try {
-            SyndFeed syndFeed = rssService.fetchFromURL(site.getLink());
+            SyndFeed syndFeed = rssService.fetchFeedFromURL(site.getLink());
             List<Entry> entries = rssService.getEntries(syndFeed);
             List<Entry> newEntries = rssService.addSiteEntries(site.getLink(), entries);
             lastNewsCount = site.getNewsCount();

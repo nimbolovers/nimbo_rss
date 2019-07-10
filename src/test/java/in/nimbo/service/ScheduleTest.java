@@ -62,7 +62,7 @@ public class ScheduleTest {
             entries.add(TestUtility.createEntry("channel " + i,
                     "title " + i, "link " + i, dateTime, "content " + i, "desc " + i));
         }
-        PowerMockito.when(rssService.fetchFromURL(site.getLink())).thenReturn(syndFeed);
+        PowerMockito.when(rssService.fetchFeedFromURL(site.getLink())).thenReturn(syndFeed);
         PowerMockito.when(rssService.getEntries(syndFeed)).thenReturn(entries);
         PowerMockito.when(rssService.addSiteEntries(site.getLink(), entries)).thenReturn(entries);
 
@@ -70,7 +70,7 @@ public class ScheduleTest {
         List<LocalDateTime> newPublicationDates = scheduleUpdater.getNewPublicationDates();
         assertEquals(dateTimes, newPublicationDates);
 
-        PowerMockito.when(rssService.fetchFromURL(site.getLink())).thenThrow(new SyndFeedException());
+        PowerMockito.when(rssService.fetchFeedFromURL(site.getLink())).thenThrow(new SyndFeedException());
         newPublicationDates = scheduleUpdater.getNewPublicationDates();
         assertEquals(0, newPublicationDates.size());
     }

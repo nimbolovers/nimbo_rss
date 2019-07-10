@@ -11,7 +11,8 @@ import java.time.format.DateTimeParseException;
 public class Utility {
     public static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
 
-    private Utility() {}
+    private Utility() {
+    }
 
     /**
      * disable JOOQ library logger
@@ -22,19 +23,19 @@ public class Utility {
 
     /**
      * encode a url which maybe contain UTF-8 characters
+     *
      * @param urlLink link
      * @return encoded URL
      */
-    public static URL encodeURL(String urlLink) throws MalformedURLException {
+    public static String encodeURL(String urlLink) throws MalformedURLException {
         try {
             if (urlLink.contains("%")) // it is encoded, so just return
-                return new URL(urlLink);
-            else
-            {
+                return urlLink;
+            else {
                 // encode url link
                 URL url = new URL(urlLink);
                 URI uri = new URI(url.getProtocol(), url.getUserInfo(), url.getHost(), url.getPort(), url.getPath(), url.getQuery(), url.getRef());
-                return new URL(uri.toASCIIString());
+                return uri.toASCIIString();
             }
         } catch (MalformedURLException | URISyntaxException e) {
             throw new MalformedURLException("Illegal URL: " + urlLink);
@@ -43,6 +44,7 @@ public class Utility {
 
     /**
      * convert a string of date to java.util.Date
+     *
      * @param date string format of day
      * @return java.util.date represent given date
      * @throws IllegalArgumentException if unable to convert string to date

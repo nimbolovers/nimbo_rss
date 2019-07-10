@@ -5,10 +5,10 @@ import in.nimbo.TestUtility;
 import in.nimbo.dao.EntryDAO;
 import in.nimbo.dao.SiteDAO;
 import in.nimbo.entity.Entry;
-import in.nimbo.entity.Site;
 import in.nimbo.entity.report.DateReport;
 import in.nimbo.entity.report.HourReport;
 import in.nimbo.exception.ContentExtractingException;
+import in.nimbo.exception.SyndFeedException;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -18,13 +18,16 @@ import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.*;
 
 @RunWith(PowerMockRunner.class)
@@ -33,6 +36,7 @@ public class RSSServiceTest {
     private static EntryDAO entryDAO;
     private static RSSService rssService;
     private static SiteDAO siteDAO;
+    private static String exampleLink = "http://example.com/";
 
     @BeforeClass
     public static void init() {
@@ -48,23 +52,24 @@ public class RSSServiceTest {
 
     @Test
     public void addSiteEntriesWithoutContain() {
-        Entry entry1 = TestUtility.createEntry("channel", "title", "link", LocalDateTime.now(), "content", "description");
-        Site site = new Site("site-name", "site-link");
+        String link = exampleLink;
+        Entry entry1 = TestUtility.createEntry("channel", "title", link, LocalDateTime.now(), "content", "description");
+
         List<Entry> entries = new ArrayList<>();
         entries.add(entry1);
         when(entryDAO.save(entry1)).thenReturn(entry1);
         when(entryDAO.contain(Matchers.any(Entry.class))).thenReturn(false);
         doReturn("content").when(rssService).getContentOfRSSLink(entry1.getLink());
 
-        List<Entry> savedEntries = rssService.addSiteEntries(site.getLink(), entries);
+        List<Entry> savedEntries = rssService.addSiteEntries(link, entries);
         assertEquals(entries.size(), savedEntries.size());
     }
 
     @Test
     public void addSiteEntriesWithContain() {
-        Entry entry1 = TestUtility.createEntry("channel 1", "title 1", "link 1", LocalDateTime.now(), "content 1", "description 1");
-        Entry entry2 = TestUtility.createEntry("channel 2", "title 2", "link 2", LocalDateTime.now(), "content 2", "description 2");
-        Site site = new Site("site-name", "site-link");
+        String link = exampleLink;
+        Entry entry1 = TestUtility.createEntry("channel 1", "title 1", link, LocalDateTime.now(), "content 1", "description 1");
+        Entry entry2 = TestUtility.createEntry("channel 2", "title 2", link, LocalDateTime.now(), "content 2", "description 2");
         List<Entry> entries = new ArrayList<>();
         entries.add(entry1);
         entries.add(entry2);
@@ -73,22 +78,74 @@ public class RSSServiceTest {
         when(entryDAO.contain(entry2)).thenReturn(true);
         doReturn("content").when(rssService).getContentOfRSSLink(entry1.getLink());
 
-        List<Entry> savedEntries = rssService.addSiteEntries(site.getLink(), entries);
+        List<Entry> savedEntries = rssService.addSiteEntries(link, entries);
         assertEquals(1, savedEntries.size());
     }
 
     @Test
     public void addSiteEntriesWithNoContent() {
-        Entry entry = TestUtility.createEntry("channel", "title", "link", LocalDateTime.now(), "content", "description");
-        Site site = new Site("site-name", "site-link");
+        String link = exampleLink;
+        Entry entry = TestUtility.createEntry("channel", "title", link, LocalDateTime.now(), "content", "description");
         List<Entry> entries = new ArrayList<>();
         entries.add(entry);
 
         when(entryDAO.save(entry)).thenReturn(entry);
         doThrow(new ContentExtractingException()).when(rssService).getContentOfRSSLink(entry.getLink());
 
-        List<Entry> savedEntries = rssService.addSiteEntries(site.getLink(), entries);
+        List<Entry> savedEntries = rssService.addSiteEntries(link, entries);
         assertEquals(savedEntries.size(), entries.size());
+    }
+
+    @Test
+    public void getContentOfRSSLink() {
+        String link = exampleLink;
+        String htmlSource = TestUtility.getFileContent(Paths.get("src/test/resources/example/example.html"));
+        String realContent = "This domain is established to be used for illustrative examples in documents. You may use this domain in examples without prior coordination or asking for permission. More information...";
+        PowerMockito.doReturn(htmlSource).when(rssService).getHTML(Matchers.anyString());
+        String contentOfRSSLink = rssService.getContentOfRSSLink(link);
+        assertEquals(realContent, contentOfRSSLink);
+
+        try {
+            link = "invalid url";
+            rssService.getContentOfRSSLink(link);
+        } catch (Exception e) {
+            assertTrue(e instanceof ContentExtractingException);
+        }
+    }
+
+    @Test
+    public void fetchFeedFromURL() {
+        String link = exampleLink;
+        String htmlSource = TestUtility.getFileContent(Paths.get("src/test/resources/example/rss.xml"));
+        PowerMockito.doReturn(htmlSource).when(rssService).getHTML(Matchers.anyString());
+        SyndFeed feed = rssService.fetchFeedFromURL(link);
+        assertEquals(2, feed.getEntries().size());
+        assertEquals("Title", feed.getTitle());
+        assertEquals("Link", feed.getLink());
+        assertEquals("Desc", feed.getDescription());
+        List<SyndEntry> entries = feed.getEntries();
+        entries.sort(Comparator.comparing(SyndEntry::getTitle));
+        for (int i = 0; i < entries.size(); i++) {
+            assertEquals("Title " + i, entries.get(i).getTitle());
+            assertEquals("Link " + i, entries.get(i).getLink());
+            assertEquals("Desc " + i, entries.get(i).getDescription().getValue());
+        }
+
+        try {
+            link = "invalid url";
+            rssService.fetchFeedFromURL(link);
+        } catch (Exception e) {
+            assertTrue(e instanceof SyndFeedException);
+        }
+
+        try {
+            link = exampleLink;
+            htmlSource = "invalid rss";
+            PowerMockito.doReturn(htmlSource).when(rssService).getHTML(Matchers.anyString());
+            rssService.fetchFeedFromURL(link);
+        } catch (Exception e) {
+            assertTrue(e instanceof SyndFeedException);
+        }
     }
 
     @Test

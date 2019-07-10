@@ -24,7 +24,6 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.net.MalformedURLException;
 import java.net.SocketTimeoutException;
-import java.net.URL;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
@@ -143,13 +142,24 @@ public class RSSService {
      */
     public String getContentOfRSSLink(String link) {
         try {
-            URL rssURL = Utility.encodeURL(link);
-            String html = Jsoup.connect(rssURL.toString()).get().html();
+            String rssURL = Utility.encodeURL(link);
+            String html = getHTML(rssURL);
             Readability4J readability4J = new Readability4J(link, html);
             Article article = readability4J.parse();
             return article.getTextContent();
         } catch (MalformedURLException e) {
             throw new ContentExtractingException("Invalid RSS URL: URL=" + link, e);
+        }
+    }
+
+    /**
+     * get html content of a site
+     * @param link link of site
+     * @return html source of site
+     */
+    public String getHTML(String link) {
+        try {
+            return Jsoup.connect(link).get().html();
         } catch (HttpStatusException e) {
             throw new ContentExtractingException("HTTP error fetching URL: Status=" + e.getStatusCode() + " URL=" + e.getUrl(), e);
         } catch (SocketTimeoutException e) {
@@ -166,17 +176,17 @@ public class RSSService {
      * @return SyndFeed which contain RSS contents
      * @throws SyndFeedException if RSS url link is not valid or unable to fetch data from url
      */
-    public SyndFeed fetchFromURL(String url) {
+    public SyndFeed fetchFeedFromURL(String url) {
         try {
-            URL encodedURL = Utility.encodeURL(url);
-            String htmlContent = Jsoup.connect(encodedURL.toString()).get().html();
+            String encodedURL = Utility.encodeURL(url);
+            String htmlContent = getHTML(encodedURL);
             SyndFeedInput input = new SyndFeedInput();
             SyndFeed feed = input.build(new StringReader(htmlContent));
             logger.info("RSS data fetched successfully from: " + url);
             return feed;
         } catch (MalformedURLException e) {
             throw new SyndFeedException("Illegal URL format: " + url, e);
-        } catch (FeedException | IOException e) {
+        } catch (FeedException e) {
             throw new SyndFeedException("Invalid RSS URL: " + url, e);
         }
     }
