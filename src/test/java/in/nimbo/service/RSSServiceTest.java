@@ -5,9 +5,12 @@ import in.nimbo.TestUtility;
 import in.nimbo.dao.EntryDAO;
 import in.nimbo.dao.SiteDAO;
 import in.nimbo.entity.Entry;
+import in.nimbo.entity.Site;
 import in.nimbo.entity.report.DateReport;
 import in.nimbo.entity.report.HourReport;
 import in.nimbo.exception.ContentExtractingException;
+import in.nimbo.exception.QueryException;
+import in.nimbo.exception.RssServiceException;
 import in.nimbo.exception.SyndFeedException;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -26,8 +29,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
 @RunWith(PowerMockRunner.class)
@@ -48,6 +50,57 @@ public class RSSServiceTest {
         entryDAO = PowerMockito.mock(EntryDAO.class);
         siteDAO = PowerMockito.mock(SiteDAO.class);
         rssService = spy(new RSSService(entryDAO, siteDAO));
+    }
+
+    @Test
+    public void updateSite() {
+        Site site = new Site("name", "link");
+
+        try {
+            PowerMockito.doReturn(site).when(siteDAO).update(site);
+            rssService.updateSite(site);
+        } catch (Exception e) {
+            fail();
+        }
+
+        try {
+            PowerMockito.doThrow(new QueryException()).when(siteDAO).update(site);
+            rssService.updateSite(site);
+            fail();
+        } catch (Exception e) {
+            assertTrue(e instanceof RssServiceException);
+        }
+
+        try {
+            PowerMockito.doThrow(new IllegalArgumentException()).when(siteDAO).update(site);
+            rssService.updateSite(site);
+            fail();
+        } catch (Exception e) {
+            assertTrue(e instanceof RssServiceException);
+        }
+    }
+
+    @Test
+    public void filterEntry() {
+        List<Entry> entries = new ArrayList<>();
+
+        try {
+            PowerMockito.doReturn(entries).when(entryDAO).filterEntry(Matchers.anyString(), Matchers.anyString(), Matchers.anyString(),
+                    Matchers.any(LocalDateTime.class), Matchers.any(LocalDateTime.class));
+            List<Entry> result = rssService.filterEntry("", "", "", LocalDateTime.now(), LocalDateTime.now());
+            assertEquals(entries, result);
+        } catch (Exception e) {
+            fail();
+        }
+
+        try {
+            PowerMockito.doThrow(new QueryException()).when(entryDAO).filterEntry(Matchers.anyString(), Matchers.anyString(), Matchers.anyString(),
+                    Matchers.any(LocalDateTime.class), Matchers.any(LocalDateTime.class));
+            rssService.filterEntry("", "", "", LocalDateTime.now(), LocalDateTime.now());
+            fail();
+        } catch (Exception e) {
+            assertTrue(e instanceof RssServiceException);
+        }
     }
 
     @Test

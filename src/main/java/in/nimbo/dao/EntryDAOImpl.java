@@ -110,7 +110,7 @@ public class EntryDAOImpl implements EntryDAO {
             Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery(sqlQuery);
             return createEntryFromResultSet(resultSet);
-        } catch (SQLException e) {
+        } catch (SQLException | ResultSetFetchException e) {
             throw new QueryException("Unable to execute query", e);
         }
     }
