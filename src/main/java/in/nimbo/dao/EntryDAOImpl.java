@@ -264,11 +264,11 @@ public class EntryDAOImpl implements EntryDAO {
     public List<Report> getAllReports(String title, LocalDateTime date) {
         try (ConnectionWrapper connection = ConnectionPool.getConnection()) {
             PreparedStatement statement = connection.prepareStatement(
-                            "select count(*) as cnt, channel " +
-                            "from feed " +
-                            "where title like ? " +
-                                    (date != null ? "and pub_date between ? and ? " : "") +
-                            "group by channel");
+                            "SELECT COUNT(*) AS cnt, channel " +
+                            "FROM feed " +
+                            "WHERE title LIKE ? " +
+                                    (date != null ? "AND pub_date BETWEEN ? AND ? " : "") +
+                            "GROUP BY channel");
             statement.setString(1, "%" + (title != null ? title : "" )+ "%");
             if (date != null){
                 statement.setObject(2, date);

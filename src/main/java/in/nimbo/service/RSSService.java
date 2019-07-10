@@ -12,6 +12,7 @@ import in.nimbo.entity.Entry;
 import in.nimbo.entity.Site;
 import in.nimbo.entity.report.DateReport;
 import in.nimbo.entity.report.HourReport;
+import in.nimbo.entity.report.Report;
 import in.nimbo.exception.*;
 import net.dankito.readability4j.Article;
 import net.dankito.readability4j.Readability4J;
@@ -211,5 +212,9 @@ public class RSSService {
      */
     public List<HourReport> getHourReports(String title) {
         return entryDAO.getHourReports(title);
+    }
+
+    public List<Report> getAllReports(String title, LocalDateTime date){
+        return entryDAO.getAllReports(title, date);
     }
 }
