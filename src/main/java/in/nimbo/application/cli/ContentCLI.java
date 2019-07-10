@@ -9,7 +9,7 @@ import java.util.concurrent.Callable;
 
 @Command(name = "get-content",
         version = RssCLI.version,
-        description = "Search in entries")
+        description = "Get content of an news")
 public class ContentCLI implements Callable<Void> {
     @CommandLine.ParentCommand
     private RssCLI rssCLI;
@@ -25,7 +25,7 @@ public class ContentCLI implements Callable<Void> {
     public Void call() {
         Optional<Content> entryContentByID = rssCLI.getApp().getRssService().getEntryContentByID(entryID);
         if (entryContentByID.isPresent()) {
-            System.out.println("Content of " + entryID + ": ");
+            System.out.println("Content of news (" + entryID + "): ");
             System.out.println(entryContentByID.get().getValue());
         } else {
             System.out.println("There is no news for id: " + entryID);
