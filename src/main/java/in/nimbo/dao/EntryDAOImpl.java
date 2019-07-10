@@ -7,6 +7,7 @@ import in.nimbo.entity.Description;
 import in.nimbo.entity.Entry;
 import in.nimbo.entity.report.DateReport;
 import in.nimbo.entity.report.HourReport;
+import in.nimbo.entity.report.Report;
 import in.nimbo.exception.QueryException;
 import in.nimbo.exception.RecordNotFoundException;
 import in.nimbo.exception.ResultSetFetchException;
@@ -257,7 +258,33 @@ public class EntryDAOImpl implements EntryDAO {
         } catch (SQLException e) {
             throw new QueryException("Unable to execute query", e);
         }
+    }
 
-
+    @Override
+    public List<Report> getAllReports(String title, LocalDateTime date) {
+        try (ConnectionWrapper connection = ConnectionPool.getConnection()) {
+            PreparedStatement statement = connection.prepareStatement(
+                            "select count(*) as cnt, channel " +
+                            "from feed " +
+                            "where title like ? " +
+                                    (date != null ? "and pub_date between ? and ? " : "") +
+                            "group by channel");
+            statement.setString(1, "%" + (title != null ? title : "" )+ "%");
+            if (date != null){
+                statement.setObject(2, date);
+                statement.setObject(3, LocalDateTime.from(date).plusDays(1));
+            }
+            ResultSet resultSet = statement.executeQuery();
+            List<Report> reports = new ArrayList<>();
+            while (resultSet.next()){
+                int cnt = resultSet.getInt("cnt");
+                String channel = resultSet.getString("channel");
+                Report report = new Report(channel, cnt);
+                reports.add(report);
+            }
+            return reports;
+        } catch (SQLException e) {
+            throw new QueryException("Unable to execute query", e);
+        }
     }
 }

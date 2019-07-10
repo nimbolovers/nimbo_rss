@@ -6,6 +6,7 @@ import in.nimbo.dao.pool.ConnectionWrapper;
 import in.nimbo.entity.Entry;
 import in.nimbo.entity.report.HourReport;
 import in.nimbo.entity.report.DateReport;
+import in.nimbo.entity.report.Report;
 import in.nimbo.exception.RecordNotFoundException;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -197,6 +198,34 @@ public class EntryDAOTest {
         Collections.reverse(reports);
 
         assertEquals(reports, entryDAO.getDateReports("", limit));
+    }
+
+    @Test
+    public void getAllReportsTest() throws SQLException {
+        String sql = "insert into feed (channel, title, pub_date) values (?, ?, ?)";
+        List<Report> reports = new ArrayList<>();
+        String channel = "test";
+        String title = "test";
+        int limit = 10;
+        for (int i = 0; i < limit; i++) {
+            int count = ThreadLocalRandom.current().nextInt(limit) + 1;
+            for (int j = 0; j < count; j++) {
+                LocalDateTime date = LocalDateTime.of(2015, 6, i + 1, i, 0);
+                ConnectionWrapper connection = ConnectionPool.getConnection();
+                PreparedStatement statement = connection.prepareStatement(sql);
+                statement.setString(1, channel);
+                statement.setString(2, title);
+                statement.setObject(3, date);
+                statement.executeUpdate();
+            }
+            if (i + 1 == 8) {
+                Report report = new Report(channel, count);
+                reports.add(report);
+            }
+        }
+
+        List<Report> real = entryDAO.getAllReports(null, LocalDateTime.of(2015, 6, 8, 0, 0));
+        assertEquals(reports, real);
     }
 
     @Test
