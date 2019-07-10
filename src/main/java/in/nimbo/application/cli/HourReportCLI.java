@@ -16,7 +16,7 @@ public class HourReportCLI implements Callable<Void> {
     @CommandLine.ParentCommand
     private RssCLI parent;
 
-    @CommandLine.Option(names = "--title", paramLabel = "STRING", description = "title of entry")
+    @CommandLine.Option(names = "--title", paramLabel = "STRING", description = "Value must be appeared in title of entry")
     private String title;
 
     @CommandLine.Option(names = {"--help"}, usageHelp = true,

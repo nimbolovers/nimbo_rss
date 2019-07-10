@@ -55,6 +55,12 @@ public class Utility {
         }
     }
 
+    /**
+     * remove quotation which surrounding value if presents
+     *
+     * @param value value
+     * @return value without quotation
+     */
     public static String removeQuotation(String value) {
         if (value != null && value.length() >= 2 &&
                 value.charAt(0) == '\"' &&

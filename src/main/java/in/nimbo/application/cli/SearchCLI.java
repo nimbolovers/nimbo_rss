@@ -3,11 +3,11 @@ package in.nimbo.application.cli;
 import in.nimbo.application.Utility;
 import in.nimbo.entity.Entry;
 import in.nimbo.exception.RssServiceException;
+import in.nimbo.service.RSSService;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 
 import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.List;
 import java.util.concurrent.Callable;
 
@@ -31,11 +31,11 @@ public class SearchCLI implements Callable<Void> {
     private String content = "";
 
     @CommandLine.Option(names = {"--start"}, paramLabel = "DATE",
-            description = "The entry publication date must be after start date")
+            description = "The entry publication date must be after start date (format: dd/MM/yyyy HH:mm:ss)")
     private String start;
 
     @CommandLine.Option(names = {"--end"}, paramLabel = "DATE",
-            description = "The entry publication date must be before end date")
+            description = "The entry publication date must be before end date (format: dd/MM/yyyy HH:mm:ss)")
     private String end;
 
     @CommandLine.Option(names = {"--help"}, usageHelp = true,
@@ -44,6 +44,11 @@ public class SearchCLI implements Callable<Void> {
 
     @Override
     public Void call() {
+        filterEntry(rssCLI.getApp().getRssService());
+        return null;
+    }
+
+    private void filterEntry(RSSService rssService) {
         try {
             LocalDateTime startDate = null;
             LocalDateTime finishDate = null;
@@ -51,18 +56,17 @@ public class SearchCLI implements Callable<Void> {
                 startDate = Utility.getDate(Utility.removeQuotation(start));
             if (end != null)
                 finishDate = Utility.getDate(Utility.removeQuotation(end));
-            List<Entry> resultEntry = rssCLI.getApp().getRssService().
-                    filterEntry(Utility.removeQuotation(channel),
-                            Utility.removeQuotation(content),
-                            Utility.removeQuotation(title),
-                            startDate, finishDate);
+            List<Entry> resultEntry = rssService.filterEntry(
+                    Utility.removeQuotation(channel),
+                    Utility.removeQuotation(content),
+                    Utility.removeQuotation(title),
+                    startDate, finishDate);
             showEntries(resultEntry);
         } catch (IllegalArgumentException e) {
             System.out.println(e.getMessage());
         } catch (RssServiceException e) {
             System.out.println("Unable to search data. We will fix it as soon as possible.");
         }
-        return null;
     }
 
     /**

@@ -4,7 +4,7 @@ import in.nimbo.application.App;
 import in.nimbo.entity.report.DateReport;
 import picocli.CommandLine;
 
-import java.text.SimpleDateFormat;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.concurrent.Callable;
 
@@ -13,10 +13,12 @@ import java.util.concurrent.Callable;
     description = "Report for each date for each site"
 )
 public class DateReportCLI implements Callable<Void> {
+    public static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
     @CommandLine.ParentCommand
     private RssCLI parent;
 
-    @CommandLine.Option(names = {"--title"}, paramLabel = "STRING", description = "Title of entry")
+    @CommandLine.Option(names = {"--title"}, paramLabel = "STRING", description = "Value must be appeared in title of entry")
     private String title;
 
     @CommandLine.Option(names = {"--help"}, usageHelp = true,
@@ -35,8 +37,7 @@ public class DateReportCLI implements Callable<Void> {
     public static void showDateReports(List<DateReport> reports){
         System.out.println();
         for (DateReport report:reports) {
-            SimpleDateFormat format = new SimpleDateFormat("yyyy/MM/dd");
-            String dateFormatted = format.format(report.getDate());
+            String dateFormatted = formatter.format(report.getDate());
             System.out.println("Channel: " + report.getChannel());
             System.out.println("News: " + report.getCount());
             System.out.println("Date: " + dateFormatted);
