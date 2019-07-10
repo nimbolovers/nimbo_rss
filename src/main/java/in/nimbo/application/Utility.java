@@ -70,4 +70,8 @@ public class Utility {
             return value.substring(1, value.length() - 1);
         return value;
     }
+
+    public static void print(Object o){
+        System.out.println(o);
+    }
 }
