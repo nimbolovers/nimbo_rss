@@ -9,7 +9,6 @@ import in.nimbo.entity.report.DateReport;
 import in.nimbo.entity.report.HourReport;
 import in.nimbo.exception.QueryException;
 import in.nimbo.exception.RecordNotFoundException;
-import in.nimbo.exception.ResultSetFetchException;
 import org.jooq.Record;
 import org.jooq.SQLDialect;
 import org.jooq.SelectConditionStep;
@@ -37,27 +36,23 @@ public class EntryDAOImpl implements EntryDAO {
      *
      * @param resultSet resultSet of database
      * @return list of entries
-     * @throws ResultSetFetchException if unable to fetch data from ResultSet
+     * @throws SQLException if unable to fetch data from ResultSet
      */
-    private List<Entry> createEntryFromResultSet(ResultSet resultSet) {
+    private List<Entry> createEntryFromResultSet(ResultSet resultSet) throws SQLException {
         List<Entry> result = new ArrayList<>();
-        try {
-            while (resultSet.next()) {
-                Entry entry = new Entry();
-                entry.setId(resultSet.getInt("id"));
-                entry.setChannel(resultSet.getString("channel"));
-                entry.setTitle(resultSet.getString("title"));
-                setDescription(entry);
-                Content content = contentDAO.getByFeedId(entry.getId());
-                entry.setContent(content.getValue());
-                entry.setLink(resultSet.getString("link"));
-                entry.setPublicationDate(resultSet.getObject("pub_date", LocalDateTime.class));
-                result.add(entry);
-            }
-            return result;
-        } catch (SQLException e) {
-            throw new ResultSetFetchException("Unable to fetch data from ResultSet", e);
+        while (resultSet.next()) {
+            Entry entry = new Entry();
+            entry.setId(resultSet.getInt("id"));
+            entry.setChannel(resultSet.getString("channel"));
+            entry.setTitle(resultSet.getString("title"));
+            setDescription(entry);
+            Content content = contentDAO.getByFeedId(entry.getId());
+            entry.setContent(content.getValue());
+            entry.setLink(resultSet.getString("link"));
+            entry.setPublicationDate(resultSet.getObject("pub_date", LocalDateTime.class));
+            result.add(entry);
         }
+        return result;
     }
 
     /**
@@ -110,7 +105,7 @@ public class EntryDAOImpl implements EntryDAO {
             Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery(sqlQuery);
             return createEntryFromResultSet(resultSet);
-        } catch (SQLException | ResultSetFetchException e) {
+        } catch (SQLException e) {
             throw new QueryException("Unable to execute query", e);
         }
     }

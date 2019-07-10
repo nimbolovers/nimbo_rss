@@ -5,7 +5,6 @@ import in.nimbo.dao.pool.ConnectionWrapper;
 import in.nimbo.entity.Description;
 import in.nimbo.exception.QueryException;
 import in.nimbo.exception.RecordNotFoundException;
-import in.nimbo.exception.ResultSetFetchException;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -20,22 +19,18 @@ public class DescriptionDAOImpl implements DescriptionDAO {
      *
      * @param resultSet resultSet of database
      * @return list of description
-     * @throws ResultSetFetchException if unable to fetch data from ResultSet
+     * @throws SQLException if unable to fetch data from ResultSet
      */
-    private List<Description> createDescriptionFromResultSet(ResultSet resultSet) {
+    private List<Description> createDescriptionFromResultSet(ResultSet resultSet) throws SQLException {
         List<Description> descriptions = new ArrayList<>();
-        try {
-            while (resultSet.next()) {
-                Description description = new Description();
-                description.setId(resultSet.getInt("id"));
-                description.setType(resultSet.getString("type"));
-                description.setMode(resultSet.getString("mode"));
-                description.setValue(resultSet.getString("value"));
-                description.setFeedId(resultSet.getInt("feed_id"));
-                descriptions.add(description);
-            }
-        } catch (SQLException e) {
-            throw new ResultSetFetchException("Unable to fetch data from ResultSet", e);
+        while (resultSet.next()) {
+            Description description = new Description();
+            description.setId(resultSet.getInt("id"));
+            description.setType(resultSet.getString("type"));
+            description.setMode(resultSet.getString("mode"));
+            description.setValue(resultSet.getString("value"));
+            description.setFeedId(resultSet.getInt("feed_id"));
+            descriptions.add(description);
         }
         return descriptions;
     }
@@ -46,7 +41,7 @@ public class DescriptionDAOImpl implements DescriptionDAO {
      * @param feedId feed_id to search id
      * @return list of descriptions
      * @throws RecordNotFoundException if unable to find a record with given feedId
-     * @throws QueryException if unable to execute query
+     * @throws QueryException          if unable to execute query
      */
     @Override
     public Description getByFeedId(int feedId) {

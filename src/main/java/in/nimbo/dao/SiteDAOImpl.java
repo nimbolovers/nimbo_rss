@@ -4,7 +4,6 @@ import in.nimbo.dao.pool.ConnectionPool;
 import in.nimbo.dao.pool.ConnectionWrapper;
 import in.nimbo.entity.Site;
 import in.nimbo.exception.QueryException;
-import in.nimbo.exception.ResultSetFetchException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,23 +23,19 @@ public class SiteDAOImpl implements SiteDAO {
      *
      * @param resultSet resultSet of database
      * @return list of sites
-     * @throws ResultSetFetchException if unable to fetch data from ResultSet
+     * @throws SQLException if unable to fetch data from ResultSet
      */
-    private List<Site> createSiteFromResultSet(ResultSet resultSet) {
+    private List<Site> createSiteFromResultSet(ResultSet resultSet) throws SQLException {
         List<Site> sites = new ArrayList<>();
-        try {
-            while (resultSet.next()) {
-                Site site = new Site();
-                site.setId(resultSet.getInt("id"));
-                site.setName(resultSet.getString("name"));
-                site.setLink(resultSet.getString("link"));
-                site.setNewsCount(resultSet.getLong("news_count"));
-                site.setAvgUpdateTime(resultSet.getLong("avg_update_time"));
-                site.setLastUpdate(resultSet.getObject("last_update", LocalDateTime.class));
-                sites.add(site);
-            }
-        } catch (SQLException e) {
-            throw new ResultSetFetchException("Unable to fetch data from ResultSet", e);
+        while (resultSet.next()) {
+            Site site = new Site();
+            site.setId(resultSet.getInt("id"));
+            site.setName(resultSet.getString("name"));
+            site.setLink(resultSet.getString("link"));
+            site.setNewsCount(resultSet.getLong("news_count"));
+            site.setAvgUpdateTime(resultSet.getLong("avg_update_time"));
+            site.setLastUpdate(resultSet.getObject("last_update", LocalDateTime.class));
+            sites.add(site);
         }
         return sites;
     }
@@ -64,6 +59,7 @@ public class SiteDAOImpl implements SiteDAO {
 
     /**
      * check whether exists a site with given link
+     *
      * @param link link of site
      * @return true if exists a site with given link
      */
@@ -114,7 +110,7 @@ public class SiteDAOImpl implements SiteDAO {
      * @param site site which is update
      * @return given site
      * @throws IllegalAccessError if site id is not set
-     * @throws QueryException if unable to execute query
+     * @throws QueryException     if unable to execute query
      */
     @Override
     public Site update(Site site) {

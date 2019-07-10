@@ -4,6 +4,7 @@ import in.nimbo.TestUtility;
 import in.nimbo.dao.pool.ConnectionPool;
 import in.nimbo.dao.pool.ConnectionWrapper;
 import in.nimbo.entity.Site;
+import in.nimbo.exception.QueryException;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -13,8 +14,6 @@ import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
-import java.nio.file.Paths;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -28,6 +27,7 @@ import static org.junit.Assert.*;
 @PrepareForTest(ConnectionPool.class)
 public class SiteDAOTest {
     private static ConnectionWrapper connection;
+    private static ConnectionWrapper fakeConnection;
     private static SiteDAO siteDAO;
 
     @BeforeClass
@@ -36,15 +36,10 @@ public class SiteDAOTest {
 
         siteDAO = new SiteDAOImpl();
 
-        String initialH2Query = TestUtility.getFileContent(Paths.get("db/db_tables_sql.sql"));
-        Class.forName(TestUtility.getDatabaseProperties().getProperty("database.driver"));
-        connection = new ConnectionWrapper(DriverManager.getConnection(
-                TestUtility.getDatabaseProperties().getProperty("database.url"),
-                TestUtility.getDatabaseProperties().getProperty("database.username"),
-                TestUtility.getDatabaseProperties().getProperty("database.password"))
-        );
-        connection.prepareStatement(initialH2Query).executeUpdate();
+        connection = DAOTest.getConnection();
         connection = PowerMockito.spy(connection);
+
+        fakeConnection = DAOTest.getFakeConnection();
     }
 
     @AfterClass
@@ -95,6 +90,14 @@ public class SiteDAOTest {
         }
 
         assertEquals(savedSites, fetchedSites);
+
+        PowerMockito.when(ConnectionPool.getConnection()).thenReturn(fakeConnection);
+        try {
+            siteDAO.save(savedSites.get(0));
+            fail();
+        } catch (Exception e) {
+            assertTrue(e instanceof QueryException);
+        }
     }
 
     @Test
@@ -105,6 +108,14 @@ public class SiteDAOTest {
         }
 
         assertEquals(savedSites, siteDAO.getSites());
+
+        PowerMockito.when(ConnectionPool.getConnection()).thenReturn(fakeConnection);
+        try {
+            siteDAO.getSites();
+            fail();
+        } catch (Exception e) {
+            assertTrue(e instanceof QueryException);
+        }
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -138,10 +149,18 @@ public class SiteDAOTest {
         assertEquals(200L, resultSet.getLong("news_count"));
 
         assertFalse(resultSet.next());
+
+        PowerMockito.when(ConnectionPool.getConnection()).thenReturn(fakeConnection);
+        try {
+            siteDAO.update(site);
+            fail();
+        } catch (Exception e) {
+            assertTrue(e instanceof QueryException);
+        }
     }
 
     @Test
-    public void countSitesTest() throws SQLException {
+    public void getCountSitesTest() throws SQLException {
         int count = 5;
         for (int i = 0; i < count; i++) {
             PreparedStatement statement = connection.prepareStatement("insert into site (link, news_count, avg_update_time) values (?, ?, ?)");
@@ -152,6 +171,14 @@ public class SiteDAOTest {
         }
 
         assertEquals(count, siteDAO.getCount());
+
+        PowerMockito.when(ConnectionPool.getConnection()).thenReturn(fakeConnection);
+        try {
+            siteDAO.getCount();
+            fail();
+        } catch (Exception e) {
+            assertTrue(e instanceof QueryException);
+        }
     }
 
     @Test
@@ -164,5 +191,13 @@ public class SiteDAOTest {
         assertTrue(siteDAO.containLink("link 1"));
         assertTrue(siteDAO.containLink("link 2"));
         assertFalse(siteDAO.containLink("link 3"));
+
+        PowerMockito.when(ConnectionPool.getConnection()).thenReturn(fakeConnection);
+        try {
+            siteDAO.containLink("link 1");
+            fail();
+        } catch (Exception e) {
+            assertTrue(e instanceof QueryException);
+        }
     }
 }

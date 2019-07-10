@@ -5,7 +5,6 @@ import in.nimbo.dao.pool.ConnectionWrapper;
 import in.nimbo.entity.Content;
 import in.nimbo.exception.QueryException;
 import in.nimbo.exception.RecordNotFoundException;
-import in.nimbo.exception.ResultSetFetchException;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -20,20 +19,16 @@ public class ContentDAOImpl implements ContentDAO {
      *
      * @param resultSet resultSet of database
      * @return list of contents
-     * @throws ResultSetFetchException if unable to fetch data from ResultSet
+     * @throws SQLException if unable to fetch data from ResultSet
      */
-    private List<Content> createContentFromResultSet(ResultSet resultSet) {
+    private List<Content> createContentFromResultSet(ResultSet resultSet) throws SQLException {
         List<Content> contents = new ArrayList<>();
-        try {
-            while (resultSet.next()) {
-                Content content = new Content();
-                content.setId(resultSet.getInt("id"));
-                content.setValue(resultSet.getString("value"));
-                content.setFeedId(resultSet.getInt("feed_id"));
-                contents.add(content);
-            }
-        } catch (SQLException e) {
-            throw new ResultSetFetchException("Unable to fetch data from ResultSet", e);
+        while (resultSet.next()) {
+            Content content = new Content();
+            content.setId(resultSet.getInt("id"));
+            content.setValue(resultSet.getString("value"));
+            content.setFeedId(resultSet.getInt("feed_id"));
+            contents.add(content);
         }
         return contents;
     }
@@ -44,7 +39,7 @@ public class ContentDAOImpl implements ContentDAO {
      * @param feedId feed_id to search id
      * @return list of contents
      * @throws RecordNotFoundException if unable to find a record with given feedId
-     * @throws QueryException if unable to execute query
+     * @throws QueryException          if unable to execute query
      */
     @Override
     public Content getByFeedId(int feedId) {
