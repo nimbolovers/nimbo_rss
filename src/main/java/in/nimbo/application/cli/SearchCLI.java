@@ -76,6 +76,7 @@ public class SearchCLI implements Callable<Void> {
      */
     public void showEntries(List<Entry> entries) {
         for (Entry entry : entries) {
+            System.out.println("ID: " + entry.getId());
             System.out.println("Channel: " + entry.getChannel());
             System.out.println("Title: " + entry.getTitle());
         }

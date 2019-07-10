@@ -8,7 +8,6 @@ import in.nimbo.entity.Entry;
 import in.nimbo.entity.report.DateReport;
 import in.nimbo.entity.report.HourReport;
 import in.nimbo.exception.QueryException;
-import in.nimbo.exception.RecordNotFoundException;
 import org.jooq.Record;
 import org.jooq.SQLDialect;
 import org.jooq.SelectConditionStep;
@@ -21,6 +20,7 @@ import java.sql.Statement;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class EntryDAOImpl implements EntryDAO {
     private DescriptionDAO descriptionDAO;
@@ -45,28 +45,15 @@ public class EntryDAOImpl implements EntryDAO {
             entry.setId(resultSet.getInt("id"));
             entry.setChannel(resultSet.getString("channel"));
             entry.setTitle(resultSet.getString("title"));
-            setDescription(entry);
-            Content content = contentDAO.getByFeedId(entry.getId());
-            entry.setContent(content.getValue());
+            Optional<Description> description = descriptionDAO.getByFeedId(entry.getId());
+            description.ifPresent(entry::setDescription);
+            Optional<Content> content = contentDAO.getByFeedId(entry.getId());
+            content.ifPresent(value -> entry.setContent(value.getValue()));
             entry.setLink(resultSet.getString("link"));
             entry.setPublicationDate(resultSet.getObject("pub_date", LocalDateTime.class));
             result.add(entry);
         }
         return result;
-    }
-
-    /**
-     * set description of entry
-     *
-     * @param entry entry
-     */
-    private void setDescription(Entry entry) {
-        try {
-            Description description = descriptionDAO.getByFeedId(entry.getId());
-            entry.setDescription(description);
-        } catch (RecordNotFoundException e) {
-            // doesn't set description and ignore error
-        }
     }
 
     /**

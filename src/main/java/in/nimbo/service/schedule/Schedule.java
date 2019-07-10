@@ -9,7 +9,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 public class Schedule {
-    private static ScheduledExecutorService scheduleService = Executors.newScheduledThreadPool(30);
+    private static ScheduledExecutorService scheduleService = Executors.newScheduledThreadPool(100);
     private RSSService rssService;
 
     public Schedule(RSSService rssService) {

@@ -5,14 +5,19 @@ import com.rometools.rome.feed.synd.SyndFeed;
 import com.rometools.rome.io.FeedException;
 import com.rometools.rome.io.SyndFeedInput;
 import in.nimbo.application.Utility;
+import in.nimbo.dao.ContentDAO;
 import in.nimbo.dao.EntryDAO;
 import in.nimbo.dao.SiteDAO;
+import in.nimbo.entity.Content;
 import in.nimbo.entity.Description;
 import in.nimbo.entity.Entry;
 import in.nimbo.entity.Site;
 import in.nimbo.entity.report.DateReport;
 import in.nimbo.entity.report.HourReport;
-import in.nimbo.exception.*;
+import in.nimbo.exception.ContentExtractingException;
+import in.nimbo.exception.QueryException;
+import in.nimbo.exception.RssServiceException;
+import in.nimbo.exception.SyndFeedException;
 import net.dankito.readability4j.Article;
 import net.dankito.readability4j.Readability4J;
 import org.jsoup.HttpStatusException;
@@ -28,16 +33,19 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class RSSService {
     private EntryDAO entryDAO;
     private SiteDAO siteDAO;
+    private ContentDAO contentDAO;
     private Logger logger = LoggerFactory.getLogger(RSSService.class);
     private static final int DAY_COUNT = 3;
 
-    public RSSService(EntryDAO entryDAO, SiteDAO siteDAO) {
+    public RSSService(EntryDAO entryDAO, SiteDAO siteDAO, ContentDAO contentDAO) {
         this.entryDAO = entryDAO;
         this.siteDAO = siteDAO;
+        this.contentDAO = contentDAO;
     }
 
     /**
@@ -72,6 +80,15 @@ public class RSSService {
         } catch (QueryException e) {
             throw new RssServiceException(e.getMessage(), e);
         }
+    }
+
+    /**
+     * get content of entry by id
+     * @param id id of entry
+     * @return content of entry if exists otherwise return Optional.empty()
+     */
+    public Optional<Content> getEntryContentByID(int id) {
+        return contentDAO.getByFeedId(id);
     }
 
     /**

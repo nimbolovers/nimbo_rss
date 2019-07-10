@@ -7,7 +7,6 @@ import in.nimbo.entity.Entry;
 import in.nimbo.entity.report.DateReport;
 import in.nimbo.entity.report.HourReport;
 import in.nimbo.exception.QueryException;
-import in.nimbo.exception.RecordNotFoundException;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -124,12 +123,6 @@ public class EntryDAOTest {
         } catch (Exception e) {
             assertTrue(e instanceof QueryException);
         }
-    }
-
-    @Test(expected = RecordNotFoundException.class)
-    public void getEntriesWithoutContent() throws SQLException {
-        connection.prepareStatement("INSERT INTO feed(channel, title, link) VALUES('channel', 'title', 'link')").executeUpdate();
-        entryDAO.getEntries();
     }
 
     private List<Entry> createExampleEntries2() {

@@ -4,7 +4,6 @@ import in.nimbo.dao.pool.ConnectionPool;
 import in.nimbo.dao.pool.ConnectionWrapper;
 import in.nimbo.entity.Description;
 import in.nimbo.exception.QueryException;
-import in.nimbo.exception.RecordNotFoundException;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -12,6 +11,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class DescriptionDAOImpl implements DescriptionDAO {
     /**
@@ -40,19 +40,18 @@ public class DescriptionDAOImpl implements DescriptionDAO {
      *
      * @param feedId feed_id to search id
      * @return list of descriptions
-     * @throws RecordNotFoundException if unable to find a record with given feedId
-     * @throws QueryException          if unable to execute query
+     * @throws QueryException if unable to execute query
      */
     @Override
-    public Description getByFeedId(int feedId) {
+    public Optional<Description> getByFeedId(int feedId) {
         try (ConnectionWrapper connection = ConnectionPool.getConnection()) {
             PreparedStatement preparedStatement = connection.prepareStatement(
                     "SELECT * FROM description WHERE feed_id=?");
             preparedStatement.setInt(1, feedId);
             ResultSet resultSet = preparedStatement.executeQuery();
-            return createDescriptionFromResultSet(resultSet).get(0);
+            return Optional.ofNullable(createDescriptionFromResultSet(resultSet).get(0));
         } catch (IndexOutOfBoundsException e) {
-            throw new RecordNotFoundException("content which has feed_id=" + feedId + " not found", e);
+            return Optional.empty();
         } catch (SQLException e) {
             throw new QueryException("Unable to execute query", e);
         }

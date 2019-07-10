@@ -27,7 +27,7 @@ public class App {
         ContentDAO contentDAO = new ContentDAOImpl();
         EntryDAO entryDAO = new EntryDAOImpl(descriptionDAO, contentDAO);
         SiteDAO siteDAO = new SiteDAOImpl();
-        RSSService rssService = new RSSService(entryDAO, siteDAO);
+        RSSService rssService = new RSSService(entryDAO, siteDAO, contentDAO);
 
         // Initialize Schedule Service
         Schedule schedule = new Schedule(rssService);
