@@ -5,6 +5,7 @@ import in.nimbo.TestUtility;
 import in.nimbo.dao.pool.ConnectionPool;
 import in.nimbo.entity.Entry;
 import in.nimbo.entity.report.DateReport;
+import in.nimbo.entity.report.Report;
 import in.nimbo.entity.report.HourReport;
 import in.nimbo.exception.QueryException;
 import org.junit.AfterClass;
@@ -229,6 +230,49 @@ public class EntryDAOTest {
     }
 
     @Test
+    public void getAllReportsTest() throws SQLException {
+        String sql = "insert into feed (channel, title, pub_date) values (?, ?, ?)";
+        List<Report> reports = new ArrayList<>();
+        List<Report> allReports = new ArrayList<>();
+        String channel = "test";
+        String title = "test";
+        int limit = 10;
+        int cnt = 0;
+        for (int i = 0; i < limit; i++) {
+            int count = ThreadLocalRandom.current().nextInt(limit) + 1;
+            for (int j = 0; j < count; j++) {
+                LocalDateTime date = LocalDateTime.of(2015, 6, i + 1, i, 0);
+                PreparedStatement statement = connection.prepareStatement(sql);
+                statement.setString(1, channel);
+                statement.setString(2, title);
+                statement.setObject(3, date);
+                statement.executeUpdate();
+            }
+            cnt += count;
+            if (i + 1 == 8) {
+                Report report = new Report(channel, count);
+                reports.add(report);
+            }
+        }
+
+        allReports.add(new Report(channel, cnt));
+
+        List<Report> real = entryDAO.getAllReports(null, LocalDateTime.of(2015, 6, 8, 0, 0));
+        assertEquals(reports, real);
+
+        real = entryDAO.getAllReports("", null);
+        assertEquals(allReports, real);
+
+        PowerMockito.when(ConnectionPool.getConnection()).thenReturn(fakeConnection);
+        try {
+            entryDAO.getAllReports(null, LocalDateTime.of(2015, 6, 8, 0, 0));
+            fail();
+        } catch (Exception e) {
+            assertTrue(e instanceof QueryException);
+        }
+    }
+
+    @Test
     public void getHourReportTest() throws SQLException {
         String sql = "insert into feed (channel, title, pub_date) values (?, ?, ?)";
         Set<HourReport> reports = new HashSet<>();
@@ -239,7 +283,6 @@ public class EntryDAOTest {
             int count = ThreadLocalRandom.current().nextInt(limit) + 1;
             for (int j = 0; j < count; j++) {
                 LocalDateTime date = LocalDateTime.of(2010, 6, i + 1, i, 0);
-                Connection connection = ConnectionPool.getConnection();
                 PreparedStatement statement = connection.prepareStatement(sql);
                 statement.setString(1, channel);
                 statement.setString(2, title);
@@ -250,17 +293,17 @@ public class EntryDAOTest {
             reports.add(report);
         }
 
-        List<HourReport> realAnswer = entryDAO.getHourReports(title);
+        List<HourReport> realAnswer = entryDAO.getHourReports(title, "");
         Set<HourReport> hourReports = new HashSet<>(realAnswer);
         assertEquals(hourReports, reports);
 
-        realAnswer = entryDAO.getHourReports(null);
+        realAnswer = entryDAO.getHourReports(null, null);
         hourReports = new HashSet<>(realAnswer);
         assertEquals(hourReports, reports);
 
         PowerMockito.when(ConnectionPool.getConnection()).thenReturn(fakeConnection);
         try {
-            entryDAO.getHourReports("");
+            entryDAO.getHourReports("", "");
             fail();
         } catch (Exception e) {
             assertTrue(e instanceof QueryException);

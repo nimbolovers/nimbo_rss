@@ -1,6 +1,8 @@
 package in.nimbo.entity.report;
 
-public abstract class Report {
+import java.util.Objects;
+
+public class Report {
     private String channel;
     private int count;
 
@@ -15,5 +17,24 @@ public abstract class Report {
 
     public int getCount() {
         return count;
+    }
+
+    @Override
+    public String toString() {
+        return "Report{" +
+                "channel='" + channel + '\'' +
+                ", count=" + count +
+                '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Report report = (Report) o;
+
+        return count == report.count &&
+                Objects.equals(channel, report.channel);
     }
 }

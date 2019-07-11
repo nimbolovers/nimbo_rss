@@ -6,6 +6,7 @@ import in.nimbo.entity.Description;
 import in.nimbo.entity.Entry;
 import in.nimbo.entity.report.DateReport;
 import in.nimbo.entity.report.HourReport;
+import in.nimbo.entity.report.Report;
 import in.nimbo.exception.QueryException;
 import org.apache.commons.dbutils.DbUtils;
 import org.jooq.Record;
@@ -187,7 +188,7 @@ public class EntryDAOImpl implements EntryDAO {
      * @return list of HourReport
      */
     @Override
-    public List<HourReport> getHourReports(String title) {
+    public List<HourReport> getHourReports(String title, String channel) {
         ResultSet resultSet = null;
         try (Connection connection = ConnectionPool.getConnection();
              PreparedStatement statement = connection.prepareStatement(
@@ -195,8 +196,10 @@ public class EntryDAOImpl implements EntryDAO {
                              " FROM feed" +
                              " WHERE pub_date IS NOT NULL" +
                              " and title LIKE ?" +
+                             " and channel LIKE ?" +
                              " GROUP BY groupChannel, hour")) {
             statement.setString(1, "%" + (title != null ? title : "") + "%");
+            statement.setString(2, "%" + (channel != null ? channel : "") + "%");
             resultSet = statement.executeQuery();
             List<HourReport> reports = new ArrayList<>();
             while (resultSet.next()) {
@@ -241,6 +244,37 @@ public class EntryDAOImpl implements EntryDAO {
                                 resultSet.getInt("year"),
                                 resultSet.getInt("month"),
                                 resultSet.getInt("day"), 0, 0));
+                reports.add(report);
+            }
+            return reports;
+        } catch (SQLException e) {
+            throw new QueryException(e);
+        } finally {
+            DbUtils.closeQuietly(resultSet);
+        }
+    }
+
+    @Override
+    public List<Report> getAllReports(String title, LocalDateTime date) {
+        ResultSet resultSet = null;
+        try (Connection connection = ConnectionPool.getConnection();
+             PreparedStatement statement = connection.prepareStatement(
+                     "SELECT COUNT(*) AS cnt, channel " +
+                             "FROM feed " +
+                             "WHERE title LIKE ? " +
+                             (date != null ? "AND pub_date BETWEEN ? AND ? " : "") +
+                             "GROUP BY channel")) {
+            statement.setString(1, "%" + (title != null ? title : "") + "%");
+            if (date != null) {
+                statement.setObject(2, date);
+                statement.setObject(3, LocalDateTime.from(date).plusDays(1));
+            }
+            resultSet = statement.executeQuery();
+            List<Report> reports = new ArrayList<>();
+            while (resultSet.next()) {
+                int cnt = resultSet.getInt("cnt");
+                String channel = resultSet.getString("channel");
+                Report report = new Report(channel, cnt);
                 reports.add(report);
             }
             return reports;

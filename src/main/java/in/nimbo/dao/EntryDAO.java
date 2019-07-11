@@ -3,6 +3,7 @@ package in.nimbo.dao;
 import in.nimbo.entity.Entry;
 import in.nimbo.entity.report.DateReport;
 import in.nimbo.entity.report.HourReport;
+import in.nimbo.entity.report.Report;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -19,5 +20,7 @@ public interface EntryDAO {
 
     List<DateReport> getDateReports(String title, int limit);
 
-    List<HourReport> getHourReports(String title);
+    List<HourReport> getHourReports(String title, String channel);
+
+    List<Report> getAllReports(String title, LocalDateTime date);
 }

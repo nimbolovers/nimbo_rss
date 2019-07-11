@@ -9,6 +9,7 @@ import in.nimbo.entity.Entry;
 import in.nimbo.entity.Site;
 import in.nimbo.entity.report.DateReport;
 import in.nimbo.entity.report.HourReport;
+import in.nimbo.entity.report.Report;
 import in.nimbo.exception.ContentExtractingException;
 import in.nimbo.exception.QueryException;
 import in.nimbo.exception.RssServiceException;
@@ -243,7 +244,7 @@ public class RSSServiceTest {
             reports.add(report);
         }
         when(entryDAO.getDateReports("test", limit)).thenReturn(reports);
-        List<DateReport> test = rssService.getReports("test");
+        List<DateReport> test = rssService.getDateReports("test");
         assertEquals(test, reports);
     }
 
@@ -253,8 +254,19 @@ public class RSSServiceTest {
         for (int i = 0; i < 5; i++) {
             reports.add(new HourReport("channel", i + 1, i));
         }
-        when(entryDAO.getHourReports("test")).thenReturn(reports);
+        when(entryDAO.getHourReports("test", "")).thenReturn(reports);
 
-        assertEquals(reports, rssService.getHourReports("test"));
+        assertEquals(reports, rssService.getHourReports("test", ""));
+    }
+
+    @Test
+    public void getAllReportTest(){
+        List<Report> reports = new ArrayList<>();
+        for (int i = 0; i < 5; i++) {
+            reports.add(new Report("channel" + i, i + 1));
+        }
+        when(entryDAO.getAllReports("test", null)).thenReturn(reports);
+
+        assertEquals(reports, rssService.getAllReports("test", null));
     }
 }
