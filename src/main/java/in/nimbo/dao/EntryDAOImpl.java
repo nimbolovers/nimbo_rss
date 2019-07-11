@@ -93,7 +93,7 @@ public class EntryDAOImpl implements EntryDAO {
             ResultSet resultSet = statement.executeQuery(sqlQuery);
             return createEntryFromResultSet(resultSet);
         } catch (SQLException e) {
-            throw new QueryException("Unable to execute query", e);
+            throw new QueryException(e);
         }
     }
 
@@ -110,7 +110,7 @@ public class EntryDAOImpl implements EntryDAO {
             ResultSet resultSet = preparedStatement.executeQuery();
             return createEntryFromResultSet(resultSet);
         } catch (SQLException e) {
-            throw new QueryException("Unable to execute query", e);
+            throw new QueryException(e);
         }
     }
 
@@ -150,7 +150,7 @@ public class EntryDAOImpl implements EntryDAO {
             contentDAO.save(content);
 
         } catch (SQLException e) {
-            throw new QueryException("Unable to execute query", e);
+            throw new QueryException(e);
         }
         return entry;
     }
@@ -172,7 +172,7 @@ public class EntryDAOImpl implements EntryDAO {
             resultSet.next();
             return resultSet.getInt(1) > 0;
         } catch (SQLException e) {
-            throw new QueryException("Unable to execute query", e);
+            throw new QueryException(e);
         }
     }
 
@@ -186,24 +186,24 @@ public class EntryDAOImpl implements EntryDAO {
     public List<HourReport> getHourReports(String title) {
         try (ConnectionWrapper connection = ConnectionPool.getConnection()) {
             PreparedStatement statement = connection.prepareStatement(
-                    " SELECT channel, Hour(pub_date) as hour, COUNT(*) as cnt" +
+                    " SELECT channel AS groupChannel, Hour(pub_date) as hour, COUNT(*) as cnt" +
                             " FROM feed" +
                             " WHERE pub_date IS NOT NULL" +
                             " and title LIKE ?" +
-                            " GROUP BY channel, hour");
+                            " GROUP BY groupChannel, hour");
             statement.setString(1, "%" + (title != null ? title : "") + "%");
             ResultSet resultSet = statement.executeQuery();
             List<HourReport> reports = new ArrayList<>();
             while (resultSet.next()) {
                 HourReport hourReport = new HourReport(
-                        resultSet.getString("channel"),
+                        resultSet.getString("groupChannel"),
                         resultSet.getInt("cnt"),
                         resultSet.getInt("hour"));
                 reports.add(hourReport);
             }
             return reports;
         } catch (SQLException e) {
-            throw new QueryException("Unable to execute query", e);
+            throw new QueryException(e);
         }
     }
 
@@ -218,17 +218,17 @@ public class EntryDAOImpl implements EntryDAO {
     public List<DateReport> getDateReports(String title, int limit) {
         try (ConnectionWrapper connection = ConnectionPool.getConnection()) {
             PreparedStatement preparedStatement = connection.prepareStatement("SELECT" +
-                    " Year(pub_date) AS year, Month(pub_date) AS month, Day(pub_date) AS day, channel, COUNT(*) as cnt" +
+                    " Year(pub_date) AS year, Month(pub_date) AS month, Day(pub_date) AS day, channel AS baseChannel, COUNT(*) AS cnt" +
                     " FROM feed" +
                     " WHERE title LIKE ? AND pub_date IS NOT NULL" +
-                    " GROUP BY year, month, day, channel" +
-                    " ORDER BY year DESC,month DESC,day DESC LIMIT ?");
+                    " GROUP BY year, month, day, baseChannel" +
+                    " ORDER BY year DESC, month DESC, day DESC LIMIT ?");
             preparedStatement.setString(1, "%" + (title != null ? title : "") + "%");
             preparedStatement.setInt(2, limit);
             ResultSet resultSet = preparedStatement.executeQuery();
             List<DateReport> reports = new ArrayList<>();
             while (resultSet.next()) {
-                DateReport report = new DateReport(resultSet.getString("channel"), resultSet.getInt("cnt"),
+                DateReport report = new DateReport(resultSet.getString("baseChannel"), resultSet.getInt("cnt"),
                         LocalDateTime.of(
                                 resultSet.getInt("year"),
                                 resultSet.getInt("month"),
@@ -237,9 +237,7 @@ public class EntryDAOImpl implements EntryDAO {
             }
             return reports;
         } catch (SQLException e) {
-            throw new QueryException("Unable to execute query", e);
+            throw new QueryException(e);
         }
-
-
     }
 }

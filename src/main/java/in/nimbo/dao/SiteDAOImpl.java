@@ -4,8 +4,6 @@ import in.nimbo.dao.pool.ConnectionPool;
 import in.nimbo.dao.pool.ConnectionWrapper;
 import in.nimbo.entity.Site;
 import in.nimbo.exception.QueryException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -16,8 +14,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class SiteDAOImpl implements SiteDAO {
-    private Logger logger = LoggerFactory.getLogger(SiteDAOImpl.class);
-
     /**
      * create a list of sites from a ResultSet of JDBC
      *
@@ -53,7 +49,7 @@ public class SiteDAOImpl implements SiteDAO {
             ResultSet resultSet = preparedStatement.executeQuery();
             return createSiteFromResultSet(resultSet);
         } catch (SQLException e) {
-            throw new QueryException("Unable to execute query", e);
+            throw new QueryException(e);
         }
     }
 
@@ -71,7 +67,7 @@ public class SiteDAOImpl implements SiteDAO {
             ResultSet resultSet = preparedStatement.executeQuery();
             return resultSet.next();
         } catch (SQLException e) {
-            throw new QueryException("Unable to execute query", e);
+            throw new QueryException(e);
         }
     }
 
@@ -99,7 +95,7 @@ public class SiteDAOImpl implements SiteDAO {
             int newId = generatedKeys.getInt(1);
             site.setId(newId);
         } catch (SQLException e) {
-            throw new QueryException("Unable to execute query", e);
+            throw new QueryException(e);
         }
         return site;
     }
@@ -129,7 +125,7 @@ public class SiteDAOImpl implements SiteDAO {
             preparedStatement.executeUpdate();
             return site;
         } catch (SQLException e) {
-            throw new QueryException("Unable to execute query", e);
+            throw new QueryException(e);
         }
     }
 
@@ -144,7 +140,7 @@ public class SiteDAOImpl implements SiteDAO {
             resultSet.next();
             return resultSet.getInt("cnt");
         } catch (SQLException e) {
-            throw new QueryException("Unable to execute query", e);
+            throw new QueryException(e);
         }
     }
 }

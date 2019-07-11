@@ -53,7 +53,7 @@ public class DescriptionDAOImpl implements DescriptionDAO {
         } catch (IndexOutOfBoundsException e) {
             return Optional.empty();
         } catch (SQLException e) {
-            throw new QueryException("Unable to execute query", e);
+            throw new QueryException(e);
         }
     }
 
@@ -76,7 +76,7 @@ public class DescriptionDAOImpl implements DescriptionDAO {
             int newId = preparedStatement.executeUpdate();
             description.setId(newId);
         } catch (SQLException e) {
-            throw new QueryException("Unable to execute query", e);
+            throw new QueryException(e);
         }
         return description;
     }

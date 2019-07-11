@@ -51,7 +51,7 @@ public class ContentDAOImpl implements ContentDAO {
         } catch (IndexOutOfBoundsException e) {
             return Optional.empty();
         } catch (SQLException e) {
-            throw new QueryException("Unable to execute query", e);
+            throw new QueryException(e);
         }
     }
 
@@ -75,7 +75,7 @@ public class ContentDAOImpl implements ContentDAO {
             int newId = generatedKeys.getInt(1);
             content.setId(newId);
         } catch (SQLException e) {
-            throw new QueryException("Unable to execute query", e);
+            throw new QueryException(e);
         }
         return content;
     }
