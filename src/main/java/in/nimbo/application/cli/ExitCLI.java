@@ -7,7 +7,7 @@ import picocli.CommandLine;
 import java.util.concurrent.Callable;
 
 @CommandLine.Command(name = "exit",
-        version = RssCLI.version,
+        version = RssCLI.VERSION,
         description = "Save data and exit")
 public class ExitCLI implements Callable<Void> {
     @CommandLine.ParentCommand

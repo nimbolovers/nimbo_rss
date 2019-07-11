@@ -1,5 +1,6 @@
 package in.nimbo.application;
 
+import java.io.PrintStream;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -10,6 +11,7 @@ import java.time.format.DateTimeParseException;
 
 public class Utility {
     public static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
+    private static final PrintStream cliOutput = System.out;
 
     private Utility() {
     }
@@ -71,7 +73,26 @@ public class Utility {
         return value;
     }
 
-    public static void print(Object o){
-        System.out.println(o);
+    /**
+     * print a value to cliOutput with new line at the end of it
+     * @param value value must be printed
+     */
+    public static void printlnCLI(String value) {
+        cliOutput.println(value);
+    }
+
+    /**
+     * print new line to cliOutput
+     */
+    public static void printlnCLI() {
+        printlnCLI("");
+    }
+
+    /**
+     * print a value to cliOutput
+     * @param value value must be printed
+     */
+    public static void printCLI(String value) {
+        cliOutput.print(value);
     }
 }

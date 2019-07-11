@@ -5,15 +5,20 @@ import com.rometools.rome.feed.synd.SyndFeed;
 import com.rometools.rome.io.FeedException;
 import com.rometools.rome.io.SyndFeedInput;
 import in.nimbo.application.Utility;
+import in.nimbo.dao.ContentDAO;
 import in.nimbo.dao.EntryDAO;
 import in.nimbo.dao.SiteDAO;
+import in.nimbo.entity.Content;
 import in.nimbo.entity.Description;
 import in.nimbo.entity.Entry;
 import in.nimbo.entity.Site;
 import in.nimbo.entity.report.DateReport;
 import in.nimbo.entity.report.HourReport;
 import in.nimbo.entity.report.Report;
-import in.nimbo.exception.*;
+import in.nimbo.exception.ContentExtractingException;
+import in.nimbo.exception.QueryException;
+import in.nimbo.exception.RssServiceException;
+import in.nimbo.exception.SyndFeedException;
 import net.dankito.readability4j.Article;
 import net.dankito.readability4j.Readability4J;
 import org.jsoup.HttpStatusException;
@@ -29,16 +34,19 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class RSSService {
     private EntryDAO entryDAO;
     private SiteDAO siteDAO;
+    private ContentDAO contentDAO;
     private Logger logger = LoggerFactory.getLogger(RSSService.class);
     private static final int DAY_COUNT = 3;
 
-    public RSSService(EntryDAO entryDAO, SiteDAO siteDAO) {
+    public RSSService(EntryDAO entryDAO, SiteDAO siteDAO, ContentDAO contentDAO) {
         this.entryDAO = entryDAO;
         this.siteDAO = siteDAO;
+        this.contentDAO = contentDAO;
     }
 
     /**
@@ -76,6 +84,16 @@ public class RSSService {
     }
 
     /**
+     * get content of entry by id
+     *
+     * @param id id of entry
+     * @return content of entry if exists otherwise return Optional.empty()
+     */
+    public Optional<Content> getEntryContentByID(int id) {
+        return contentDAO.getByFeedId(id);
+    }
+
+    /**
      * add all of new entries of site to database
      * if unable to get content of one site, add it to database with empty content
      *
@@ -101,10 +119,10 @@ public class RSSService {
                 newEntries.add(entry);
             }
         }
-        if (newEntries.size() == entries.size()) {
-            logger.info("Add " + newEntries.size() + " entries from: " + siteLink);
+        if (newEntries.size() == entries.size() && !newEntries.isEmpty()) {
+            logger.info("Add {} entries from: {}", newEntries.size(), siteLink);
         } else if (!newEntries.isEmpty()) {
-            logger.info("Add " + newEntries.size() + "/" + entries.size() + " entries from: " + siteLink);
+            logger.info("Add {}/{} entries from: {}", newEntries.size(), entries.size(), siteLink);
         }
 
         return newEntries;
@@ -156,6 +174,7 @@ public class RSSService {
 
     /**
      * get html content of a site
+     *
      * @param link link of site
      * @return html source of site
      */
@@ -184,7 +203,7 @@ public class RSSService {
             String htmlContent = getHTML(encodedURL);
             SyndFeedInput input = new SyndFeedInput();
             SyndFeed feed = input.build(new StringReader(htmlContent));
-            logger.info("RSS data fetched successfully from: " + url);
+            logger.info("RSS data fetched successfully from: {}", url);
             return feed;
         } catch (MalformedURLException e) {
             throw new SyndFeedException("Illegal URL format: " + url, e);

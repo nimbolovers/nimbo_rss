@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.concurrent.ScheduledExecutorService;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 @RunWith(PowerMockRunner.class)
 public class ScheduleTest {
@@ -164,17 +165,21 @@ public class ScheduleTest {
     }
 
     @Test
-    public void scheduleSiteUpdater() throws RssServiceException {
+    public void scheduleSiteUpdater() {
         List<Site> sites = new ArrayList<>();
         for (int i = 0; i < 10; i++) {
             sites.add(new Site("name " + i, "link " + i));
         }
 
-        ScheduleSiteUpdater scheduleSiteUpdater = PowerMockito.spy(new ScheduleSiteUpdater(sites, rssService));
-        PowerMockito.doNothing().when(rssService).updateSite(Matchers.any(Site.class));
-        scheduleSiteUpdater.run();
+        try {
+            ScheduleSiteUpdater scheduleSiteUpdater = PowerMockito.spy(new ScheduleSiteUpdater(sites, rssService));
+            PowerMockito.doNothing().when(rssService).updateSite(Matchers.any(Site.class));
+            scheduleSiteUpdater.run();
 
-        PowerMockito.doThrow(new RssServiceException()).when(rssService).updateSite(Matchers.any(Site.class));
-        scheduleSiteUpdater.run();
+            PowerMockito.doThrow(new RssServiceException()).when(rssService).updateSite(Matchers.any(Site.class));
+            scheduleSiteUpdater.run();
+        } catch (Exception e) {
+            fail();
+        }
     }
 }

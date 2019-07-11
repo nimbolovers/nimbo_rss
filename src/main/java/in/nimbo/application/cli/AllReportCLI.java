@@ -11,7 +11,7 @@ import java.util.concurrent.Callable;
 @CommandLine.Command(
         name = "all-report",
         description = "Report count of news for each site",
-        version = RssCLI.version
+        version = RssCLI.VERSION
 )
 public class AllReportCLI implements Callable<Void> {
     @CommandLine.ParentCommand
@@ -34,7 +34,7 @@ public class AllReportCLI implements Callable<Void> {
             try {
                 dateTime = Utility.getDate(Utility.removeQuotation(date) + " 00:00:00");
             }catch (Exception e){
-                Utility.print(e.getMessage());
+                Utility.printCLI(e.getMessage());
                 return null;
             }
         }
@@ -44,11 +44,11 @@ public class AllReportCLI implements Callable<Void> {
     }
 
     public static void showAllReports(List<Report> reports){
-        System.out.println();
+        Utility.printlnCLI();
         for (Report report:reports) {
-            System.out.println("Channel: " + report.getChannel());
-            System.out.println("News: " + report.getCount());
-            System.out.println("----------");
+            Utility.printCLI("Channel: " + report.getChannel());
+            Utility.printCLI("News: " + report.getCount());
+            Utility.printCLI("----------");
         }
     }
 }

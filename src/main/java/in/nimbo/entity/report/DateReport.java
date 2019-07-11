@@ -29,4 +29,9 @@ public class DateReport extends Report {
                 && Objects.equals(date, report.date)
                 && Objects.equals(getChannel(), this.getChannel());
     }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getCount(), date, getChannel());
+    }
 }

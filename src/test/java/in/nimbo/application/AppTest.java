@@ -1,6 +1,6 @@
-package in.nimbo;
+package in.nimbo.application;
 
-import in.nimbo.application.App;
+import in.nimbo.TestUtility;
 import in.nimbo.dao.SiteDAO;
 import in.nimbo.entity.Site;
 import in.nimbo.service.RSSService;
@@ -9,21 +9,22 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Matchers;
 import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({})
 public class AppTest {
     private SiteDAO siteDAO;
     private RSSService rssService;
     private Schedule schedule;
+    private App app;
 
     @BeforeClass
     public static void init() {
@@ -35,11 +36,11 @@ public class AppTest {
         siteDAO = PowerMockito.mock(SiteDAO.class);
         rssService = PowerMockito.mock(RSSService.class);
         schedule = PowerMockito.mock(Schedule.class);
+        app = new App(siteDAO, schedule, rssService);
     }
 
     @Test
     public void splitArguments() {
-        App app = new App(siteDAO, schedule, rssService);
         List<String> strings = new ArrayList<>();
         for (int i = 0; i < 5; i++) {
             strings.add(String.valueOf(i));
@@ -51,5 +52,21 @@ public class AppTest {
             strings.add('"' + String.valueOf(i) + '"');
         }
         assertEquals(strings, app.splitArguments(String.join(" ", strings)));
+    }
+
+    @Test
+    public void appInit() {
+        List<Site> sites = new ArrayList<>();
+        sites.add(new Site("site 1", "link 1"));
+        sites.add(new Site("site 2", "link 2"));
+        PowerMockito.doNothing().when(schedule).scheduleSite(Matchers.any(Site.class));
+        PowerMockito.doNothing().when(schedule).scheduleSiteDAO(sites);
+        PowerMockito.doReturn(sites).when(siteDAO).getSites();
+        try {
+            app.doSchedule();
+            app.init();
+        } catch (Exception e) {
+            fail();
+        }
     }
 }

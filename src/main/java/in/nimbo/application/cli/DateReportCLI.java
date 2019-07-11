@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.concurrent.Callable;
 
 @CommandLine.Command(name = "date-report",
-    version = RssCLI.version,
+    version = RssCLI.VERSION,
     description = "Report for each date for each site"
 )
 public class DateReportCLI implements Callable<Void> {
@@ -36,13 +36,12 @@ public class DateReportCLI implements Callable<Void> {
     }
 
     public static void showDateReports(List<DateReport> reports){
-        System.out.println();
         for (DateReport report:reports) {
             String dateFormatted = formatter.format(report.getDate());
-            System.out.println("Channel: " + report.getChannel());
-            System.out.println("News: " + report.getCount());
-            System.out.println("Date: " + dateFormatted);
-            System.out.println("----------");
+            Utility.printlnCLI("Channel: " + report.getChannel());
+            Utility.printlnCLI("News: " + report.getCount());
+            Utility.printlnCLI("Date: " + dateFormatted);
+            Utility.printlnCLI("----------");
         }
     }
 }
