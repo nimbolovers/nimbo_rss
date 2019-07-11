@@ -67,9 +67,9 @@ public class DescriptionDAOImpl implements DescriptionDAO {
     @Override
     public Description save(Description description) {
         ResultSet generatedKeys = null;
-        try (Connection connection = ConnectionPool.getConnection()) {
-            PreparedStatement preparedStatement = connection.prepareStatement(
-                    "INSERT INTO description(type, mode, value, feed_id) VALUES(?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
+        try (Connection connection = ConnectionPool.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(
+                     "INSERT INTO description(type, mode, value, feed_id) VALUES(?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS);) {
             preparedStatement.setString(1, description.getType());
             preparedStatement.setString(2, description.getMode());
             preparedStatement.setString(3, description.getValue());

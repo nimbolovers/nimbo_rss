@@ -118,7 +118,7 @@ public class RSSService {
                 newEntries.add(entry);
             }
         }
-        if (newEntries.size() == entries.size() && newEntries.size() > 0) {
+        if (newEntries.size() == entries.size() && !newEntries.isEmpty()) {
             logger.info("Add {} entries from: {}", newEntries.size(), siteLink);
         } else if (!newEntries.isEmpty()) {
             logger.info("Add {}/{} entries from: {}", newEntries.size(), entries.size(), siteLink);

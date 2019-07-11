@@ -3,7 +3,6 @@ package in.nimbo.dao.pool;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import in.nimbo.exception.ConnectionException;
-import in.nimbo.exception.PropertyNotFoundException;
 
 import java.io.IOException;
 import java.sql.Connection;
@@ -15,34 +14,30 @@ public class ConnectionPool {
     private static Properties databaseProp;
     private static Properties hikariProperties;
 
-    private ConnectionPool() {}
+    private ConnectionPool() {
+    }
 
-    public static Properties getProperties() {
-        if (hikariProperties == null || databaseProp == null){
-            try {
-                hikariProperties = new Properties();
-                databaseProp = new Properties();
-                ClassLoader loader = ConnectionPool.class.getClassLoader();
-                databaseProp.load(loader.getResourceAsStream("database.properties"));
-                hikariProperties.load(loader.getResourceAsStream("hikari.properties"));
-            } catch (IOException e) {
-                throw new PropertyNotFoundException("HikariCP properties not found", e);
-            }
+    public static void loadProperties() throws IOException {
+        if (hikariProperties == null || databaseProp == null) {
+            hikariProperties = new Properties();
+            databaseProp = new Properties();
+            ClassLoader loader = ConnectionPool.class.getClassLoader();
+            databaseProp.load(loader.getResourceAsStream("database.properties"));
+            hikariProperties.load(loader.getResourceAsStream("hikari.properties"));
         }
-        return hikariProperties;
     }
 
     /**
      * initialize and configure datasource
      */
-    private static void init() {
+    private static void init() throws IOException {
         HikariConfig cfg = new HikariConfig();
-        getProperties();
+        loadProperties();
         cfg.setJdbcUrl(databaseProp.getProperty("database.url"));
         cfg.setUsername(databaseProp.getProperty("database.username"));
         cfg.setPassword(databaseProp.getProperty("database.password"));
         cfg.setDriverClassName(databaseProp.getProperty("database.driver"));
-        for (String key:hikariProperties.stringPropertyNames()) {
+        for (String key : hikariProperties.stringPropertyNames()) {
             cfg.addDataSourceProperty(key, hikariProperties.getProperty(key));
         }
         dataSource = new HikariDataSource(cfg);
@@ -51,14 +46,15 @@ public class ConnectionPool {
 
     /**
      * create a connection to database
+     *
      * @return connection which is created
      */
-    public static Connection getConnection(){
-        if (dataSource == null)
-            init();
+    public static Connection getConnection() {
         try {
+            if (dataSource == null)
+                init();
             return dataSource.getConnection();
-        } catch (SQLException e) {
+        } catch (SQLException | IOException e) {
             throw new ConnectionException("Unable to get connection from datasource", e);
         }
     }

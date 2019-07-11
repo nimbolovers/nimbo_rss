@@ -21,6 +21,12 @@ public class App {
     public static void main(String[] args) {
         Utility.disableJOOQLogo();
 
+        App app = new App();
+        app.init();
+        app.run();
+    }
+
+    public void init() {
         // Initialization
         // Dependency Injection
         DescriptionDAO descriptionDAO = new DescriptionDAOImpl();
@@ -39,8 +45,12 @@ public class App {
         }
         schedule.scheduleSiteDAO(sites);
 
-        App app = new App(siteDAO, schedule, rssService);
-        app.run();
+        this.siteDAO = siteDAO;
+        this.schedule = schedule;
+        this.rssService = rssService;
+    }
+
+    public App() {
     }
 
     public App(SiteDAO siteDAO, Schedule schedule, RSSService rssService) {
