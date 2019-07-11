@@ -21,26 +21,13 @@ public class App {
     public static void main(String[] args) {
         Utility.disableJOOQLogo();
 
-        // Initialization
-        // Dependency Injection
-        DescriptionDAO descriptionDAO = new DescriptionDAOImpl();
-        ContentDAO contentDAO = new ContentDAOImpl();
-        EntryDAO entryDAO = new EntryDAOImpl(descriptionDAO, contentDAO);
-        SiteDAO siteDAO = new SiteDAOImpl();
-        RSSService rssService = new RSSService(entryDAO, siteDAO);
-
-        // Initialize Schedule Service
-        Schedule schedule = new Schedule(rssService);
-
-        // Load sites
-        List<Site> sites = siteDAO.getSites();
-        for (Site site : sites) {
-            schedule.scheduleSite(site);
-        }
-        schedule.scheduleSiteDAO(sites);
-
-        App app = new App(siteDAO, schedule, rssService);
+        App app = new App();
+        app.init();
+        app.doSchedule();
         app.run();
+    }
+
+    public App() {
     }
 
     public App(SiteDAO siteDAO, Schedule schedule, RSSService rssService) {
@@ -61,19 +48,36 @@ public class App {
         return rssService;
     }
 
+    public void init() {
+        DescriptionDAO descriptionDAO = new DescriptionDAOImpl();
+        ContentDAO contentDAO = new ContentDAOImpl();
+        EntryDAO entryDAO = new EntryDAOImpl(descriptionDAO, contentDAO);
+        siteDAO = new SiteDAOImpl();
+        rssService = new RSSService(entryDAO, siteDAO, contentDAO);
+        schedule = new Schedule(rssService);
+    }
+
+    public void doSchedule() {
+        List<Site> sites = siteDAO.getSites();
+        for (Site site : sites) {
+            schedule.scheduleSite(site);
+        }
+        schedule.scheduleSiteDAO(sites);
+    }
+
     private void run() {
-        System.out.println("Welcome to the RSS service.");
-        System.out.println();
-        System.out.println("Type '--help' for help.");
+        Utility.printlnCLI("Welcome to the RSS service.");
+        Utility.printlnCLI();
+        Utility.printlnCLI("Type '--help' for help.");
 
         // UI interface
         Scanner in = new Scanner(System.in);
-        System.out.print("rss> ");
+        Utility.printCLI("rss> ");
         while (in.hasNextLine()) {
             String input = in.nextLine().trim();
             List<String> args = splitArguments(input);
             CommandLine.call(new RssCLI(this), args.toArray(new String[0]));
-            System.out.print("rss> ");
+            Utility.printCLI("rss> ");
         }
     }
 

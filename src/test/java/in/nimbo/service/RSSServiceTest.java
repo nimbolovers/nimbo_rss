@@ -2,6 +2,7 @@ package in.nimbo.service;
 
 import com.rometools.rome.feed.synd.*;
 import in.nimbo.TestUtility;
+import in.nimbo.dao.ContentDAO;
 import in.nimbo.dao.EntryDAO;
 import in.nimbo.dao.SiteDAO;
 import in.nimbo.entity.Entry;
@@ -35,9 +36,10 @@ import static org.mockito.Mockito.*;
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({EntryDAO.class, Entry.class})
 public class RSSServiceTest {
-    private static EntryDAO entryDAO;
     private static RSSService rssService;
+    private static EntryDAO entryDAO;
     private static SiteDAO siteDAO;
+    private static ContentDAO contentDAO;
     private static String exampleLink = "http://example.com/";
 
     @BeforeClass
@@ -49,7 +51,8 @@ public class RSSServiceTest {
     public void beforeAnyTest() {
         entryDAO = PowerMockito.mock(EntryDAO.class);
         siteDAO = PowerMockito.mock(SiteDAO.class);
-        rssService = spy(new RSSService(entryDAO, siteDAO));
+        contentDAO = PowerMockito.mock(ContentDAO.class);
+        rssService = spy(new RSSService(entryDAO, siteDAO, contentDAO));
     }
 
     @Test

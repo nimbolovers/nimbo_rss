@@ -1,12 +1,12 @@
 package in.nimbo.dao;
 
+import in.nimbo.DAOUtility;
 import in.nimbo.TestUtility;
 import in.nimbo.dao.pool.ConnectionPool;
-import in.nimbo.dao.pool.ConnectionWrapper;
 import in.nimbo.entity.Entry;
-import in.nimbo.entity.report.HourReport;
 import in.nimbo.entity.report.DateReport;
-import in.nimbo.exception.RecordNotFoundException;
+import in.nimbo.entity.report.HourReport;
+import in.nimbo.exception.QueryException;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -16,8 +16,7 @@ import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
-import java.nio.file.Paths;
-import java.sql.DriverManager;
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -31,7 +30,8 @@ import static org.junit.Assert.*;
 @RunWith(PowerMockRunner.class)
 @PrepareForTest(ConnectionPool.class)
 public class EntryDAOTest {
-    private static ConnectionWrapper connection;
+    private static Connection connection;
+    private static Connection fakeConnection;
     private static EntryDAO entryDAO;
 
     @BeforeClass
@@ -42,16 +42,10 @@ public class EntryDAOTest {
         ContentDAO contentDAO = new ContentDAOImpl();
         entryDAO = new EntryDAOImpl(descriptionDAO, contentDAO);
 
-        String initialH2Query = TestUtility.getFileContent(Paths.get("db/db_tables_sql.sql"));
-        Class.forName(TestUtility.getDatabaseProperties().getProperty("database.driver"));
-        connection = new ConnectionWrapper(DriverManager.getConnection(
-                TestUtility.getDatabaseProperties().getProperty("database.url"),
-                TestUtility.getDatabaseProperties().getProperty("database.username"),
-                TestUtility.getDatabaseProperties().getProperty("database.password"))
-        );
-
-        connection.prepareStatement(initialH2Query).executeUpdate();
+        connection = DAOUtility.getConnection();
         connection = PowerMockito.spy(connection);
+
+        fakeConnection = DAOUtility.getFakeConnection();
     }
 
     @AfterClass
@@ -104,6 +98,14 @@ public class EntryDAOTest {
         }
 
         assertEquals(entries, fetchedEntries);
+
+        PowerMockito.when(ConnectionPool.getConnection()).thenReturn(fakeConnection);
+        try {
+            entryDAO.save(entries.get(0));
+            fail();
+        } catch (Exception e) {
+            assertTrue(e instanceof QueryException);
+        }
     }
 
     @Test
@@ -114,12 +116,14 @@ public class EntryDAOTest {
         }
 
         assertEquals(entries, entryDAO.getEntries());
-    }
 
-    @Test(expected = RecordNotFoundException.class)
-    public void getEntriesWithoutContent() throws SQLException {
-        connection.prepareStatement("INSERT INTO feed(channel, title, link) VALUES('channel', 'title', 'link')").executeUpdate();
-        entryDAO.getEntries();
+        PowerMockito.when(ConnectionPool.getConnection()).thenReturn(fakeConnection);
+        try {
+            entryDAO.getEntries();
+            fail();
+        } catch (Exception e) {
+            assertTrue(e instanceof QueryException);
+        }
     }
 
     private List<Entry> createExampleEntries2() {
@@ -143,18 +147,26 @@ public class EntryDAOTest {
         assertEquals(entries.stream()
                         .filter(entry -> entry.getPublicationDate().compareTo(beforeDate) >= 0)
                         .collect(Collectors.toList()),
-                entryDAO.filterEntry("channel", "content", "title", beforeDate, null));
+                entryDAO.filterEntry(null, "content", "title", beforeDate, null));
         // test after
         assertEquals(entries.stream()
                         .filter(entry -> entry.getPublicationDate().compareTo(beforeDate) >= 0)
                         .filter(entry -> entry.getPublicationDate().compareTo(afterDate) <= 0)
                         .collect(Collectors.toList()),
-                entryDAO.filterEntry("channel", "content", "title", beforeDate, afterDate));
+                entryDAO.filterEntry("", "content", "title", beforeDate, afterDate));
         // test between
         assertEquals(entries.stream()
                         .filter(entry -> entry.getPublicationDate().compareTo(afterDate) <= 0)
                         .collect(Collectors.toList()),
                 entryDAO.filterEntry("channel", "content", "title", null, afterDate));
+
+        PowerMockito.when(ConnectionPool.getConnection()).thenReturn(fakeConnection);
+        try {
+            entryDAO.filterEntry("", "", "", LocalDateTime.now(), LocalDateTime.now());
+            fail();
+        } catch (Exception e) {
+            assertTrue(e instanceof QueryException);
+        }
     }
 
     @Test
@@ -169,6 +181,14 @@ public class EntryDAOTest {
         assertTrue(entryDAO.contain(TestUtility.createEntry("channel-test", "title-test", "link 1", LocalDateTime.now(), "content-test", "desc-test")));
         assertTrue(entryDAO.contain(TestUtility.createEntry("channel-test", "title-test", "link 2", LocalDateTime.now(), "content-test", "desc-test")));
         assertFalse(entryDAO.contain(TestUtility.createEntry("channel-test", "title-test", "link 3", LocalDateTime.now(), "content-test", "desc-test")));
+
+        PowerMockito.when(ConnectionPool.getConnection()).thenReturn(fakeConnection);
+        try {
+            entryDAO.contain(entries.get(0));
+            fail();
+        } catch (Exception e) {
+            assertTrue(e instanceof QueryException);
+        }
     }
 
     @Test
@@ -197,6 +217,15 @@ public class EntryDAOTest {
         Collections.reverse(reports);
 
         assertEquals(reports, entryDAO.getDateReports("", limit));
+        assertEquals(reports, entryDAO.getDateReports(null, limit));
+
+        PowerMockito.when(ConnectionPool.getConnection()).thenReturn(fakeConnection);
+        try {
+            entryDAO.getDateReports("", 0);
+            fail();
+        } catch (Exception e) {
+            assertTrue(e instanceof QueryException);
+        }
     }
 
     @Test
@@ -210,7 +239,7 @@ public class EntryDAOTest {
             int count = ThreadLocalRandom.current().nextInt(limit) + 1;
             for (int j = 0; j < count; j++) {
                 LocalDateTime date = LocalDateTime.of(2010, 6, i + 1, i, 0);
-                ConnectionWrapper connection = ConnectionPool.getConnection();
+                Connection connection = ConnectionPool.getConnection();
                 PreparedStatement statement = connection.prepareStatement(sql);
                 statement.setString(1, channel);
                 statement.setString(2, title);
@@ -224,5 +253,17 @@ public class EntryDAOTest {
         List<HourReport> realAnswer = entryDAO.getHourReports(title);
         Set<HourReport> hourReports = new HashSet<>(realAnswer);
         assertEquals(hourReports, reports);
+
+        realAnswer = entryDAO.getHourReports(null);
+        hourReports = new HashSet<>(realAnswer);
+        assertEquals(hourReports, reports);
+
+        PowerMockito.when(ConnectionPool.getConnection()).thenReturn(fakeConnection);
+        try {
+            entryDAO.getHourReports("");
+            fail();
+        } catch (Exception e) {
+            assertTrue(e instanceof QueryException);
+        }
     }
 }

@@ -1,6 +1,7 @@
 package in.nimbo.application.cli;
 
 import in.nimbo.application.App;
+import in.nimbo.application.Utility;
 import in.nimbo.entity.report.HourReport;
 import picocli.CommandLine;
 
@@ -9,7 +10,7 @@ import java.util.concurrent.Callable;
 
 @CommandLine.Command(
         name = "hour-report",
-        version = RssCLI.version,
+        version = RssCLI.VERSION,
         description = "Report for each hour for each site"
 )
 public class HourReportCLI implements Callable<Void> {
@@ -32,12 +33,11 @@ public class HourReportCLI implements Callable<Void> {
     }
 
     public static void showHourReports(List<HourReport> reports) {
-        System.out.println();
         for (HourReport report:reports) {
-            System.out.println("Channel: " + report.getChannel());
-            System.out.println("News: " + report.getCount());
-            System.out.println("Hour: " + report.getHour());
-            System.out.println("----------");
+            Utility.printlnCLI("Channel: " + report.getChannel());
+            Utility.printlnCLI("News: " + report.getCount());
+            Utility.printlnCLI("Hour: " + report.getHour());
+            Utility.printlnCLI("----------");
         }
     }
 }

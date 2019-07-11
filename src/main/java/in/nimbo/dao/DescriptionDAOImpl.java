@@ -1,18 +1,14 @@
 package in.nimbo.dao;
 
 import in.nimbo.dao.pool.ConnectionPool;
-import in.nimbo.dao.pool.ConnectionWrapper;
 import in.nimbo.entity.Description;
 import in.nimbo.exception.QueryException;
-import in.nimbo.exception.RecordNotFoundException;
-import in.nimbo.exception.ResultSetFetchException;
+import org.apache.commons.dbutils.DbUtils;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class DescriptionDAOImpl implements DescriptionDAO {
     /**
@@ -20,22 +16,18 @@ public class DescriptionDAOImpl implements DescriptionDAO {
      *
      * @param resultSet resultSet of database
      * @return list of description
-     * @throws ResultSetFetchException if unable to fetch data from ResultSet
+     * @throws SQLException if unable to fetch data from ResultSet
      */
-    private List<Description> createDescriptionFromResultSet(ResultSet resultSet) {
+    private List<Description> createDescriptionFromResultSet(ResultSet resultSet) throws SQLException {
         List<Description> descriptions = new ArrayList<>();
-        try {
-            while (resultSet.next()) {
-                Description description = new Description();
-                description.setId(resultSet.getInt("id"));
-                description.setType(resultSet.getString("type"));
-                description.setMode(resultSet.getString("mode"));
-                description.setValue(resultSet.getString("value"));
-                description.setFeedId(resultSet.getInt("feed_id"));
-                descriptions.add(description);
-            }
-        } catch (SQLException e) {
-            throw new ResultSetFetchException("Unable to fetch data from ResultSet", e);
+        while (resultSet.next()) {
+            Description description = new Description();
+            description.setId(resultSet.getInt("id"));
+            description.setType(resultSet.getString("type"));
+            description.setMode(resultSet.getString("mode"));
+            description.setValue(resultSet.getString("value"));
+            description.setFeedId(resultSet.getInt("feed_id"));
+            descriptions.add(description);
         }
         return descriptions;
     }
@@ -45,21 +37,23 @@ public class DescriptionDAOImpl implements DescriptionDAO {
      *
      * @param feedId feed_id to search id
      * @return list of descriptions
-     * @throws RecordNotFoundException if unable to find a record with given feedId
      * @throws QueryException if unable to execute query
      */
     @Override
-    public Description getByFeedId(int feedId) {
-        try (ConnectionWrapper connection = ConnectionPool.getConnection()) {
-            PreparedStatement preparedStatement = connection.prepareStatement(
-                    "SELECT * FROM description WHERE feed_id=?");
+    public Optional<Description> getByFeedId(int feedId) {
+        ResultSet resultSet = null;
+        try (Connection connection = ConnectionPool.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(
+                     "SELECT * FROM description WHERE feed_id=?")) {
             preparedStatement.setInt(1, feedId);
-            ResultSet resultSet = preparedStatement.executeQuery();
-            return createDescriptionFromResultSet(resultSet).get(0);
+            resultSet = preparedStatement.executeQuery();
+            return Optional.ofNullable(createDescriptionFromResultSet(resultSet).get(0));
         } catch (IndexOutOfBoundsException e) {
-            throw new RecordNotFoundException("content which has feed_id=" + feedId + " not found", e);
+            return Optional.empty();
         } catch (SQLException e) {
-            throw new QueryException("Unable to execute query", e);
+            throw new QueryException(e);
+        } finally {
+            DbUtils.closeQuietly(resultSet);
         }
     }
 
@@ -72,18 +66,24 @@ public class DescriptionDAOImpl implements DescriptionDAO {
      */
     @Override
     public Description save(Description description) {
-        try (ConnectionWrapper connection = ConnectionPool.getConnection()) {
-            PreparedStatement preparedStatement = connection.prepareStatement(
-                    "INSERT INTO description(type, mode, value, feed_id) VALUES(?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
+        ResultSet generatedKeys = null;
+        try (Connection connection = ConnectionPool.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(
+                     "INSERT INTO description(type, mode, value, feed_id) VALUES(?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS);) {
             preparedStatement.setString(1, description.getType());
             preparedStatement.setString(2, description.getMode());
             preparedStatement.setString(3, description.getValue());
             preparedStatement.setInt(4, description.getFeedId());
-            int newId = preparedStatement.executeUpdate();
+            preparedStatement.executeUpdate();
+            generatedKeys = preparedStatement.getGeneratedKeys();
+            generatedKeys.next();
+            int newId = generatedKeys.getInt(1);
             description.setId(newId);
+            return description;
         } catch (SQLException e) {
-            throw new QueryException("Unable to execute query", e);
+            throw new QueryException(e);
+        } finally {
+            DbUtils.closeQuietly(generatedKeys);
         }
-        return description;
     }
 }
