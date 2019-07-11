@@ -1,7 +1,6 @@
-package in.nimbo.cli;
+package in.nimbo.application.cli;
 
 import in.nimbo.TestUtility;
-import in.nimbo.application.cli.AddCLI;
 import in.nimbo.dao.SiteDAO;
 import in.nimbo.entity.Site;
 import in.nimbo.service.RSSService;

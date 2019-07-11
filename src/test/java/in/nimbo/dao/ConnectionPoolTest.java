@@ -4,9 +4,6 @@ import in.nimbo.TestUtility;
 import in.nimbo.dao.pool.ConnectionPool;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -15,8 +12,6 @@ import java.sql.Statement;
 
 import static org.junit.Assert.*;
 
-@RunWith(PowerMockRunner.class)
-@PrepareForTest(ConnectionPool.class)
 public class ConnectionPoolTest {
     @BeforeClass
     public static void init() {
@@ -33,7 +28,7 @@ public class ConnectionPoolTest {
             fail();
         }
 
-        try (Connection connection = ConnectionPool.getConnection(); ){
+        try (Connection connection = ConnectionPool.getConnection()){
             assertNotNull(connection);
         } catch (SQLException e) {
             fail();

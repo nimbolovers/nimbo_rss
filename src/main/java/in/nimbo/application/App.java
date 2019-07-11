@@ -23,31 +23,8 @@ public class App {
 
         App app = new App();
         app.init();
+        app.doSchedule();
         app.run();
-    }
-
-    public void init() {
-        // Initialization
-        // Dependency Injection
-        DescriptionDAO descriptionDAO = new DescriptionDAOImpl();
-        ContentDAO contentDAO = new ContentDAOImpl();
-        EntryDAO entryDAO = new EntryDAOImpl(descriptionDAO, contentDAO);
-        SiteDAO siteDAO = new SiteDAOImpl();
-        RSSService rssService = new RSSService(entryDAO, siteDAO, contentDAO);
-
-        // Initialize Schedule Service
-        Schedule schedule = new Schedule(rssService);
-
-        // Load sites
-        List<Site> sites = siteDAO.getSites();
-        for (Site site : sites) {
-            schedule.scheduleSite(site);
-        }
-        schedule.scheduleSiteDAO(sites);
-
-        this.siteDAO = siteDAO;
-        this.schedule = schedule;
-        this.rssService = rssService;
     }
 
     public App() {
@@ -69,6 +46,23 @@ public class App {
 
     public RSSService getRssService() {
         return rssService;
+    }
+
+    public void init() {
+        DescriptionDAO descriptionDAO = new DescriptionDAOImpl();
+        ContentDAO contentDAO = new ContentDAOImpl();
+        EntryDAO entryDAO = new EntryDAOImpl(descriptionDAO, contentDAO);
+        siteDAO = new SiteDAOImpl();
+        rssService = new RSSService(entryDAO, siteDAO, contentDAO);
+        schedule = new Schedule(rssService);
+    }
+
+    public void doSchedule() {
+        List<Site> sites = siteDAO.getSites();
+        for (Site site : sites) {
+            schedule.scheduleSite(site);
+        }
+        schedule.scheduleSiteDAO(sites);
     }
 
     private void run() {

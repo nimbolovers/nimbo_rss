@@ -17,7 +17,7 @@ public class ConnectionPool {
     private ConnectionPool() {
     }
 
-    public static void loadProperties() throws IOException {
+    private static void loadProperties() throws IOException {
         if (hikariProperties == null || databaseProp == null) {
             hikariProperties = new Properties();
             databaseProp = new Properties();
