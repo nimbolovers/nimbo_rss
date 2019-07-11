@@ -1,4 +1,4 @@
-# RSS Service
+# RSS Service [![Build Status](https://travis-ci.com/karimiehsan90/nimbo_rss.svg?branch=master)](https://travis-ci.com/karimiehsan90/nimbo_rss) [![codecov](https://codecov.io/gh/karimiehsan90/nimbo_rss/branch/master/graph/badge.svg)](https://codecov.io/gh/karimiehsan90/nimbo_rss)
 
 A simple to use application for fetch data from news sites 
 
