@@ -84,6 +84,7 @@ public class RSSService {
 
     /**
      * get content of entry by id
+     *
      * @param id id of entry
      * @return content of entry if exists otherwise return Optional.empty()
      */
@@ -117,10 +118,10 @@ public class RSSService {
                 newEntries.add(entry);
             }
         }
-        if (newEntries.size() == entries.size()) {
-            logger.info("Add " + newEntries.size() + " entries from: " + siteLink);
+        if (newEntries.size() == entries.size() && newEntries.size() > 0) {
+            logger.info("Add {} entries from: {}", newEntries.size(), siteLink);
         } else if (!newEntries.isEmpty()) {
-            logger.info("Add " + newEntries.size() + "/" + entries.size() + " entries from: " + siteLink);
+            logger.info("Add {}/{} entries from: {}", newEntries.size(), entries.size(), siteLink);
         }
 
         return newEntries;
@@ -172,6 +173,7 @@ public class RSSService {
 
     /**
      * get html content of a site
+     *
      * @param link link of site
      * @return html source of site
      */
@@ -200,7 +202,7 @@ public class RSSService {
             String htmlContent = getHTML(encodedURL);
             SyndFeedInput input = new SyndFeedInput();
             SyndFeed feed = input.build(new StringReader(htmlContent));
-            logger.info("RSS data fetched successfully from: " + url);
+            logger.info("RSS data fetched successfully from: {}", url);
             return feed;
         } catch (MalformedURLException e) {
             throw new SyndFeedException("Illegal URL format: " + url, e);

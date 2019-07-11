@@ -1,5 +1,6 @@
 package in.nimbo.dao;
 
+import in.nimbo.DAOUtility;
 import in.nimbo.TestUtility;
 import in.nimbo.dao.pool.ConnectionPool;
 import in.nimbo.dao.pool.ConnectionWrapper;
@@ -41,10 +42,10 @@ public class EntryDAOTest {
         ContentDAO contentDAO = new ContentDAOImpl();
         entryDAO = new EntryDAOImpl(descriptionDAO, contentDAO);
 
-        connection = DAOTest.getConnection();
+        connection = DAOUtility.getConnection();
         connection = PowerMockito.spy(connection);
 
-        fakeConnection = DAOTest.getFakeConnection();
+        fakeConnection = DAOUtility.getFakeConnection();
     }
 
     @AfterClass

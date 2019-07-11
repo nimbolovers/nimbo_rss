@@ -1,4 +1,4 @@
-package in.nimbo.dao;
+package in.nimbo;
 
 import in.nimbo.TestUtility;
 import in.nimbo.dao.pool.ConnectionWrapper;
@@ -9,11 +9,11 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-public class DAOTest {
+public class DAOUtility {
     private static ConnectionWrapper connection;
     private static ConnectionWrapper fakeConnection;
 
-    private DAOTest() {}
+    private DAOUtility() {}
 
     public static ConnectionWrapper getConnection() throws SQLException, ClassNotFoundException {
         if (connection != null)
