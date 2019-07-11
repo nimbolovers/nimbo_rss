@@ -30,22 +30,21 @@ public class AllReportCLI implements Callable<Void> {
     @Override
     public Void call() throws Exception {
         LocalDateTime dateTime = null;
-        if (date != null){
-            try {
+        try {
+            if (date != null) {
                 dateTime = Utility.getDate(Utility.removeQuotation(date) + " 00:00:00");
-            }catch (Exception e){
-                Utility.printCLI(e.getMessage());
-                return null;
             }
+            List<Report> reports = rssCLI.getApp().getRssService().getAllReports(Utility.removeQuotation(title), dateTime);
+            showAllReports(reports);
+        } catch (IllegalArgumentException e) {
+            Utility.printCLI(e.getMessage());
         }
-        List<Report> reports = rssCLI.getApp().getRssService().getAllReports(Utility.removeQuotation(title), dateTime);
-        showAllReports(reports);
         return null;
     }
 
-    public static void showAllReports(List<Report> reports){
+    public static void showAllReports(List<Report> reports) {
         Utility.printlnCLI();
-        for (Report report:reports) {
+        for (Report report : reports) {
             Utility.printCLI("Channel: " + report.getChannel());
             Utility.printCLI("News: " + report.getCount());
             Utility.printCLI("----------");
