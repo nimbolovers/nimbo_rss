@@ -62,18 +62,18 @@ public class App {
     }
 
     private void run() {
-        System.out.println("Welcome to the RSS service.");
-        System.out.println();
-        System.out.println("Type '--help' for help.");
+        Utility.printlnCLI("Welcome to the RSS service.");
+        Utility.printlnCLI();
+        Utility.printlnCLI("Type '--help' for help.");
 
         // UI interface
         Scanner in = new Scanner(System.in);
-        System.out.print("rss> ");
+        Utility.printCLI("rss> ");
         while (in.hasNextLine()) {
             String input = in.nextLine().trim();
             List<String> args = splitArguments(input);
             CommandLine.call(new RssCLI(this), args.toArray(new String[0]));
-            System.out.print("rss> ");
+            Utility.printCLI("rss> ");
         }
     }
 

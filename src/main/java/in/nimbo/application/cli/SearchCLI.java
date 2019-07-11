@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.concurrent.Callable;
 
 @Command(name = "search",
-        version = RssCLI.version,
+        version = RssCLI.VERSION,
         description = "Search in entries")
 public class SearchCLI implements Callable<Void> {
     @CommandLine.ParentCommand
@@ -63,9 +63,9 @@ public class SearchCLI implements Callable<Void> {
                     startDate, finishDate);
             showEntries(resultEntry);
         } catch (IllegalArgumentException e) {
-            System.out.println(e.getMessage());
+            Utility.printlnCLI(e.getMessage());
         } catch (RssServiceException e) {
-            System.out.println("Unable to search data. We will fix it as soon as possible.");
+            Utility.printlnCLI("Unable to search data. We will fix it as soon as possible.");
         }
     }
 
@@ -76,9 +76,10 @@ public class SearchCLI implements Callable<Void> {
      */
     public void showEntries(List<Entry> entries) {
         for (Entry entry : entries) {
-            System.out.println("ID: " + entry.getId());
-            System.out.println("Channel: " + entry.getChannel());
-            System.out.println("Title: " + entry.getTitle());
+            Utility.printlnCLI("ID: " + entry.getId());
+            Utility.printlnCLI("Channel: " + entry.getChannel());
+            Utility.printlnCLI("Title: " + entry.getTitle());
+            Utility.printlnCLI("----------");
         }
     }
 }

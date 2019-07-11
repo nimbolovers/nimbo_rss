@@ -1,5 +1,6 @@
 package in.nimbo.application.cli;
 
+import in.nimbo.application.Utility;
 import in.nimbo.dao.SiteDAO;
 import in.nimbo.entity.Site;
 import in.nimbo.service.schedule.Schedule;
@@ -8,7 +9,7 @@ import picocli.CommandLine;
 import java.util.concurrent.Callable;
 
 @CommandLine.Command(name = "add",
-        version = RssCLI.version,
+        version = RssCLI.VERSION,
         description = "Add a new site to repository")
 public class AddCLI implements Callable<Void> {
     @CommandLine.ParentCommand
@@ -28,9 +29,9 @@ public class AddCLI implements Callable<Void> {
     public Void call() {
         try {
             addSite(rssCLI.getApp().getSchedule(), rssCLI.getApp().getSiteDAO(), siteName, siteLink);
-            System.out.println("Site " + siteName + " (" + siteLink + ") added");
+            Utility.printlnCLI("Site " + siteName + " (" + siteLink + ") added");
         } catch (IllegalArgumentException e) {
-            System.out.println(e.getMessage());
+            Utility.printlnCLI(e.getMessage());
         }
         return null;
     }

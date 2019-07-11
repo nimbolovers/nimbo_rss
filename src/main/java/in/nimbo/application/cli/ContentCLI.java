@@ -1,5 +1,6 @@
 package in.nimbo.application.cli;
 
+import in.nimbo.application.Utility;
 import in.nimbo.entity.Content;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
@@ -8,7 +9,7 @@ import java.util.Optional;
 import java.util.concurrent.Callable;
 
 @Command(name = "get-content",
-        version = RssCLI.version,
+        version = RssCLI.VERSION,
         description = "Get content of an news")
 public class ContentCLI implements Callable<Void> {
     @CommandLine.ParentCommand
@@ -25,10 +26,10 @@ public class ContentCLI implements Callable<Void> {
     public Void call() {
         Optional<Content> entryContentByID = rssCLI.getApp().getRssService().getEntryContentByID(entryID);
         if (entryContentByID.isPresent()) {
-            System.out.println("Content of news (" + entryID + "): ");
-            System.out.println(entryContentByID.get().getValue());
+            Utility.printlnCLI("Content of news (" + entryID + "): ");
+            Utility.printlnCLI(entryContentByID.get().getValue());
         } else {
-            System.out.println("There is no news for id: " + entryID);
+            Utility.printlnCLI("There is no news for id: " + entryID);
         }
         return null;
     }
