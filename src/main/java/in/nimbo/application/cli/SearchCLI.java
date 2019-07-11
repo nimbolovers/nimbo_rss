@@ -44,29 +44,30 @@ public class SearchCLI implements Callable<Void> {
 
     @Override
     public Void call() {
-        filterEntry(rssCLI.getApp().getRssService());
-        return null;
-    }
-
-    private void filterEntry(RSSService rssService) {
         try {
-            LocalDateTime startDate = null;
-            LocalDateTime finishDate = null;
-            if (start != null)
-                startDate = Utility.getDate(Utility.removeQuotation(start));
-            if (end != null)
-                finishDate = Utility.getDate(Utility.removeQuotation(end));
-            List<Entry> resultEntry = rssService.filterEntry(
-                    Utility.removeQuotation(channel),
-                    Utility.removeQuotation(content),
-                    Utility.removeQuotation(title),
-                    startDate, finishDate);
+            List<Entry> resultEntry = filterEntry(rssCLI.getApp().getRssService(), start, end, channel, content, title);
             showEntries(resultEntry);
         } catch (IllegalArgumentException e) {
             Utility.printlnCLI(e.getMessage());
         } catch (RssServiceException e) {
             Utility.printlnCLI("Unable to search data. We will fix it as soon as possible.");
         }
+        return null;
+    }
+
+    public List<Entry> filterEntry(RSSService rssService, String startTime, String endTime,
+                                   String channel, String content, String title) throws RssServiceException {
+        LocalDateTime startDate = null;
+        LocalDateTime finishDate = null;
+        if (startTime != null)
+            startDate = Utility.getDate(Utility.removeQuotation(startTime));
+        if (endTime != null)
+            finishDate = Utility.getDate(Utility.removeQuotation(endTime));
+        return rssService.filterEntry(
+                Utility.removeQuotation(channel),
+                Utility.removeQuotation(content),
+                Utility.removeQuotation(title),
+                startDate, finishDate);
     }
 
     /**
