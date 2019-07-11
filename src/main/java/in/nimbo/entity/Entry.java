@@ -92,4 +92,9 @@ public class Entry {
                 Objects.equals(title, entry.title) &&
                 Objects.equals(link, entry.link);
     }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(channel, id, content, title, link);
+    }
 }

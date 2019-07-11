@@ -82,4 +82,9 @@ public class Site {
                 Objects.equals(link, site.link) &&
                 Objects.equals(lastUpdate, site.lastUpdate);
     }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(newsCount, avgUpdateTime, name, link, lastUpdate);
+    }
 }
