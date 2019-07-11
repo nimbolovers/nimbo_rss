@@ -3,7 +3,6 @@ package in.nimbo.dao;
 import in.nimbo.DAOUtility;
 import in.nimbo.TestUtility;
 import in.nimbo.dao.pool.ConnectionPool;
-import in.nimbo.dao.pool.ConnectionWrapper;
 import in.nimbo.entity.Site;
 import in.nimbo.exception.QueryException;
 import org.junit.AfterClass;
@@ -15,6 +14,7 @@ import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -27,8 +27,8 @@ import static org.junit.Assert.*;
 @RunWith(PowerMockRunner.class)
 @PrepareForTest(ConnectionPool.class)
 public class SiteDAOTest {
-    private static ConnectionWrapper connection;
-    private static ConnectionWrapper fakeConnection;
+    private static Connection connection;
+    private static Connection fakeConnection;
     private static SiteDAO siteDAO;
 
     @BeforeClass

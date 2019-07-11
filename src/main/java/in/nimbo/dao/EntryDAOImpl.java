@@ -1,22 +1,19 @@
 package in.nimbo.dao;
 
 import in.nimbo.dao.pool.ConnectionPool;
-import in.nimbo.dao.pool.ConnectionWrapper;
 import in.nimbo.entity.Content;
 import in.nimbo.entity.Description;
 import in.nimbo.entity.Entry;
 import in.nimbo.entity.report.DateReport;
 import in.nimbo.entity.report.HourReport;
 import in.nimbo.exception.QueryException;
+import org.apache.commons.dbutils.DbUtils;
 import org.jooq.Record;
 import org.jooq.SQLDialect;
 import org.jooq.SelectConditionStep;
 import org.jooq.impl.DSL;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -72,25 +69,26 @@ public class EntryDAOImpl implements EntryDAO {
      */
     public List<Entry> filterEntry(String channel, String contentValue, String titleValue
             , LocalDateTime startDate, LocalDateTime finishDate) {
-        try (ConnectionWrapper connection = ConnectionPool.getConnection()) {
-            SelectConditionStep<Record> query = DSL.using(SQLDialect.MYSQL)
-                    .select()
-                    .from("feed")
-                    .innerJoin("content").on(DSL.field("feed.id").eq(DSL.field("content.feed_id")))
-                    .where(
-                            DSL.field("content.value").like("%" + contentValue + "%")
-                                    .and(DSL.field("title").like("%" + titleValue + "%"))
-                    );
-            if (channel != null && !channel.isEmpty())
-                query = query.and(DSL.field("feed.channel").eq(channel));
-            if (startDate != null)
-                query = query.and(DSL.field("feed.pub_date").ge(startDate));
-            if (finishDate != null)
-                query = query.and(DSL.field("feed.pub_date").le(finishDate));
+        SelectConditionStep<Record> query = DSL.using(SQLDialect.MYSQL)
+                .select()
+                .from("feed")
+                .innerJoin("content").on(DSL.field("feed.id").eq(DSL.field("content.feed_id")))
+                .where(
+                        DSL.field("content.value").like("%" + contentValue + "%")
+                                .and(DSL.field("title").like("%" + titleValue + "%"))
+                );
+        if (channel != null && !channel.isEmpty())
+            query = query.and(DSL.field("feed.channel").eq(channel));
+        if (startDate != null)
+            query = query.and(DSL.field("feed.pub_date").ge(startDate));
+        if (finishDate != null)
+            query = query.and(DSL.field("feed.pub_date").le(finishDate));
 
-            String sqlQuery = query.getQuery().toString();
-            Statement statement = connection.createStatement();
-            ResultSet resultSet = statement.executeQuery(sqlQuery);
+        String sqlQuery = query.getQuery().toString();
+
+        try (Connection connection = ConnectionPool.getConnection();
+             Statement statement = connection.createStatement();
+             ResultSet resultSet = statement.executeQuery(sqlQuery)) {
             return createEntryFromResultSet(resultSet);
         } catch (SQLException e) {
             throw new QueryException(e);
@@ -105,9 +103,9 @@ public class EntryDAOImpl implements EntryDAO {
      */
     @Override
     public List<Entry> getEntries() {
-        try (ConnectionWrapper connection = ConnectionPool.getConnection()) {
-            PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM feed");
-            ResultSet resultSet = preparedStatement.executeQuery();
+        try (Connection connection = ConnectionPool.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM feed");
+             ResultSet resultSet = preparedStatement.executeQuery()) {
             return createEntryFromResultSet(resultSet);
         } catch (SQLException e) {
             throw new QueryException(e);
@@ -126,15 +124,16 @@ public class EntryDAOImpl implements EntryDAO {
      */
     @Override
     public Entry save(Entry entry) {
-        try (ConnectionWrapper connection = ConnectionPool.getConnection()) {
-            PreparedStatement preparedStatement = connection.prepareStatement(
-                    "INSERT INTO feed(channel, title, pub_date, link) VALUES(?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
+        ResultSet generatedKeys = null;
+        try (Connection connection = ConnectionPool.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(
+                     "INSERT INTO feed(channel, title, pub_date, link) VALUES(?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS);) {
             preparedStatement.setString(1, entry.getChannel());
             preparedStatement.setString(2, entry.getTitle());
             preparedStatement.setObject(3, entry.getPublicationDate());
             preparedStatement.setString(4, entry.getLink());
             preparedStatement.executeUpdate();
-            ResultSet generatedKeys = preparedStatement.getGeneratedKeys();
+            generatedKeys = preparedStatement.getGeneratedKeys();
             generatedKeys.next();
             int newId = generatedKeys.getInt(1);
             entry.setId(newId);
@@ -151,6 +150,8 @@ public class EntryDAOImpl implements EntryDAO {
 
         } catch (SQLException e) {
             throw new QueryException(e);
+        } finally {
+            DbUtils.closeQuietly(generatedKeys);
         }
         return entry;
     }
@@ -164,15 +165,18 @@ public class EntryDAOImpl implements EntryDAO {
      */
     @Override
     public boolean contain(Entry entry) {
-        try (ConnectionWrapper connection = ConnectionPool.getConnection()) {
-            PreparedStatement preparedStatement = connection.prepareStatement(
-                    "SELECT COUNT(*) FROM feed WHERE link=?");
+        ResultSet resultSet = null;
+        try (Connection connection = ConnectionPool.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(
+                     "SELECT COUNT(*) FROM feed WHERE link=?")) {
             preparedStatement.setString(1, entry.getLink());
-            ResultSet resultSet = preparedStatement.executeQuery();
+            resultSet = preparedStatement.executeQuery();
             resultSet.next();
             return resultSet.getInt(1) > 0;
         } catch (SQLException e) {
             throw new QueryException(e);
+        } finally {
+            DbUtils.closeQuietly(resultSet);
         }
     }
 
@@ -184,15 +188,16 @@ public class EntryDAOImpl implements EntryDAO {
      */
     @Override
     public List<HourReport> getHourReports(String title) {
-        try (ConnectionWrapper connection = ConnectionPool.getConnection()) {
-            PreparedStatement statement = connection.prepareStatement(
-                    " SELECT channel AS groupChannel, Hour(pub_date) as hour, COUNT(*) as cnt" +
-                            " FROM feed" +
-                            " WHERE pub_date IS NOT NULL" +
-                            " and title LIKE ?" +
-                            " GROUP BY groupChannel, hour");
+        ResultSet resultSet = null;
+        try (Connection connection = ConnectionPool.getConnection();
+             PreparedStatement statement = connection.prepareStatement(
+                     " SELECT channel AS groupChannel, Hour(pub_date) as hour, COUNT(*) as cnt" +
+                             " FROM feed" +
+                             " WHERE pub_date IS NOT NULL" +
+                             " and title LIKE ?" +
+                             " GROUP BY groupChannel, hour")) {
             statement.setString(1, "%" + (title != null ? title : "") + "%");
-            ResultSet resultSet = statement.executeQuery();
+            resultSet = statement.executeQuery();
             List<HourReport> reports = new ArrayList<>();
             while (resultSet.next()) {
                 HourReport hourReport = new HourReport(
@@ -204,6 +209,8 @@ public class EntryDAOImpl implements EntryDAO {
             return reports;
         } catch (SQLException e) {
             throw new QueryException(e);
+        } finally {
+            DbUtils.closeQuietly(resultSet);
         }
     }
 
@@ -216,16 +223,17 @@ public class EntryDAOImpl implements EntryDAO {
      */
     @Override
     public List<DateReport> getDateReports(String title, int limit) {
-        try (ConnectionWrapper connection = ConnectionPool.getConnection()) {
-            PreparedStatement preparedStatement = connection.prepareStatement("SELECT" +
-                    " Year(pub_date) AS year, Month(pub_date) AS month, Day(pub_date) AS day, channel AS baseChannel, COUNT(*) AS cnt" +
-                    " FROM feed" +
-                    " WHERE title LIKE ? AND pub_date IS NOT NULL" +
-                    " GROUP BY year, month, day, baseChannel" +
-                    " ORDER BY year DESC, month DESC, day DESC LIMIT ?");
+        ResultSet resultSet = null;
+        try (Connection connection = ConnectionPool.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement("SELECT" +
+                     " Year(pub_date) AS year, Month(pub_date) AS month, Day(pub_date) AS day, channel AS baseChannel, COUNT(*) AS cnt" +
+                     " FROM feed" +
+                     " WHERE title LIKE ? AND pub_date IS NOT NULL" +
+                     " GROUP BY year, month, day, baseChannel" +
+                     " ORDER BY year DESC, month DESC, day DESC LIMIT ?");) {
             preparedStatement.setString(1, "%" + (title != null ? title : "") + "%");
             preparedStatement.setInt(2, limit);
-            ResultSet resultSet = preparedStatement.executeQuery();
+            resultSet = preparedStatement.executeQuery();
             List<DateReport> reports = new ArrayList<>();
             while (resultSet.next()) {
                 DateReport report = new DateReport(resultSet.getString("baseChannel"), resultSet.getInt("cnt"),
@@ -238,6 +246,8 @@ public class EntryDAOImpl implements EntryDAO {
             return reports;
         } catch (SQLException e) {
             throw new QueryException(e);
+        } finally {
+            DbUtils.closeQuietly(resultSet);
         }
     }
 }

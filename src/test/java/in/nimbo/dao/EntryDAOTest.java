@@ -3,7 +3,6 @@ package in.nimbo.dao;
 import in.nimbo.DAOUtility;
 import in.nimbo.TestUtility;
 import in.nimbo.dao.pool.ConnectionPool;
-import in.nimbo.dao.pool.ConnectionWrapper;
 import in.nimbo.entity.Entry;
 import in.nimbo.entity.report.DateReport;
 import in.nimbo.entity.report.HourReport;
@@ -17,6 +16,7 @@ import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -30,8 +30,8 @@ import static org.junit.Assert.*;
 @RunWith(PowerMockRunner.class)
 @PrepareForTest(ConnectionPool.class)
 public class EntryDAOTest {
-    private static ConnectionWrapper connection;
-    private static ConnectionWrapper fakeConnection;
+    private static Connection connection;
+    private static Connection fakeConnection;
     private static EntryDAO entryDAO;
 
     @BeforeClass
@@ -239,7 +239,7 @@ public class EntryDAOTest {
             int count = ThreadLocalRandom.current().nextInt(limit) + 1;
             for (int j = 0; j < count; j++) {
                 LocalDateTime date = LocalDateTime.of(2010, 6, i + 1, i, 0);
-                ConnectionWrapper connection = ConnectionPool.getConnection();
+                Connection connection = ConnectionPool.getConnection();
                 PreparedStatement statement = connection.prepareStatement(sql);
                 statement.setString(1, channel);
                 statement.setString(2, title);

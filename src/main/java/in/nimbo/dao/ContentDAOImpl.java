@@ -1,14 +1,11 @@
 package in.nimbo.dao;
 
 import in.nimbo.dao.pool.ConnectionPool;
-import in.nimbo.dao.pool.ConnectionWrapper;
 import in.nimbo.entity.Content;
 import in.nimbo.exception.QueryException;
+import org.apache.commons.dbutils.DbUtils;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -42,16 +39,19 @@ public class ContentDAOImpl implements ContentDAO {
      */
     @Override
     public Optional<Content> getByFeedId(int feedId) {
-        try (ConnectionWrapper connection = ConnectionPool.getConnection()) {
-            PreparedStatement preparedStatement = connection.prepareStatement(
-                    "SELECT * FROM content WHERE feed_id=?");
+        ResultSet resultSet = null;
+        try (Connection connection = ConnectionPool.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(
+                     "SELECT * FROM content WHERE feed_id=?")) {
             preparedStatement.setInt(1, feedId);
-            ResultSet resultSet = preparedStatement.executeQuery();
+            resultSet = preparedStatement.executeQuery();
             return Optional.ofNullable(createContentFromResultSet(resultSet).get(0));
         } catch (IndexOutOfBoundsException e) {
             return Optional.empty();
         } catch (SQLException e) {
             throw new QueryException(e);
+        } finally {
+            DbUtils.closeQuietly(resultSet);
         }
     }
 
@@ -64,19 +64,22 @@ public class ContentDAOImpl implements ContentDAO {
      */
     @Override
     public Content save(Content content) {
-        try (ConnectionWrapper connection = ConnectionPool.getConnection()) {
-            PreparedStatement preparedStatement = connection.prepareStatement(
-                    "INSERT INTO content(value, feed_id) VALUES(?, ?)", Statement.RETURN_GENERATED_KEYS);
+        ResultSet generatedKeys = null;
+        try (Connection connection = ConnectionPool.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(
+                     "INSERT INTO content(value, feed_id) VALUES(?, ?)", Statement.RETURN_GENERATED_KEYS)) {
             preparedStatement.setString(1, content.getValue());
             preparedStatement.setInt(2, content.getFeedId());
             preparedStatement.executeUpdate();
-            ResultSet generatedKeys = preparedStatement.getGeneratedKeys();
+            generatedKeys = preparedStatement.getGeneratedKeys();
             generatedKeys.next();
             int newId = generatedKeys.getInt(1);
             content.setId(newId);
+            return content;
         } catch (SQLException e) {
             throw new QueryException(e);
+        } finally {
+            DbUtils.closeQuietly(generatedKeys);
         }
-        return content;
     }
 }

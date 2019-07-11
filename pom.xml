@@ -27,6 +27,8 @@
     <readability.version>1.0.3</readability.version>
     <JSoup.version>1.12.1</JSoup.version>
     <picocli.version>3.9.6</picocli.version>
+    <Apache.DBUtils.version>1.7</Apache.DBUtils.version>
+    <SonarQube.version>3.6.0.1398</SonarQube.version>
   </properties>
 
   <dependencies>
@@ -119,20 +121,12 @@
       <version>${mockito1.version}</version>
     </dependency>
 
-    <!--Article Extractor (boilerpipe) from Google-->
-<!--    <dependency>-->
-<!--      <groupId>com.robbypond</groupId>-->
-<!--      <artifactId>boilerpipe</artifactId>-->
-<!--      <version>${boilerpipe.version}</version>-->
-<!--    </dependency>-->
-
     <!--Reader from firefox-->
     <dependency>
       <groupId>net.dankito.readability4j</groupId>
       <artifactId>readability4j</artifactId>
       <version>${readability.version}</version>
     </dependency>
-
 
     <!--JSoup library for working with html-->
     <dependency>
@@ -159,7 +153,14 @@
     <dependency>
       <groupId>org.sonarsource.scanner.maven</groupId>
       <artifactId>sonar-maven-plugin</artifactId>
-      <version>3.6.0.1398</version>
+      <version>${SonarQube.version}</version>
+    </dependency>
+
+    <!--Apache Database utility-->
+    <dependency>
+      <groupId>commons-dbutils</groupId>
+      <artifactId>commons-dbutils</artifactId>
+      <version>${Apache.DBUtils.version}</version>
     </dependency>
 
   </dependencies>

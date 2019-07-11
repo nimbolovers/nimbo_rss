@@ -6,6 +6,7 @@ import in.nimbo.exception.ConnectionException;
 import in.nimbo.exception.PropertyNotFoundException;
 
 import java.io.IOException;
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Properties;
 
@@ -52,11 +53,11 @@ public class ConnectionPool {
      * create a connection to database
      * @return connection which is created
      */
-    public static ConnectionWrapper getConnection(){
+    public static Connection getConnection(){
         if (dataSource == null)
             init();
         try {
-            return new ConnectionWrapper(dataSource.getConnection());
+            return dataSource.getConnection();
         } catch (SQLException e) {
             throw new ConnectionException("Unable to get connection from datasource", e);
         }

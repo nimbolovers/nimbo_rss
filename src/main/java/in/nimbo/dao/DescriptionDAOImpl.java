@@ -1,14 +1,11 @@
 package in.nimbo.dao;
 
 import in.nimbo.dao.pool.ConnectionPool;
-import in.nimbo.dao.pool.ConnectionWrapper;
 import in.nimbo.entity.Description;
 import in.nimbo.exception.QueryException;
+import org.apache.commons.dbutils.DbUtils;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -44,16 +41,19 @@ public class DescriptionDAOImpl implements DescriptionDAO {
      */
     @Override
     public Optional<Description> getByFeedId(int feedId) {
-        try (ConnectionWrapper connection = ConnectionPool.getConnection()) {
-            PreparedStatement preparedStatement = connection.prepareStatement(
-                    "SELECT * FROM description WHERE feed_id=?");
+        ResultSet resultSet = null;
+        try (Connection connection = ConnectionPool.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(
+                     "SELECT * FROM description WHERE feed_id=?")) {
             preparedStatement.setInt(1, feedId);
-            ResultSet resultSet = preparedStatement.executeQuery();
+            resultSet = preparedStatement.executeQuery();
             return Optional.ofNullable(createDescriptionFromResultSet(resultSet).get(0));
         } catch (IndexOutOfBoundsException e) {
             return Optional.empty();
         } catch (SQLException e) {
             throw new QueryException(e);
+        } finally {
+            DbUtils.closeQuietly(resultSet);
         }
     }
 
@@ -66,18 +66,24 @@ public class DescriptionDAOImpl implements DescriptionDAO {
      */
     @Override
     public Description save(Description description) {
-        try (ConnectionWrapper connection = ConnectionPool.getConnection()) {
+        ResultSet generatedKeys = null;
+        try (Connection connection = ConnectionPool.getConnection()) {
             PreparedStatement preparedStatement = connection.prepareStatement(
                     "INSERT INTO description(type, mode, value, feed_id) VALUES(?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
             preparedStatement.setString(1, description.getType());
             preparedStatement.setString(2, description.getMode());
             preparedStatement.setString(3, description.getValue());
             preparedStatement.setInt(4, description.getFeedId());
-            int newId = preparedStatement.executeUpdate();
+            preparedStatement.executeUpdate();
+            generatedKeys = preparedStatement.getGeneratedKeys();
+            generatedKeys.next();
+            int newId = generatedKeys.getInt(1);
             description.setId(newId);
+            return description;
         } catch (SQLException e) {
             throw new QueryException(e);
+        } finally {
+            DbUtils.closeQuietly(generatedKeys);
         }
-        return description;
     }
 }
