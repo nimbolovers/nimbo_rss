@@ -19,7 +19,6 @@ import java.util.List;
 import static org.junit.Assert.fail;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({})
 public class AddCLITest {
     private SiteDAO siteDAO;
     private RSSService rssService;
