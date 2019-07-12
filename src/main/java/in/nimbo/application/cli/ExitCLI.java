@@ -1,6 +1,7 @@
 package in.nimbo.application.cli;
 
 import in.nimbo.application.App;
+import in.nimbo.dao.SiteDAO;
 import in.nimbo.entity.Site;
 import picocli.CommandLine;
 
@@ -22,8 +23,9 @@ public class ExitCLI implements Callable<Void> {
         App app = rssCLI.getApp();
         app.getSchedule().stopService();
 
-        for (Site site : app.getSiteDAO().getSites()) {
-            app.getSiteDAO().update(site);
+        SiteDAO siteDAO = app.getRssService().getSiteDAO();
+        for (Site site : siteDAO.getSites()) {
+            siteDAO.update(site);
         }
 
         System.exit(0);

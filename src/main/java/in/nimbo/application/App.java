@@ -14,7 +14,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class App {
-    private SiteDAO siteDAO;
     private Schedule schedule;
     private RSSService rssService;
 
@@ -30,14 +29,9 @@ public class App {
     public App() {
     }
 
-    public App(SiteDAO siteDAO, Schedule schedule, RSSService rssService) {
-        this.siteDAO = siteDAO;
+    public App(Schedule schedule, RSSService rssService) {
         this.schedule = schedule;
         this.rssService = rssService;
-    }
-
-    public SiteDAO getSiteDAO() {
-        return siteDAO;
     }
 
     public Schedule getSchedule() {
@@ -52,13 +46,13 @@ public class App {
         DescriptionDAO descriptionDAO = new DescriptionDAOImpl();
         ContentDAO contentDAO = new ContentDAOImpl();
         EntryDAO entryDAO = new EntryDAOImpl(descriptionDAO, contentDAO);
-        siteDAO = new SiteDAOImpl();
+        SiteDAO siteDAO = new SiteDAOImpl();
         rssService = new RSSService(entryDAO, siteDAO, contentDAO);
         schedule = new Schedule(rssService);
     }
 
     public void doSchedule() {
-        List<Site> sites = siteDAO.getSites();
+        List<Site> sites = rssService.getSiteDAO().getSites();
         for (Site site : sites) {
             schedule.scheduleSite(site);
         }

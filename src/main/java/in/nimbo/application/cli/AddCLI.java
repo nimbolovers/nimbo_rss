@@ -28,7 +28,7 @@ public class AddCLI implements Callable<Void> {
     @Override
     public Void call() {
         try {
-            addSite(rssCLI.getApp().getSchedule(), rssCLI.getApp().getSiteDAO(), siteName, siteLink);
+            addSite(rssCLI.getApp().getSchedule(), rssCLI.getApp().getRssService().getSiteDAO(), siteName, siteLink);
             Utility.printlnCLI("Site " + siteName + " (" + siteLink + ") added");
         } catch (IllegalArgumentException e) {
             Utility.printlnCLI(e.getMessage());

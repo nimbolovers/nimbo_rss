@@ -62,6 +62,10 @@ public class RSSService {
         }
     }
 
+    public SiteDAO getSiteDAO() {
+        return siteDAO;
+    }
+
     /**
      * @param channel      channel of entry
      *                     If it is null, ignore it

@@ -36,7 +36,7 @@ public class AppTest {
         siteDAO = PowerMockito.mock(SiteDAO.class);
         rssService = PowerMockito.mock(RSSService.class);
         schedule = PowerMockito.mock(Schedule.class);
-        app = new App(siteDAO, schedule, rssService);
+        app = new App(schedule, rssService);
     }
 
     @Test
