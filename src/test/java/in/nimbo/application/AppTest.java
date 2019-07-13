@@ -61,11 +61,13 @@ public class AppTest {
         sites.add(new Site("site 2", "link 2"));
         PowerMockito.doNothing().when(schedule).scheduleSite(Matchers.any(Site.class));
         PowerMockito.doNothing().when(schedule).scheduleSiteDAO(sites);
+        PowerMockito.when(rssService.getSiteDAO()).thenReturn(siteDAO);
         PowerMockito.doReturn(sites).when(siteDAO).getSites();
         try {
             app.doSchedule();
             app.init();
         } catch (Exception e) {
+            e.printStackTrace();
             fail();
         }
     }

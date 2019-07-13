@@ -14,34 +14,31 @@ public class ConnectionPool {
     private static Properties databaseProp;
     private static Properties hikariProperties;
 
-    private ConnectionPool() {
-    }
-
-    private static void loadProperties() throws IOException {
-        if (hikariProperties == null || databaseProp == null) {
-            hikariProperties = new Properties();
-            databaseProp = new Properties();
-            ClassLoader loader = ConnectionPool.class.getClassLoader();
-            databaseProp.load(loader.getResourceAsStream("database.properties"));
-            hikariProperties.load(loader.getResourceAsStream("hikari.properties"));
-        }
-    }
-
-    /**
-     * initialize and configure datasource
-     */
-    private static void init() throws IOException {
-        HikariConfig cfg = new HikariConfig();
+    public ConnectionPool() {
         loadProperties();
-        cfg.setJdbcUrl(databaseProp.getProperty("database.url"));
-        cfg.setUsername(databaseProp.getProperty("database.username"));
-        cfg.setPassword(databaseProp.getProperty("database.password"));
-        cfg.setDriverClassName(databaseProp.getProperty("database.driver"));
+        HikariConfig hikariConfig = new HikariConfig();
+        hikariConfig.setJdbcUrl(databaseProp.getProperty("database.url"));
+        hikariConfig.setUsername(databaseProp.getProperty("database.username"));
+        hikariConfig.setPassword(databaseProp.getProperty("database.password"));
+        hikariConfig.setDriverClassName(databaseProp.getProperty("database.driver"));
         for (String key : hikariProperties.stringPropertyNames()) {
-            cfg.addDataSourceProperty(key, hikariProperties.getProperty(key));
+            hikariConfig.addDataSourceProperty(key, hikariProperties.getProperty(key));
         }
-        dataSource = new HikariDataSource(cfg);
+        dataSource = new HikariDataSource(hikariConfig);
+    }
 
+    private void loadProperties() {
+        try {
+            if (hikariProperties == null || databaseProp == null) {
+                hikariProperties = new Properties();
+                databaseProp = new Properties();
+                ClassLoader loader = ConnectionPool.class.getClassLoader();
+                databaseProp.load(loader.getResourceAsStream("database.properties"));
+                hikariProperties.load(loader.getResourceAsStream("hikari.properties"));
+            }
+        } catch (IOException e) {
+            throw new ConnectionException("Unable to connect to database", e);
+        }
     }
 
     /**
@@ -49,12 +46,10 @@ public class ConnectionPool {
      *
      * @return connection which is created
      */
-    public static Connection getConnection() {
+    public Connection getConnection() {
         try {
-            if (dataSource == null)
-                init();
             return dataSource.getConnection();
-        } catch (SQLException | IOException e) {
+        } catch (SQLException e) {
             throw new ConnectionException("Unable to get connection from datasource", e);
         }
     }

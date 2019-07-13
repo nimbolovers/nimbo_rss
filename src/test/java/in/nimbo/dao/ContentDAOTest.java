@@ -23,6 +23,7 @@ import static org.junit.Assert.*;
 @RunWith(PowerMockRunner.class)
 @PrepareForTest(ConnectionPool.class)
 public class ContentDAOTest {
+    private static ConnectionPool connectionPool;
     private static Connection connection;
     private static Connection fakeConnection;
     private static ContentDAO contentDAO;
@@ -31,10 +32,11 @@ public class ContentDAOTest {
     public static void init() throws SQLException, ClassNotFoundException {
         TestUtility.disableJOOQLogo();
 
-        contentDAO = new ContentDAOImpl();
-
         connection = DAOUtility.getConnection();
         connection = PowerMockito.spy(connection);
+        connectionPool = PowerMockito.mock(ConnectionPool.class);
+
+        contentDAO = new ContentDAOImpl(connectionPool);
 
         fakeConnection = DAOUtility.getFakeConnection();
     }
@@ -48,7 +50,7 @@ public class ContentDAOTest {
     @Before
     public void initBeforeEachTest() throws SQLException {
         PowerMockito.mockStatic(ConnectionPool.class);
-        PowerMockito.when(ConnectionPool.getConnection()).thenReturn(connection);
+        PowerMockito.when(connectionPool.getConnection()).thenReturn(connection);
         PowerMockito.doNothing().when(connection).close();
 
         connection.prepareStatement("DELETE FROM content").executeUpdate();
@@ -59,7 +61,7 @@ public class ContentDAOTest {
         Optional<Content> byFeedId = contentDAO.getByFeedId(1);
         assertFalse(byFeedId.isPresent());
 
-        PowerMockito.when(ConnectionPool.getConnection()).thenReturn(fakeConnection);
+        PowerMockito.when(connectionPool.getConnection()).thenReturn(fakeConnection);
         try {
             contentDAO.getByFeedId(1);
             fail();
@@ -70,7 +72,7 @@ public class ContentDAOTest {
 
     @Test(expected = QueryException.class)
     public void saveWithException() {
-        PowerMockito.when(ConnectionPool.getConnection()).thenReturn(fakeConnection);
+        PowerMockito.when(connectionPool.getConnection()).thenReturn(fakeConnection);
         contentDAO.save(new Content());
     }
 }

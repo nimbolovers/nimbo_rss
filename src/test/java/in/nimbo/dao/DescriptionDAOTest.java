@@ -20,6 +20,7 @@ import java.sql.SQLException;
 @RunWith(PowerMockRunner.class)
 @PrepareForTest(ConnectionPool.class)
 public class DescriptionDAOTest {
+    private static ConnectionPool connectionPool;
     private static Connection connection;
     private static Connection fakeConnection;
     private static DescriptionDAO descriptionDAO;
@@ -28,10 +29,11 @@ public class DescriptionDAOTest {
     public static void init() throws SQLException, ClassNotFoundException {
         TestUtility.disableJOOQLogo();
 
-        descriptionDAO = new DescriptionDAOImpl();
-
         connection = DAOUtility.getConnection();
         connection = PowerMockito.spy(connection);
+        connectionPool = PowerMockito.mock(ConnectionPool.class);
+
+        descriptionDAO = new DescriptionDAOImpl(connectionPool);
 
         fakeConnection = DAOUtility.getFakeConnection();
     }
@@ -45,7 +47,7 @@ public class DescriptionDAOTest {
     @Before
     public void initBeforeEachTest() throws SQLException {
         PowerMockito.mockStatic(ConnectionPool.class);
-        PowerMockito.when(ConnectionPool.getConnection()).thenReturn(connection);
+        PowerMockito.when(connectionPool.getConnection()).thenReturn(connection);
         PowerMockito.doNothing().when(connection).close();
 
         connection.prepareStatement("DELETE FROM description").executeUpdate();
@@ -53,13 +55,13 @@ public class DescriptionDAOTest {
 
     @Test(expected = QueryException.class)
     public void getByFeedIdWithException() {
-        PowerMockito.when(ConnectionPool.getConnection()).thenReturn(fakeConnection);
+        PowerMockito.when(connectionPool.getConnection()).thenReturn(fakeConnection);
         descriptionDAO.getByFeedId(1);
     }
 
     @Test(expected = QueryException.class)
     public void saveWithException() {
-        PowerMockito.when(ConnectionPool.getConnection()).thenReturn(fakeConnection);
+        PowerMockito.when(connectionPool.getConnection()).thenReturn(fakeConnection);
         descriptionDAO.save(new Description());
     }
 }

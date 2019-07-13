@@ -11,6 +11,12 @@ import java.util.List;
 import java.util.Optional;
 
 public class DescriptionDAOImpl implements DescriptionDAO {
+    ConnectionPool connectionPool;
+
+    public DescriptionDAOImpl(ConnectionPool connectionPool) {
+        this.connectionPool = connectionPool;
+    }
+
     /**
      * create a list of description from a ResultSet of JDBC
      *
@@ -42,7 +48,7 @@ public class DescriptionDAOImpl implements DescriptionDAO {
     @Override
     public Optional<Description> getByFeedId(int feedId) {
         ResultSet resultSet = null;
-        try (Connection connection = ConnectionPool.getConnection();
+        try (Connection connection = connectionPool.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(
                      "SELECT * FROM description WHERE feed_id=?")) {
             preparedStatement.setInt(1, feedId);
@@ -67,7 +73,7 @@ public class DescriptionDAOImpl implements DescriptionDAO {
     @Override
     public Description save(Description description) {
         ResultSet generatedKeys = null;
-        try (Connection connection = ConnectionPool.getConnection();
+        try (Connection connection = connectionPool.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(
                      "INSERT INTO description(type, mode, value, feed_id) VALUES(?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS);) {
             preparedStatement.setString(1, description.getType());

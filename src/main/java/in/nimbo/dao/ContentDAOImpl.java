@@ -11,6 +11,12 @@ import java.util.List;
 import java.util.Optional;
 
 public class ContentDAOImpl implements ContentDAO {
+    ConnectionPool connectionPool;
+
+    public ContentDAOImpl(ConnectionPool connectionPool) {
+        this.connectionPool = connectionPool;
+    }
+
     /**
      * create a list of contents from a ResultSet of JDBC
      *
@@ -40,7 +46,7 @@ public class ContentDAOImpl implements ContentDAO {
     @Override
     public Optional<Content> getByFeedId(int feedId) {
         ResultSet resultSet = null;
-        try (Connection connection = ConnectionPool.getConnection();
+        try (Connection connection = connectionPool.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(
                      "SELECT * FROM content WHERE feed_id=?")) {
             preparedStatement.setInt(1, feedId);
@@ -65,7 +71,7 @@ public class ContentDAOImpl implements ContentDAO {
     @Override
     public Content save(Content content) {
         ResultSet generatedKeys = null;
-        try (Connection connection = ConnectionPool.getConnection();
+        try (Connection connection = connectionPool.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(
                      "INSERT INTO content(value, feed_id) VALUES(?, ?)", Statement.RETURN_GENERATED_KEYS)) {
             preparedStatement.setString(1, content.getValue());
