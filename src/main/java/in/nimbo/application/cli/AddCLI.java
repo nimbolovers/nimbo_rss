@@ -1,8 +1,9 @@
 package in.nimbo.application.cli;
 
 import in.nimbo.application.Utility;
-import in.nimbo.dao.SiteDAO;
 import in.nimbo.entity.Site;
+import in.nimbo.exception.SyndFeedException;
+import in.nimbo.service.RSSService;
 import in.nimbo.service.schedule.Schedule;
 import picocli.CommandLine;
 
@@ -28,9 +29,9 @@ public class AddCLI implements Callable<Void> {
     @Override
     public Void call() {
         try {
-            addSite(rssCLI.getApp().getSchedule(), rssCLI.getApp().getRssService().getSiteDAO(), siteName, siteLink);
+            addSite(rssCLI.getApp().getSchedule(), rssCLI.getApp().getRssService(), siteName, siteLink);
             Utility.printlnCLI("Site " + siteName + " (" + siteLink + ") added");
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException | SyndFeedException e) {
             Utility.printlnCLI(e.getMessage());
         }
         return null;
@@ -44,12 +45,14 @@ public class AddCLI implements Callable<Void> {
      * @param link link of site
      * @throws IllegalArgumentException if site is duplicate
      */
-    public void addSite(Schedule schedule, SiteDAO siteDAO, String name, String link) {
-        if (siteDAO.containLink(link))
+    public void addSite(Schedule schedule, RSSService rssService, String name, String link) {
+        if (rssService.getSiteDAO().containLink(link))
             throw new IllegalArgumentException("Duplicate URL: " + link);
 
+        // check whether link is illegal or not
+        rssService.fetchFeedFromURL(link);
         Site newSite = new Site(name, link);
-        siteDAO.save(newSite);
+        rssService.getSiteDAO().save(newSite);
         schedule.scheduleSite(newSite);
     }
 }
