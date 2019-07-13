@@ -1,24 +1,14 @@
 package in.nimbo;
 
 import in.nimbo.application.Utility;
-import in.nimbo.dao.SiteDAO;
-import in.nimbo.service.RSSService;
-import in.nimbo.service.schedule.Schedule;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
 
 import java.net.MalformedURLException;
 import java.time.LocalDateTime;
 
 import static org.junit.Assert.*;
 
-@RunWith(PowerMockRunner.class)
-@PrepareForTest({})
 public class UtilityTest {
     @BeforeClass
     public static void init() {

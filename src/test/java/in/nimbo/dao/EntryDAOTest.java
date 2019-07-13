@@ -5,17 +5,13 @@ import in.nimbo.TestUtility;
 import in.nimbo.dao.pool.ConnectionPool;
 import in.nimbo.entity.Entry;
 import in.nimbo.entity.report.DateReport;
-import in.nimbo.entity.report.Report;
 import in.nimbo.entity.report.HourReport;
+import in.nimbo.entity.report.Report;
 import in.nimbo.exception.QueryException;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -27,9 +23,8 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
-@RunWith(PowerMockRunner.class)
-@PrepareForTest(ConnectionPool.class)
 public class EntryDAOTest {
     private static ConnectionPool connectionPool;
     private static Connection connection;
@@ -41,8 +36,8 @@ public class EntryDAOTest {
         TestUtility.disableJOOQLogo();
 
         connection = DAOUtility.getConnection();
-        connection = PowerMockito.spy(connection);
-        connectionPool = PowerMockito.mock(ConnectionPool.class);
+        connection = spy(connection);
+        connectionPool = mock(ConnectionPool.class);
 
         DescriptionDAO descriptionDAO = new DescriptionDAOImpl(connectionPool);
         ContentDAO contentDAO = new ContentDAOImpl(connectionPool);
@@ -59,9 +54,8 @@ public class EntryDAOTest {
 
     @Before
     public void initBeforeEachTest() throws SQLException {
-        PowerMockito.mockStatic(ConnectionPool.class);
-        PowerMockito.when(connectionPool.getConnection()).thenReturn(connection);
-        PowerMockito.doNothing().when(connection).close();
+        when(connectionPool.getConnection()).thenReturn(connection);
+        doNothing().when(connection).close();
 
         connection.prepareStatement("DELETE FROM content;" +
                 "DELETE FROM description;" +
@@ -102,7 +96,7 @@ public class EntryDAOTest {
 
         assertEquals(entries, fetchedEntries);
 
-        PowerMockito.when(connectionPool.getConnection()).thenReturn(fakeConnection);
+        when(connectionPool.getConnection()).thenReturn(fakeConnection);
         try {
             entryDAO.save(entries.get(0));
             fail();
@@ -120,7 +114,7 @@ public class EntryDAOTest {
 
         assertEquals(entries, entryDAO.getEntries());
 
-        PowerMockito.when(connectionPool.getConnection()).thenReturn(fakeConnection);
+        when(connectionPool.getConnection()).thenReturn(fakeConnection);
         try {
             entryDAO.getEntries();
             fail();
@@ -163,7 +157,7 @@ public class EntryDAOTest {
                         .collect(Collectors.toList()),
                 entryDAO.filterEntry("channel", "content", "title", null, afterDate));
 
-        PowerMockito.when(connectionPool.getConnection()).thenReturn(fakeConnection);
+        when(connectionPool.getConnection()).thenReturn(fakeConnection);
         try {
             entryDAO.filterEntry("", "", "", LocalDateTime.now(), LocalDateTime.now());
             fail();
@@ -185,7 +179,7 @@ public class EntryDAOTest {
         assertTrue(entryDAO.contain(TestUtility.createEntry("channel-test", "title-test", "link 2", LocalDateTime.now(), "content-test", "desc-test")));
         assertFalse(entryDAO.contain(TestUtility.createEntry("channel-test", "title-test", "link 3", LocalDateTime.now(), "content-test", "desc-test")));
 
-        PowerMockito.when(connectionPool.getConnection()).thenReturn(fakeConnection);
+        when(connectionPool.getConnection()).thenReturn(fakeConnection);
         try {
             entryDAO.contain(entries.get(0));
             fail();
@@ -222,7 +216,7 @@ public class EntryDAOTest {
         assertEquals(reports, entryDAO.getDateReports("", limit));
         assertEquals(reports, entryDAO.getDateReports(null, limit));
 
-        PowerMockito.when(connectionPool.getConnection()).thenReturn(fakeConnection);
+        when(connectionPool.getConnection()).thenReturn(fakeConnection);
         try {
             entryDAO.getDateReports("", 0);
             fail();
@@ -265,7 +259,7 @@ public class EntryDAOTest {
         real = entryDAO.getAllReports("", null);
         assertEquals(allReports, real);
 
-        PowerMockito.when(connectionPool.getConnection()).thenReturn(fakeConnection);
+        when(connectionPool.getConnection()).thenReturn(fakeConnection);
         try {
             entryDAO.getAllReports(null, LocalDateTime.of(2015, 6, 8, 0, 0));
             fail();
@@ -303,7 +297,7 @@ public class EntryDAOTest {
         hourReports = new HashSet<>(realAnswer);
         assertEquals(hourReports, reports);
 
-        PowerMockito.when(connectionPool.getConnection()).thenReturn(fakeConnection);
+        when(connectionPool.getConnection()).thenReturn(fakeConnection);
         try {
             entryDAO.getHourReports("", "");
             fail();

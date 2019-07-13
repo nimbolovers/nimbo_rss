@@ -9,19 +9,14 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
 
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Optional;
 
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
-@RunWith(PowerMockRunner.class)
-@PrepareForTest(ConnectionPool.class)
 public class ContentDAOTest {
     private static ConnectionPool connectionPool;
     private static Connection connection;
@@ -33,8 +28,8 @@ public class ContentDAOTest {
         TestUtility.disableJOOQLogo();
 
         connection = DAOUtility.getConnection();
-        connection = PowerMockito.spy(connection);
-        connectionPool = PowerMockito.mock(ConnectionPool.class);
+        connection = spy(connection);
+        connectionPool = mock(ConnectionPool.class);
 
         contentDAO = new ContentDAOImpl(connectionPool);
 
@@ -49,9 +44,8 @@ public class ContentDAOTest {
 
     @Before
     public void initBeforeEachTest() throws SQLException {
-        PowerMockito.mockStatic(ConnectionPool.class);
-        PowerMockito.when(connectionPool.getConnection()).thenReturn(connection);
-        PowerMockito.doNothing().when(connection).close();
+        when(connectionPool.getConnection()).thenReturn(connection);
+        doNothing().when(connection).close();
 
         connection.prepareStatement("DELETE FROM content").executeUpdate();
     }
@@ -61,7 +55,7 @@ public class ContentDAOTest {
         Optional<Content> byFeedId = contentDAO.getByFeedId(1);
         assertFalse(byFeedId.isPresent());
 
-        PowerMockito.when(connectionPool.getConnection()).thenReturn(fakeConnection);
+        when(connectionPool.getConnection()).thenReturn(fakeConnection);
         try {
             contentDAO.getByFeedId(1);
             fail();
@@ -72,7 +66,7 @@ public class ContentDAOTest {
 
     @Test(expected = QueryException.class)
     public void saveWithException() {
-        PowerMockito.when(connectionPool.getConnection()).thenReturn(fakeConnection);
+        when(connectionPool.getConnection()).thenReturn(fakeConnection);
         contentDAO.save(new Content());
     }
 }

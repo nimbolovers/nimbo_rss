@@ -24,7 +24,7 @@ public class ConnectionPoolTest {
         try (Connection connection = connectionPool.getConnection();
              Statement statement = connection.createStatement();
              ResultSet resultSet = statement.executeQuery("SHOW TABLES")) {
-            assertFalse(resultSet.next());
+            assertNotNull(resultSet);
         } catch (SQLException e) {
             fail();
         }

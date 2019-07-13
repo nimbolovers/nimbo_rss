@@ -9,10 +9,6 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -23,9 +19,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
-@RunWith(PowerMockRunner.class)
-@PrepareForTest(ConnectionPool.class)
 public class SiteDAOTest {
     private static ConnectionPool connectionPool;
     private static Connection connection;
@@ -37,8 +32,8 @@ public class SiteDAOTest {
         TestUtility.disableJOOQLogo();
 
         connection = DAOUtility.getConnection();
-        connection = PowerMockito.spy(connection);
-        connectionPool = PowerMockito.mock(ConnectionPool.class);
+        connection = spy(connection);
+        connectionPool = mock(ConnectionPool.class);
 
         siteDAO = new SiteDAOImpl(connectionPool);
 
@@ -53,9 +48,8 @@ public class SiteDAOTest {
 
     @Before
     public void initBeforeEachTest() throws SQLException {
-        PowerMockito.mockStatic(ConnectionPool.class);
-        PowerMockito.when(connectionPool.getConnection()).thenReturn(connection);
-        PowerMockito.doNothing().when(connection).close();
+        when(connectionPool.getConnection()).thenReturn(connection);
+        doNothing().when(connection).close();
 
         connection.prepareStatement("DELETE FROM site").executeUpdate();
     }
@@ -94,7 +88,7 @@ public class SiteDAOTest {
 
         assertEquals(savedSites, fetchedSites);
 
-        PowerMockito.when(connectionPool.getConnection()).thenReturn(fakeConnection);
+        when(connectionPool.getConnection()).thenReturn(fakeConnection);
         try {
             siteDAO.save(savedSites.get(0));
             fail();
@@ -112,7 +106,7 @@ public class SiteDAOTest {
 
         assertEquals(savedSites, siteDAO.getSites());
 
-        PowerMockito.when(connectionPool.getConnection()).thenReturn(fakeConnection);
+        when(connectionPool.getConnection()).thenReturn(fakeConnection);
         try {
             siteDAO.getSites();
             fail();
@@ -153,7 +147,7 @@ public class SiteDAOTest {
 
         assertFalse(resultSet.next());
 
-        PowerMockito.when(connectionPool.getConnection()).thenReturn(fakeConnection);
+        when(connectionPool.getConnection()).thenReturn(fakeConnection);
         try {
             siteDAO.update(site);
             fail();
@@ -175,7 +169,7 @@ public class SiteDAOTest {
 
         assertEquals(count, siteDAO.getCount());
 
-        PowerMockito.when(connectionPool.getConnection()).thenReturn(fakeConnection);
+        when(connectionPool.getConnection()).thenReturn(fakeConnection);
         try {
             siteDAO.getCount();
             fail();
@@ -195,7 +189,7 @@ public class SiteDAOTest {
         assertTrue(siteDAO.containLink("link 2"));
         assertFalse(siteDAO.containLink("link 3"));
 
-        PowerMockito.when(connectionPool.getConnection()).thenReturn(fakeConnection);
+        when(connectionPool.getConnection()).thenReturn(fakeConnection);
         try {
             siteDAO.containLink("link 1");
             fail();

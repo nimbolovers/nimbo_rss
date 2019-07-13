@@ -8,10 +8,7 @@ import in.nimbo.service.RSSService;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.mockito.Matchers;
-import org.powermock.api.mockito.PowerMockito;
-import org.powermock.modules.junit4.PowerMockRunner;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -19,8 +16,8 @@ import java.util.List;
 
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.mockito.Mockito.*;
 
-@RunWith(PowerMockRunner.class)
 public class SearchCLITest {
     private RSSService rssService;
     private SearchCLI searchCLI;
@@ -32,8 +29,8 @@ public class SearchCLITest {
 
     @Before
     public void beforeEachTest() {
-        rssService = PowerMockito.mock(RSSService.class);
-        searchCLI = PowerMockito.spy(new SearchCLI());
+        rssService = mock(RSSService.class);
+        searchCLI = spy(new SearchCLI());
     }
 
     @Test
@@ -42,7 +39,7 @@ public class SearchCLITest {
         entries.add(TestUtility.createEntry("channel 1", "title 1", "link 1", LocalDateTime.now(), "content 1", "desc 1"));
         entries.add(TestUtility.createEntry("channel 2", "title 2", "link 2", LocalDateTime.now(), "content 2", "desc 2"));
         entries.add(TestUtility.createEntry("channel 3", "title 3", "link 3", LocalDateTime.now(), "content 3", "desc 3"));
-        PowerMockito.doReturn(entries).when(rssService).filterEntry(Matchers.anyString(), Matchers.anyString(), Matchers.anyString(),
+        doReturn(entries).when(rssService).filterEntry(Matchers.anyString(), Matchers.anyString(), Matchers.anyString(),
                 Matchers.any(LocalDateTime.class), Matchers.any(LocalDateTime.class));
         try {
             searchCLI.filterEntry(rssService, null, null, "channel", "content", "title");
@@ -53,7 +50,7 @@ public class SearchCLITest {
         }
 
         try {
-            PowerMockito.doThrow(new RssServiceException()).when(rssService).filterEntry(Matchers.anyString(), Matchers.anyString(), Matchers.anyString(),
+            doThrow(new RssServiceException()).when(rssService).filterEntry(Matchers.anyString(), Matchers.anyString(), Matchers.anyString(),
                     Matchers.any(LocalDateTime.class), Matchers.any(LocalDateTime.class));
             searchCLI.filterEntry(rssService, null, null, "channel", "content", "title");
             fail();
@@ -64,7 +61,7 @@ public class SearchCLITest {
 
     @Test(expected = RssServiceException.class)
     public void showFilteredEntryWithException1() throws RssServiceException {
-        PowerMockito.doThrow(new RssServiceException()).when(rssService).filterEntry(Matchers.anyString(), Matchers.anyString(), Matchers.anyString(),
+        doThrow(new RssServiceException()).when(rssService).filterEntry(Matchers.anyString(), Matchers.anyString(), Matchers.anyString(),
                 Matchers.any(LocalDateTime.class), Matchers.any(LocalDateTime.class));
         searchCLI.filterEntry(rssService, null, null, "channel", "content", "title");
     }

@@ -14,16 +14,14 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Matchers;
-import org.powermock.api.mockito.PowerMockito;
-import org.powermock.modules.junit4.PowerMockRunner;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.mockito.Mockito.*;
 
-@RunWith(PowerMockRunner.class)
 public class AddCLITest {
     private SiteDAO siteDAO;
     private ContentDAO contentDAO;
@@ -38,11 +36,11 @@ public class AddCLITest {
 
     @Before
     public void beforeEachTest() {
-        siteDAO = PowerMockito.mock(SiteDAO.class);
-        contentDAO = PowerMockito.mock(ContentDAO.class);
-        entryDAO = PowerMockito.mock(EntryDAO.class);
-        schedule = PowerMockito.mock(Schedule.class);
-        rssService = PowerMockito.spy(new RSSService(entryDAO, siteDAO, contentDAO));
+        siteDAO = mock(SiteDAO.class);
+        contentDAO = mock(ContentDAO.class);
+        entryDAO = mock(EntryDAO.class);
+        schedule = mock(Schedule.class);
+        rssService = spy(new RSSService(entryDAO, siteDAO, contentDAO));
     }
 
     private List<Site> createExampleSites() {
@@ -55,19 +53,19 @@ public class AddCLITest {
 
     @Test(expected = IllegalArgumentException.class)
     public void addDuplicateSite() {
-        PowerMockito.when(siteDAO.containLink("link 1")).thenReturn(true);
-        PowerMockito.when(siteDAO.getSites()).thenReturn(createExampleSites());
-        PowerMockito.doReturn(new SyndFeedImpl()).when(rssService).fetchFeedFromURL(Matchers.anyString());
-        AddCLI addCLI = PowerMockito.spy(new AddCLI());
+        when(siteDAO.containLink("link 1")).thenReturn(true);
+        when(siteDAO.getSites()).thenReturn(createExampleSites());
+        doReturn(new SyndFeedImpl()).when(rssService).fetchFeedFromURL(Matchers.anyString());
+        AddCLI addCLI = spy(new AddCLI());
         addCLI.addSite(schedule, rssService, "site 1", "link 1");
     }
 
     @Test
     public void addNonDuplicateSite() {
-        PowerMockito.when(siteDAO.containLink("link 4")).thenReturn(false);
-        PowerMockito.when(siteDAO.getSites()).thenReturn(createExampleSites());
-        PowerMockito.doReturn(new SyndFeedImpl()).when(rssService).fetchFeedFromURL(Matchers.anyString());
-        AddCLI addCLI = PowerMockito.spy(new AddCLI());
+        when(siteDAO.containLink("link 4")).thenReturn(false);
+        when(siteDAO.getSites()).thenReturn(createExampleSites());
+        doReturn(new SyndFeedImpl()).when(rssService).fetchFeedFromURL(Matchers.anyString());
+        AddCLI addCLI = spy(new AddCLI());
         try {
             addCLI.addSite(schedule, rssService, "site 4", "link 4");
         } catch (Exception e) {
@@ -77,10 +75,10 @@ public class AddCLITest {
 
     @Test
     public void addInvalidSiteURL() {
-        PowerMockito.when(siteDAO.containLink("link 4")).thenReturn(false);
-        PowerMockito.when(siteDAO.getSites()).thenReturn(createExampleSites());
-        PowerMockito.doThrow(new SyndFeedException()).when(rssService).fetchFeedFromURL(Matchers.anyString());
-        AddCLI addCLI = PowerMockito.spy(new AddCLI());
+        when(siteDAO.containLink("link 4")).thenReturn(false);
+        when(siteDAO.getSites()).thenReturn(createExampleSites());
+        doThrow(new SyndFeedException()).when(rssService).fetchFeedFromURL(Matchers.anyString());
+        AddCLI addCLI = spy(new AddCLI());
         try {
             addCLI.addSite(schedule, rssService, "site 4", "link 4");
             fail();
