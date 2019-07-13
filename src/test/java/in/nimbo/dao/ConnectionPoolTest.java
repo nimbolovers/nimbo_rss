@@ -20,15 +20,16 @@ public class ConnectionPoolTest {
 
     @Test
     public void testHikari() {
-        try (Connection connection = ConnectionPool.getConnection();
+        ConnectionPool connectionPool = new ConnectionPool();
+        try (Connection connection = connectionPool.getConnection();
              Statement statement = connection.createStatement();
              ResultSet resultSet = statement.executeQuery("SHOW TABLES")) {
-            assertFalse(resultSet.next());
+            assertNotNull(resultSet);
         } catch (SQLException e) {
             fail();
         }
 
-        try (Connection connection = ConnectionPool.getConnection()){
+        try (Connection connection = connectionPool.getConnection()){
             assertNotNull(connection);
         } catch (SQLException e) {
             fail();

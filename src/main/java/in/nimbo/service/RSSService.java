@@ -62,6 +62,10 @@ public class RSSService {
         }
     }
 
+    public SiteDAO getSiteDAO() {
+        return siteDAO;
+    }
+
     /**
      * @param channel      channel of entry
      *                     If it is null, ignore it
@@ -173,24 +177,6 @@ public class RSSService {
     }
 
     /**
-     * get html content of a site
-     *
-     * @param link link of site
-     * @return html source of site
-     */
-    public String getHTML(String link) {
-        try {
-            return Jsoup.connect(link).get().html();
-        } catch (HttpStatusException e) {
-            throw new ContentExtractingException("HTTP error fetching URL: Status=" + e.getStatusCode() + " URL=" + e.getUrl(), e);
-        } catch (SocketTimeoutException e) {
-            throw new ContentExtractingException("HTTP error timeout: URL=" + link, e);
-        } catch (IOException e) {
-            throw new ContentExtractingException("Unable to extract content: URL=" + link, e);
-        }
-    }
-
-    /**
      * Fetch an SyndFeed from RSS URL
      *
      * @param url url which is an RSS
@@ -209,6 +195,24 @@ public class RSSService {
             throw new SyndFeedException("Illegal URL format: " + url, e);
         } catch (FeedException e) {
             throw new SyndFeedException("Invalid RSS URL: " + url, e);
+        }
+    }
+
+    /**
+     * get html content of a site
+     *
+     * @param link link of site
+     * @return html source of site
+     */
+    public String getHTML(String link) {
+        try {
+            return Jsoup.connect(link).get().html();
+        } catch (HttpStatusException e) {
+            throw new ContentExtractingException("HTTP error fetching URL: Status=" + e.getStatusCode() + " URL=" + e.getUrl(), e);
+        } catch (SocketTimeoutException e) {
+            throw new ContentExtractingException("HTTP error timeout: URL=" + link, e);
+        } catch (IOException e) {
+            throw new ContentExtractingException("Unable to extract content: URL=" + link, e);
         }
     }
 

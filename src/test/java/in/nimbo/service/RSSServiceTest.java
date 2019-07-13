@@ -17,11 +17,7 @@ import in.nimbo.exception.SyndFeedException;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.mockito.Matchers;
-import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
 
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
@@ -34,8 +30,6 @@ import java.util.List;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
-@RunWith(PowerMockRunner.class)
-@PrepareForTest({EntryDAO.class, Entry.class})
 public class RSSServiceTest {
     private static RSSService rssService;
     private static EntryDAO entryDAO;
@@ -50,9 +44,9 @@ public class RSSServiceTest {
 
     @Before
     public void beforeAnyTest() {
-        entryDAO = PowerMockito.mock(EntryDAO.class);
-        siteDAO = PowerMockito.mock(SiteDAO.class);
-        contentDAO = PowerMockito.mock(ContentDAO.class);
+        entryDAO = mock(EntryDAO.class);
+        siteDAO = mock(SiteDAO.class);
+        contentDAO = mock(ContentDAO.class);
         rssService = spy(new RSSService(entryDAO, siteDAO, contentDAO));
     }
 
@@ -61,14 +55,14 @@ public class RSSServiceTest {
         Site site = new Site("name", "link");
 
         try {
-            PowerMockito.doReturn(site).when(siteDAO).update(site);
+            doReturn(site).when(siteDAO).update(site);
             rssService.updateSite(site);
         } catch (Exception e) {
             fail();
         }
 
         try {
-            PowerMockito.doThrow(new QueryException()).when(siteDAO).update(site);
+            doThrow(new QueryException()).when(siteDAO).update(site);
             rssService.updateSite(site);
             fail();
         } catch (Exception e) {
@@ -76,7 +70,7 @@ public class RSSServiceTest {
         }
 
         try {
-            PowerMockito.doThrow(new IllegalArgumentException()).when(siteDAO).update(site);
+            doThrow(new IllegalArgumentException()).when(siteDAO).update(site);
             rssService.updateSite(site);
             fail();
         } catch (Exception e) {
@@ -89,7 +83,7 @@ public class RSSServiceTest {
         List<Entry> entries = new ArrayList<>();
 
         try {
-            PowerMockito.doReturn(entries).when(entryDAO).filterEntry(Matchers.anyString(), Matchers.anyString(), Matchers.anyString(),
+            doReturn(entries).when(entryDAO).filterEntry(Matchers.anyString(), Matchers.anyString(), Matchers.anyString(),
                     Matchers.any(LocalDateTime.class), Matchers.any(LocalDateTime.class));
             List<Entry> result = rssService.filterEntry("", "", "", LocalDateTime.now(), LocalDateTime.now());
             assertEquals(entries, result);
@@ -98,7 +92,7 @@ public class RSSServiceTest {
         }
 
         try {
-            PowerMockito.doThrow(new QueryException()).when(entryDAO).filterEntry(Matchers.anyString(), Matchers.anyString(), Matchers.anyString(),
+            doThrow(new QueryException()).when(entryDAO).filterEntry(Matchers.anyString(), Matchers.anyString(), Matchers.anyString(),
                     Matchers.any(LocalDateTime.class), Matchers.any(LocalDateTime.class));
             rssService.filterEntry("", "", "", LocalDateTime.now(), LocalDateTime.now());
             fail();
@@ -158,7 +152,7 @@ public class RSSServiceTest {
         String link = exampleLink;
         String htmlSource = TestUtility.getFileContent(Paths.get("src/test/resources/example/example.html"));
         String realContent = "This domain is established to be used for illustrative examples in documents. You may use this domain in examples without prior coordination or asking for permission. More information...";
-        PowerMockito.doReturn(htmlSource).when(rssService).getHTML(Matchers.anyString());
+        doReturn(htmlSource).when(rssService).getHTML(Matchers.anyString());
         String contentOfRSSLink = rssService.getContentOfRSSLink(link);
         assertEquals(realContent, contentOfRSSLink);
 
@@ -174,7 +168,7 @@ public class RSSServiceTest {
     public void fetchFeedFromURL() {
         String link = exampleLink;
         String htmlSource = TestUtility.getFileContent(Paths.get("src/test/resources/example/rss.xml"));
-        PowerMockito.doReturn(htmlSource).when(rssService).getHTML(Matchers.anyString());
+        doReturn(htmlSource).when(rssService).getHTML(Matchers.anyString());
         SyndFeed feed = rssService.fetchFeedFromURL(link);
         assertEquals(2, feed.getEntries().size());
         assertEquals("Title", feed.getTitle());
@@ -198,7 +192,7 @@ public class RSSServiceTest {
         try {
             link = exampleLink;
             htmlSource = "invalid rss";
-            PowerMockito.doReturn(htmlSource).when(rssService).getHTML(Matchers.anyString());
+            doReturn(htmlSource).when(rssService).getHTML(Matchers.anyString());
             rssService.fetchFeedFromURL(link);
         } catch (Exception e) {
             assertTrue(e instanceof SyndFeedException);

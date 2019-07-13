@@ -2,9 +2,13 @@ package in.nimbo.application;
 
 import in.nimbo.application.cli.RssCLI;
 import in.nimbo.dao.*;
+import in.nimbo.dao.pool.ConnectionPool;
 import in.nimbo.entity.Site;
+import in.nimbo.exception.ConnectionException;
 import in.nimbo.service.RSSService;
 import in.nimbo.service.schedule.Schedule;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import picocli.CommandLine;
 
 import java.util.ArrayList;
@@ -14,7 +18,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class App {
-    private SiteDAO siteDAO;
+    private Logger logger = LoggerFactory.getLogger(App.class);
     private Schedule schedule;
     private RSSService rssService;
 
@@ -30,14 +34,9 @@ public class App {
     public App() {
     }
 
-    public App(SiteDAO siteDAO, Schedule schedule, RSSService rssService) {
-        this.siteDAO = siteDAO;
+    public App(Schedule schedule, RSSService rssService) {
         this.schedule = schedule;
         this.rssService = rssService;
-    }
-
-    public SiteDAO getSiteDAO() {
-        return siteDAO;
     }
 
     public Schedule getSchedule() {
@@ -49,16 +48,23 @@ public class App {
     }
 
     public void init() {
-        DescriptionDAO descriptionDAO = new DescriptionDAOImpl();
-        ContentDAO contentDAO = new ContentDAOImpl();
-        EntryDAO entryDAO = new EntryDAOImpl(descriptionDAO, contentDAO);
-        siteDAO = new SiteDAOImpl();
-        rssService = new RSSService(entryDAO, siteDAO, contentDAO);
-        schedule = new Schedule(rssService);
+        try {
+            ConnectionPool connectionPool = new ConnectionPool();
+            DescriptionDAO descriptionDAO = new DescriptionDAOImpl(connectionPool);
+            ContentDAO contentDAO = new ContentDAOImpl(connectionPool);
+            EntryDAO entryDAO = new EntryDAOImpl(connectionPool, descriptionDAO, contentDAO);
+            SiteDAO siteDAO = new SiteDAOImpl(connectionPool);
+            rssService = new RSSService(entryDAO, siteDAO, contentDAO);
+            schedule = new Schedule(rssService);
+        } catch (ConnectionException e) {
+            logger.error(e.getMessage(), e);
+            Utility.printlnCLI(e.getMessage());
+            Utility.printlnCLI("Please check your database initialization and try again!");
+        }
     }
 
     public void doSchedule() {
-        List<Site> sites = siteDAO.getSites();
+        List<Site> sites = rssService.getSiteDAO().getSites();
         for (Site site : sites) {
             schedule.scheduleSite(site);
         }

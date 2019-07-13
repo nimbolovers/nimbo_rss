@@ -8,18 +8,15 @@ import in.nimbo.service.schedule.Schedule;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.mockito.Matchers;
-import org.powermock.api.mockito.PowerMockito;
-import org.powermock.modules.junit4.PowerMockRunner;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
+import static org.mockito.Mockito.*;
 
-@RunWith(PowerMockRunner.class)
 public class AppTest {
     private SiteDAO siteDAO;
     private RSSService rssService;
@@ -33,10 +30,10 @@ public class AppTest {
 
     @Before
     public void beforeEachTest() {
-        siteDAO = PowerMockito.mock(SiteDAO.class);
-        rssService = PowerMockito.mock(RSSService.class);
-        schedule = PowerMockito.mock(Schedule.class);
-        app = new App(siteDAO, schedule, rssService);
+        siteDAO = mock(SiteDAO.class);
+        rssService = mock(RSSService.class);
+        schedule = mock(Schedule.class);
+        app = new App(schedule, rssService);
     }
 
     @Test
@@ -59,13 +56,15 @@ public class AppTest {
         List<Site> sites = new ArrayList<>();
         sites.add(new Site("site 1", "link 1"));
         sites.add(new Site("site 2", "link 2"));
-        PowerMockito.doNothing().when(schedule).scheduleSite(Matchers.any(Site.class));
-        PowerMockito.doNothing().when(schedule).scheduleSiteDAO(sites);
-        PowerMockito.doReturn(sites).when(siteDAO).getSites();
+        doNothing().when(schedule).scheduleSite(Matchers.any(Site.class));
+        doNothing().when(schedule).scheduleSiteDAO(sites);
+        when(rssService.getSiteDAO()).thenReturn(siteDAO);
+        doReturn(sites).when(siteDAO).getSites();
         try {
             app.doSchedule();
             app.init();
         } catch (Exception e) {
+            e.printStackTrace();
             fail();
         }
     }

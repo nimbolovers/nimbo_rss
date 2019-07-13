@@ -23,8 +23,10 @@ import java.util.Optional;
 public class EntryDAOImpl implements EntryDAO {
     private DescriptionDAO descriptionDAO;
     private ContentDAO contentDAO;
+    ConnectionPool connectionPool;
 
-    public EntryDAOImpl(DescriptionDAO descriptionDAO, ContentDAO contentDAO) {
+    public EntryDAOImpl(ConnectionPool connectionPool, DescriptionDAO descriptionDAO, ContentDAO contentDAO) {
+        this.connectionPool = connectionPool;
         this.descriptionDAO = descriptionDAO;
         this.contentDAO = contentDAO;
     }
@@ -87,7 +89,7 @@ public class EntryDAOImpl implements EntryDAO {
 
         String sqlQuery = query.getQuery().toString();
 
-        try (Connection connection = ConnectionPool.getConnection();
+        try (Connection connection = connectionPool.getConnection();
              Statement statement = connection.createStatement();
              ResultSet resultSet = statement.executeQuery(sqlQuery)) {
             return createEntryFromResultSet(resultSet);
@@ -104,7 +106,7 @@ public class EntryDAOImpl implements EntryDAO {
      */
     @Override
     public List<Entry> getEntries() {
-        try (Connection connection = ConnectionPool.getConnection();
+        try (Connection connection = connectionPool.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM feed");
              ResultSet resultSet = preparedStatement.executeQuery()) {
             return createEntryFromResultSet(resultSet);
@@ -126,7 +128,7 @@ public class EntryDAOImpl implements EntryDAO {
     @Override
     public Entry save(Entry entry) {
         ResultSet generatedKeys = null;
-        try (Connection connection = ConnectionPool.getConnection();
+        try (Connection connection = connectionPool.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(
                      "INSERT INTO feed(channel, title, pub_date, link) VALUES(?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS);) {
             preparedStatement.setString(1, entry.getChannel());
@@ -167,7 +169,7 @@ public class EntryDAOImpl implements EntryDAO {
     @Override
     public boolean contain(Entry entry) {
         ResultSet resultSet = null;
-        try (Connection connection = ConnectionPool.getConnection();
+        try (Connection connection = connectionPool.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(
                      "SELECT COUNT(*) FROM feed WHERE link=?")) {
             preparedStatement.setString(1, entry.getLink());
@@ -190,7 +192,7 @@ public class EntryDAOImpl implements EntryDAO {
     @Override
     public List<HourReport> getHourReports(String title, String channel) {
         ResultSet resultSet = null;
-        try (Connection connection = ConnectionPool.getConnection();
+        try (Connection connection = connectionPool.getConnection();
              PreparedStatement statement = connection.prepareStatement(
                      " SELECT channel AS groupChannel, Hour(pub_date) as hour, COUNT(*) as cnt" +
                              " FROM feed" +
@@ -227,7 +229,7 @@ public class EntryDAOImpl implements EntryDAO {
     @Override
     public List<DateReport> getDateReports(String title, int limit) {
         ResultSet resultSet = null;
-        try (Connection connection = ConnectionPool.getConnection();
+        try (Connection connection = connectionPool.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement("SELECT" +
                      " Year(pub_date) AS year, Month(pub_date) AS month, Day(pub_date) AS day, channel AS baseChannel, COUNT(*) AS cnt" +
                      " FROM feed" +
@@ -257,7 +259,7 @@ public class EntryDAOImpl implements EntryDAO {
     @Override
     public List<Report> getAllReports(String title, LocalDateTime date) {
         ResultSet resultSet = null;
-        try (Connection connection = ConnectionPool.getConnection();
+        try (Connection connection = connectionPool.getConnection();
              PreparedStatement statement = connection.prepareStatement(
                      "SELECT COUNT(*) AS cnt, channel " +
                              "FROM feed " +

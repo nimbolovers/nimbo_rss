@@ -11,10 +11,7 @@ import in.nimbo.service.schedule.ScheduleSiteUpdater;
 import in.nimbo.service.schedule.ScheduleUpdater;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.mockito.Matchers;
-import org.powermock.api.mockito.PowerMockito;
-import org.powermock.modules.junit4.PowerMockRunner;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
@@ -24,16 +21,16 @@ import java.util.concurrent.ScheduledExecutorService;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
+import static org.mockito.Mockito.*;
 
-@RunWith(PowerMockRunner.class)
 public class ScheduleTest {
     private static ScheduledExecutorService scheduledService;
     private static RSSService rssService;
 
     @BeforeClass
     public static void init() {
-        rssService = PowerMockito.mock(RSSService.class);
-        scheduledService = PowerMockito.mock(ScheduledExecutorService.class);
+        rssService = mock(RSSService.class);
+        scheduledService = mock(ScheduledExecutorService.class);
     }
 
     private Site getExampleSite() {
@@ -63,15 +60,15 @@ public class ScheduleTest {
             entries.add(TestUtility.createEntry("channel " + i,
                     "title " + i, "link " + i, dateTime, "content " + i, "desc " + i));
         }
-        PowerMockito.when(rssService.fetchFeedFromURL(site.getLink())).thenReturn(syndFeed);
-        PowerMockito.when(rssService.getEntries(syndFeed)).thenReturn(entries);
-        PowerMockito.when(rssService.addSiteEntries(site.getLink(), entries)).thenReturn(entries);
+        when(rssService.fetchFeedFromURL(site.getLink())).thenReturn(syndFeed);
+        when(rssService.getEntries(syndFeed)).thenReturn(entries);
+        when(rssService.addSiteEntries(site.getLink(), entries)).thenReturn(entries);
 
         ScheduleUpdater scheduleUpdater = new ScheduleUpdater(scheduledService, rssService, site, 5, 0);
         List<LocalDateTime> newPublicationDates = scheduleUpdater.getNewPublicationDates();
         assertEquals(dateTimes, newPublicationDates);
 
-        PowerMockito.when(rssService.fetchFeedFromURL(site.getLink())).thenThrow(new SyndFeedException());
+        when(rssService.fetchFeedFromURL(site.getLink())).thenThrow(new SyndFeedException());
         newPublicationDates = scheduleUpdater.getNewPublicationDates();
         assertEquals(0, newPublicationDates.size());
     }
@@ -111,20 +108,20 @@ public class ScheduleTest {
         long lastNewsCount = 0;
         long realNewAverageUpdateTime;
 
-        ScheduleUpdater scheduleUpdater = PowerMockito.spy(new ScheduleUpdater(scheduledService, rssService, site, 5, lastNewsCount));
-        PowerMockito.when(scheduleUpdater.getSumOfIntervals(dateTimes)).thenReturn(sumOfIntervals);
+        ScheduleUpdater scheduleUpdater = spy(new ScheduleUpdater(scheduledService, rssService, site, 5, lastNewsCount));
+        when(scheduleUpdater.getSumOfIntervals(dateTimes)).thenReturn(sumOfIntervals);
         long newAverageUpdateTime = scheduleUpdater.getNewAverageUpdateTime(dateTimes);
         realNewAverageUpdateTime = sumOfIntervals / site.getNewsCount();
         assertEquals(realNewAverageUpdateTime / 1000, newAverageUpdateTime);
 
-        scheduleUpdater = PowerMockito.spy(new ScheduleUpdater(scheduledService, rssService, siteWithLastUpdate, 5, lastNewsCount));
-        PowerMockito.doReturn(sumOfIntervals).when(scheduleUpdater).getSumOfIntervals(dateTimes);
+        scheduleUpdater = spy(new ScheduleUpdater(scheduledService, rssService, siteWithLastUpdate, 5, lastNewsCount));
+        doReturn(sumOfIntervals).when(scheduleUpdater).getSumOfIntervals(dateTimes);
         newAverageUpdateTime = scheduleUpdater.getNewAverageUpdateTime(dateTimes);
         realNewAverageUpdateTime = (lastNewsCount * siteWithLastUpdate.getAvgUpdateTime() + sumOfIntervals) / siteWithLastUpdate.getNewsCount();
         assertEquals(realNewAverageUpdateTime / 1000, newAverageUpdateTime);
 
         sumOfIntervals = 1;
-        PowerMockito.doReturn(sumOfIntervals).when(scheduleUpdater).getSumOfIntervals(dateTimes);
+        doReturn(sumOfIntervals).when(scheduleUpdater).getSumOfIntervals(dateTimes);
         newAverageUpdateTime = scheduleUpdater.getNewAverageUpdateTime(dateTimes);
         assertEquals(ScheduleUpdater.DEFAULT_UPDATE_INTERVAL, newAverageUpdateTime);
     }
@@ -137,9 +134,9 @@ public class ScheduleTest {
         long lastUpdateTime = 5;
         long newAverageUpdateTime = 10;
 
-        ScheduleUpdater scheduleUpdater = PowerMockito.spy(new ScheduleUpdater(scheduledService, rssService, site, lastUpdateTime, 0));
-        PowerMockito.doReturn(dateTimes).when(scheduleUpdater).getNewPublicationDates();
-        PowerMockito.doReturn(newAverageUpdateTime).when(scheduleUpdater).getNewAverageUpdateTime(dateTimes);
+        ScheduleUpdater scheduleUpdater = spy(new ScheduleUpdater(scheduledService, rssService, site, lastUpdateTime, 0));
+        doReturn(dateTimes).when(scheduleUpdater).getNewPublicationDates();
+        doReturn(newAverageUpdateTime).when(scheduleUpdater).getNewAverageUpdateTime(dateTimes);
 
         scheduleUpdater.calculateUpdateInterval();
         assertEquals(lastUpdateTime * 2, scheduleUpdater.getUpdateInterval());
@@ -152,7 +149,7 @@ public class ScheduleTest {
         assertEquals(nowTime, site.getLastUpdate());
 
         newAverageUpdateTime = 5 * 3600;
-        PowerMockito.doReturn(newAverageUpdateTime).when(scheduleUpdater).getNewAverageUpdateTime(dateTimes);
+        doReturn(newAverageUpdateTime).when(scheduleUpdater).getNewAverageUpdateTime(dateTimes);
         scheduleUpdater.calculateUpdateInterval();
         assertEquals(3 * 3600, scheduleUpdater.getUpdateInterval());
     }
@@ -172,11 +169,11 @@ public class ScheduleTest {
         }
 
         try {
-            ScheduleSiteUpdater scheduleSiteUpdater = PowerMockito.spy(new ScheduleSiteUpdater(sites, rssService));
-            PowerMockito.doNothing().when(rssService).updateSite(Matchers.any(Site.class));
+            ScheduleSiteUpdater scheduleSiteUpdater = spy(new ScheduleSiteUpdater(sites, rssService));
+            doNothing().when(rssService).updateSite(Matchers.any(Site.class));
             scheduleSiteUpdater.run();
 
-            PowerMockito.doThrow(new RssServiceException()).when(rssService).updateSite(Matchers.any(Site.class));
+            doThrow(new RssServiceException()).when(rssService).updateSite(Matchers.any(Site.class));
             scheduleSiteUpdater.run();
         } catch (Exception e) {
             fail();

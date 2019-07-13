@@ -11,6 +11,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class SiteDAOImpl implements SiteDAO {
+    ConnectionPool connectionPool;
+
+    public SiteDAOImpl(ConnectionPool connectionPool) {
+        this.connectionPool = connectionPool;
+    }
+
     /**
      * create a list of sites from a ResultSet of JDBC
      *
@@ -41,7 +47,7 @@ public class SiteDAOImpl implements SiteDAO {
      */
     @Override
     public List<Site> getSites() {
-        try (Connection connection = ConnectionPool.getConnection();
+        try (Connection connection = connectionPool.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM site");
              ResultSet resultSet = preparedStatement.executeQuery()) {
             return createSiteFromResultSet(resultSet);
@@ -59,7 +65,7 @@ public class SiteDAOImpl implements SiteDAO {
     @Override
     public boolean containLink(String link) {
         ResultSet resultSet = null;
-        try (Connection connection = ConnectionPool.getConnection();
+        try (Connection connection = connectionPool.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM site where link = ?")) {
             preparedStatement.setString(1, link);
             resultSet = preparedStatement.executeQuery();
@@ -81,7 +87,7 @@ public class SiteDAOImpl implements SiteDAO {
     @Override
     public Site save(Site site) {
         ResultSet generatedKeys = null;
-        try (Connection connection = ConnectionPool.getConnection();
+            try (Connection connection = connectionPool.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(
                      "INSERT INTO site(name, link, news_count, avg_update_time, last_update) VALUES(?, ?, ?, ?, ?)",
                      Statement.RETURN_GENERATED_KEYS)) {
@@ -116,7 +122,7 @@ public class SiteDAOImpl implements SiteDAO {
     public Site update(Site site) {
         if (site.getId() == 0)
             throw new IllegalArgumentException("Site id must be set for update operation");
-        try (Connection connection = ConnectionPool.getConnection();
+        try (Connection connection = connectionPool.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(
                      "UPDATE site SET link = ?, name = ?, news_count = ?, avg_update_time = ?, last_update = ? WHERE id = ?")) {
             preparedStatement.setString(1, site.getLink());
@@ -137,7 +143,7 @@ public class SiteDAOImpl implements SiteDAO {
      */
     @Override
     public int getCount() {
-        try (Connection connection = ConnectionPool.getConnection();
+        try (Connection connection = connectionPool.getConnection();
              PreparedStatement statement = connection.prepareStatement("select count(*) as cnt from site");
              ResultSet resultSet = statement.executeQuery()) {
             resultSet.next();

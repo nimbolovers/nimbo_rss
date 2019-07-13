@@ -9,17 +9,14 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
 
 import java.sql.Connection;
 import java.sql.SQLException;
 
-@RunWith(PowerMockRunner.class)
-@PrepareForTest(ConnectionPool.class)
+import static org.mockito.Mockito.*;
+
 public class DescriptionDAOTest {
+    private static ConnectionPool connectionPool;
     private static Connection connection;
     private static Connection fakeConnection;
     private static DescriptionDAO descriptionDAO;
@@ -28,10 +25,11 @@ public class DescriptionDAOTest {
     public static void init() throws SQLException, ClassNotFoundException {
         TestUtility.disableJOOQLogo();
 
-        descriptionDAO = new DescriptionDAOImpl();
-
         connection = DAOUtility.getConnection();
-        connection = PowerMockito.spy(connection);
+        connection = spy(connection);
+        connectionPool = mock(ConnectionPool.class);
+
+        descriptionDAO = new DescriptionDAOImpl(connectionPool);
 
         fakeConnection = DAOUtility.getFakeConnection();
     }
@@ -44,22 +42,21 @@ public class DescriptionDAOTest {
 
     @Before
     public void initBeforeEachTest() throws SQLException {
-        PowerMockito.mockStatic(ConnectionPool.class);
-        PowerMockito.when(ConnectionPool.getConnection()).thenReturn(connection);
-        PowerMockito.doNothing().when(connection).close();
+        when(connectionPool.getConnection()).thenReturn(connection);
+        doNothing().when(connection).close();
 
         connection.prepareStatement("DELETE FROM description").executeUpdate();
     }
 
     @Test(expected = QueryException.class)
     public void getByFeedIdWithException() {
-        PowerMockito.when(ConnectionPool.getConnection()).thenReturn(fakeConnection);
+        when(connectionPool.getConnection()).thenReturn(fakeConnection);
         descriptionDAO.getByFeedId(1);
     }
 
     @Test(expected = QueryException.class)
     public void saveWithException() {
-        PowerMockito.when(ConnectionPool.getConnection()).thenReturn(fakeConnection);
+        when(connectionPool.getConnection()).thenReturn(fakeConnection);
         descriptionDAO.save(new Description());
     }
 }
