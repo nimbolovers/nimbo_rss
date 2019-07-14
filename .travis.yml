@@ -1,10 +1,22 @@
 language: java
+
+addons:
+  sonarcloud:
+    organization: "karimiehsan90"
+    token:
+      secure: "dDml8XHj/ly0NASvR92JhM971XLWA1XSW4PElkCRXkg239E3LxIk/MO6Ez4ZyWXtodcIjOpKSBDMwciBq0OQCzj4eYI+OwMHJHggLmm7AsG/OcNe8t57j7Di1RjDqiNAg/s9Z10dSTTRO6yhjApLUwK16od9FBX0wWIGyrXa/tEV0u6PtZm5nDjhhTtpbvuWiIBDtxX/A/W/njisD5iaDJSHwDBMRNHye/qeus8TQidc+Kauh4N4G+dw3F1SqSext2OMgykNKchbD0Ir2XfS8UP+gdT0/XUusKcAeB65DGauj0ruLWy0DjvHFJ7Ybzo4OqW8crbSBJlZ1Uv/lSYEm5/v8AZ4q9g/LIWwvXZ3W95N4G8T4xGDZGzEuUL7p7pYImcW9ixuMapNpXAmjiuO6BZoWKoSV3OKS0pq5g6rwJ9mJN5sZVbhdSCZQUv6xJnPj9b2WGSZOj1XTruPZTgJR6/sq638M91M2QUQ8Rp5+rvICBjkeI/Znbg4uYCasJkt3GopYdMki+sWf+gU/YtMfJu/sNGBrV1U+k5KJuNn8MdTUgMfgIgI/ekYX+9SGH2FIqpUtX5ZwKZus+YhflN5vsZ3L2tXeV/R+lvq8gBJp5jSVRJdCQvuhgX1VzXji1Xbzmv2aCyshBqeXkPP0hHiThIQQESd9nxx67pZV82VyRw="
+
 script:
-  - mvn test -B
+  # the following command line builds the project, runs the tests with coverage and then execute the SonarCloud analysis
+  - mvn clean org.jacoco:jacoco-maven-plugin:prepare-agent install sonar:sonar
+
 jdk:
   - oraclejdk8
+
 cache:
-  directory:
+  directories:
     - '$HOME/.m2/repositories'
+    - '$HOME/.sonar/cache'
+
 after_success:
   - bash <(curl -s https://codecov.io/bash)

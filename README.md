@@ -1,4 +1,4 @@
-# RSS Service ![Sonar Qube Quality](sonarQube.svg) [![codecov](https://codecov.io/gh/karimiehsan90/nimbo_rss/branch/master/graph/badge.svg)](https://codecov.io/gh/karimiehsan90/nimbo_rss)
+# RSS Service [![codecov](https://codecov.io/gh/karimiehsan90/nimbo_rss/branch/master/graph/badge.svg)](https://codecov.io/gh/karimiehsan90/nimbo_rss)
 
 A simple to use application for fetch data from news sites 
 
