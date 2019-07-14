@@ -1,10 +1,15 @@
 language: java
+
 script:
   - mvn test -B
+
 jdk:
   - oraclejdk8
+
 cache:
-  directory:
+  directories:
     - '$HOME/.m2/repositories'
+    - '$HOME/.sonar/cache'
+
 after_success:
   - bash <(curl -s https://codecov.io/bash)
