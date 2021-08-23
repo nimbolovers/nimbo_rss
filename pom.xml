@@ -24,7 +24,7 @@
         <JOOQ.version>3.11.11</JOOQ.version>
         <hikari.version>3.2.0</hikari.version>
         <readability.version>1.0.3</readability.version>
-        <JSoup.version>1.12.1</JSoup.version>
+        <JSoup.version>1.14.2</JSoup.version>
         <picocli.version>3.9.6</picocli.version>
         <Apache.DBUtils.version>1.7</Apache.DBUtils.version>
         <SonarQube.version>3.6.0.1398</SonarQube.version>
